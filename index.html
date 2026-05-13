@@ -218,6 +218,68 @@
     opacity: 0.7;
   }
 
+  .countdown-wrap {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    margin: 16px 0 4px;
+  }
+  .countdown-wrap.visible { display: flex; }
+
+  .countdown-ring {
+    position: relative;
+    width: 56px; height: 56px;
+  }
+  .countdown-ring svg {
+    transform: rotate(-90deg);
+  }
+  .countdown-ring circle {
+    fill: none;
+    stroke-width: 3;
+  }
+  .ring-bg { stroke: rgba(255,255,255,0.08); }
+  .ring-fill {
+    stroke: var(--gold);
+    stroke-dasharray: 138.2;
+    stroke-dashoffset: 0;
+    stroke-linecap: round;
+    transition: stroke-dashoffset 1s linear;
+  }
+  .countdown-num {
+    position: absolute;
+    inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--gold2);
+  }
+  .countdown-label {
+    font-size: 12px;
+    color: var(--text-dim);
+    text-align: center;
+    line-height: 1.5;
+  }
+  .unlock-pulse {
+    display: none;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    background: rgba(29,158,117,0.15);
+    border: 1px solid rgba(29,158,117,0.4);
+    border-radius: 99px;
+    font-size: 13px;
+    color: #4ecb9e;
+    font-weight: 500;
+    animation: unlockAnim 0.4s ease forwards;
+    margin: 8px 0 0;
+  }
+  .unlock-pulse.visible { display: flex; }
+  @keyframes unlockAnim {
+    from { transform: scale(0.9); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+
   /* ===================== SCREEN 2 — JEU ===================== */
   .s2-wrap {
     width: 100%;
@@ -722,9 +784,21 @@
         <span class="star">⭐</span>
         <span class="star">⭐</span>
       </div>
-      <button class="btn-primary" onclick="openGoogle()">Laisser mon avis ⭐</button>
-      <button class="btn-secondary" onclick="goToGame()">J'ai laissé mon avis →</button>
-      <div class="s1-note">Un grand merci pour votre soutien 🙏</div>
+      <button class="btn-primary" id="googleBtn" onclick="openGoogle()">Laisser mon avis ⭐</button>
+
+      <div class="countdown-wrap" id="countdownWrap">
+        <div class="countdown-ring">
+          <svg width="56" height="56" viewBox="0 0 56 56">
+            <circle class="ring-bg" cx="28" cy="28" r="22"/>
+            <circle class="ring-fill" id="ringFill" cx="28" cy="28" r="22"/>
+          </svg>
+          <div class="countdown-num" id="countNum">30</div>
+        </div>
+        <div class="countdown-label">Revenez sur cette page<br>après avoir laissé votre avis</div>
+      </div>
+
+      <div class="unlock-pulse" id="unlockMsg">✓ Avis détecté — la roue se débloque !</div>
+      <div class="s1-note" id="s1Note">Un grand merci pour votre soutien 🙏</div>
     </div>
   </div>
 </div>
@@ -890,8 +964,73 @@ function showScreen(id) {
   document.getElementById(id).classList.add('active');
 }
 
+// ---- Boulangerie cible : Boulangerie Dupain, Paris ----
+const GOOGLE_REVIEW_URL = 'https://search.google.com/local/writereview?placeid=ChIJD7fiBh9u5kcRYJSMaMOCCwQ';
+
+let countdownInterval = null;
+let countdownValue = 30;
+let googleOpened = false;
+const CIRCUMFERENCE = 2 * Math.PI * 22; // r=22
+
 function openGoogle() {
-  window.open('https://search.google.com/local/writereview?placeid=VOTRE_PLACE_ID', '_blank');
+  if (googleOpened) return;
+  googleOpened = true;
+
+  // Open Google review page
+  window.open(GOOGLE_REVIEW_URL, '_blank');
+
+  // Update button
+  const btn = document.getElementById('googleBtn');
+  btn.textContent = '✓ Ouvert dans un nouvel onglet';
+  btn.style.opacity = '0.5';
+  btn.style.cursor = 'default';
+
+  // Show countdown
+  const wrap = document.getElementById('countdownWrap');
+  wrap.classList.add('visible');
+  document.getElementById('s1Note').style.display = 'none';
+
+  // Set ring
+  const ring = document.getElementById('ringFill');
+  ring.style.strokeDasharray = CIRCUMFERENCE;
+  ring.style.strokeDashoffset = 0;
+
+  // Start countdown
+  countdownValue = 30;
+  countdownInterval = setInterval(() => {
+    countdownValue--;
+    document.getElementById('countNum').textContent = countdownValue;
+    const offset = CIRCUMFERENCE * (1 - countdownValue / 30);
+    ring.style.strokeDashoffset = offset;
+    if (countdownValue <= 0) {
+      clearInterval(countdownInterval);
+      unlockGame();
+    }
+  }, 1000);
+
+  // Also listen for page visibility (user comes back to tab)
+  document.addEventListener('visibilitychange', onVisibilityChange);
+}
+
+function onVisibilityChange() {
+  if (!googleOpened) return;
+  if (document.visibilityState === 'visible') {
+    // User returned to tab — wait min 5s before unlocking to avoid cheating
+    const elapsed = 30 - countdownValue;
+    if (elapsed >= 5) {
+      clearInterval(countdownInterval);
+      document.removeEventListener('visibilitychange', onVisibilityChange);
+      unlockGame();
+    }
+  }
+}
+
+function unlockGame() {
+  document.getElementById('countdownWrap').classList.remove('visible');
+  const msg = document.getElementById('unlockMsg');
+  msg.classList.add('visible');
+  spawnParticles();
+  setTimeout(() => showScreen('screen2'), 1800);
 }
 
 function goToGame() {
