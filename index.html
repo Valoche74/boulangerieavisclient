@@ -1023,6 +1023,12 @@ async function submitForm() {
   const code = generateCode();
   const gain = wonPrize ? wonPrize.name : 'Votre cadeau';
   const gainEmoji = wonPrize ? wonPrize.emoji : '🎁';
+  const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbwWS91T-VKMdDtWzAK9chX9mD7xdU5Hh5q-Us4x4NLczYnpssNaan9W_cgQG1C1OlQg/exec';
+
+  // Sauvegarder le code dans Google Sheets
+  try {
+    await fetch(`${SHEETS_URL}?action=save&code=${encodeURIComponent(code)}&gain=${encodeURIComponent(gain)}&prenom=${encodeURIComponent(prenom)}&email=${encodeURIComponent(email)}`);
+  } catch(e) { console.log('Sheets save failed', e); }
 
   try {
     const res = await fetch('https://api.resend.com/emails', {
