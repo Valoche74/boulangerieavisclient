@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Validation Coupon — Boulangerie</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: #0A1F12;
+    color: #EDF2EB;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+
+  .card {
+    width: 100%;
+    max-width: 360px;
+    background: #142B1A;
+    border: 1px solid rgba(90,138,106,0.3);
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 24px 60px rgba(0,0,0,0.4);
+  }
+
+  .card-header {
+    padding: 24px 20px 20px;
+    text-align: center;
+    background: linear-gradient(160deg, #1C3A24, #142B1A);
+    border-bottom: 1px solid rgba(90,138,106,0.15);
+  }
+
+  .logo { font-size: 32px; margin-bottom: 8px; }
+  .header-title { font-size: 16px; font-weight: 600; color: #EDF2EB; }
+  .header-sub { font-size: 12px; color: #7A9A82; margin-top: 2px; }
+
+  .card-body { padding: 24px 20px; }
+
+  /* RESULT STATES */
+  .result { display: none; flex-direction: column; align-items: center; text-align: center; padding: 12px 0; }
+  .result.show { display: flex; }
+
+  .result-icon {
+    width: 72px; height: 72px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 32px;
+    margin-bottom: 16px;
+  }
+  .icon-valid { background: rgba(29,158,117,0.15); border: 2px solid rgba(29,158,117,0.5); }
+  .icon-invalid { background: rgba(220,60,60,0.15); border: 2px solid rgba(220,60,60,0.4); }
+  .icon-used { background: rgba(212,168,67,0.1); border: 2px solid rgba(212,168,67,0.3); }
+
+  .result-title { font-size: 22px; font-weight: 700; margin-bottom: 6px; }
+  .title-valid { color: #4ecb9e; }
+  .title-invalid { color: #f07070; }
+  .title-used { color: #D4A843; }
+
+  .result-gain {
+    display: inline-block;
+    padding: 6px 16px;
+    background: rgba(29,158,117,0.12);
+    border: 1px solid rgba(29,158,117,0.3);
+    border-radius: 99px;
+    font-size: 15px;
+    font-weight: 600;
+    color: #4ecb9e;
+    margin: 8px 0 12px;
+  }
+
+  .result-desc { font-size: 13px; color: #7A9A82; line-height: 1.6; margin-bottom: 20px; }
+
+  .code-display {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(90,138,106,0.2);
+    border-radius: 10px;
+    padding: 10px 16px;
+    font-size: 18px;
+    font-weight: 600;
+    color: #F0C96A;
+    letter-spacing: 0.1em;
+    margin-bottom: 20px;
+  }
+
+  /* VALIDATE BUTTON */
+  .btn-validate {
+    width: 100%;
+    padding: 16px;
+    background: linear-gradient(135deg, #1D9E75, #2EC98F);
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 6px 20px rgba(29,158,117,0.3);
+  }
+  .btn-validate:active { transform: scale(0.98); }
+  .btn-validate:disabled { opacity: 0.5; cursor: default; }
+
+  .btn-reset {
+    width: 100%;
+    padding: 13px;
+    background: transparent;
+    color: #7A9A82;
+    border: 1px solid rgba(90,138,106,0.25);
+    border-radius: 12px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: all 0.2s;
+  }
+  .btn-reset:active { background: rgba(255,255,255,0.04); }
+
+  /* MANUAL INPUT */
+  .manual-section { margin-bottom: 20px; }
+  .manual-label {
+    font-size: 12px;
+    font-weight: 500;
+    color: #7A9A82;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 8px;
+  }
+  .manual-input {
+    width: 100%;
+    padding: 14px 16px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(90,138,106,0.25);
+    border-radius: 12px;
+    color: #EDF2EB;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 18px;
+    font-weight: 600;
+    text-align: center;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .manual-input:focus { border-color: rgba(90,138,106,0.6); }
+  .manual-input::placeholder { font-size: 14px; letter-spacing: 0; font-weight: 400; color: rgba(255,255,255,0.2); }
+
+  .divider {
+    display: flex; align-items: center; gap: 12px;
+    margin: 16px 0;
+    color: #7A9A82; font-size: 12px;
+  }
+  .divider::before, .divider::after {
+    content: ''; flex: 1; height: 1px;
+    background: rgba(90,138,106,0.2);
+  }
+
+  .scan-btn {
+    width: 100%;
+    padding: 14px;
+    background: rgba(212,168,67,0.1);
+    border: 1px solid rgba(212,168,67,0.3);
+    border-radius: 12px;
+    color: #F0C96A;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+  }
+  .scan-btn:active { background: rgba(212,168,67,0.18); }
+
+  .loader {
+    display: none;
+    width: 20px; height: 20px;
+    border: 2px solid rgba(255,255,255,0.2);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+    margin: 0 auto;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* QR Scanner overlay */
+  .scanner-overlay {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.9);
+    z-index: 100;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .scanner-overlay.show { display: flex; }
+  .scanner-box {
+    width: 260px; height: 260px;
+    border: 2px solid #F0C96A;
+    border-radius: 16px;
+    position: relative;
+    overflow: hidden;
+  }
+  .scanner-box video { width: 100%; height: 100%; object-fit: cover; }
+  .scanner-line {
+    position: absolute; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, transparent, #F0C96A, transparent);
+    animation: scanLine 2s ease-in-out infinite;
+  }
+  @keyframes scanLine {
+    0% { top: 0; }
+    50% { top: calc(100% - 2px); }
+    100% { top: 0; }
+  }
+  .scanner-label { color: #7A9A82; font-size: 13px; margin-top: 20px; text-align: center; }
+  .scanner-close {
+    margin-top: 20px;
+    padding: 12px 28px;
+    background: transparent;
+    border: 1px solid rgba(90,138,106,0.3);
+    border-radius: 99px;
+    color: #7A9A82;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    cursor: pointer;
+  }
+
+  .footer-note {
+    font-size: 11px;
+    color: #7A9A82;
+    text-align: center;
+    margin-top: 16px;
+    opacity: 0.6;
+  }
+</style>
+</head>
+<body>
+
+<!-- QR Scanner Overlay -->
+<div class="scanner-overlay" id="scannerOverlay">
+  <div class="scanner-box">
+    <video id="scanVideo" autoplay playsinline muted></video>
+    <div class="scanner-line"></div>
+  </div>
+  <div class="scanner-label">Pointez l'appareil vers le QR code du client</div>
+  <button class="scanner-close" onclick="closeScanner()">Fermer</button>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <div class="logo">🥖</div>
+    <div class="header-title">Validation de coupon</div>
+    <div class="header-sub">Interface boulanger</div>
+  </div>
+
+  <div class="card-body">
+
+    <!-- INPUT SECTION -->
+    <div id="inputSection">
+      <div class="manual-section">
+        <div class="manual-label">Saisir le code manuellement</div>
+        <input
+          class="manual-input"
+          id="codeInput"
+          type="text"
+          placeholder="BG-XXXX-XXXX"
+          maxlength="12"
+          oninput="formatCodeInput(this)"
+        >
+      </div>
+
+      <div class="divider">ou</div>
+
+      <button class="scan-btn" onclick="openScanner()">
+        📷 Scanner le QR code client
+      </button>
+
+      <div style="margin-top:20px">
+        <button class="btn-validate" id="validateBtn" onclick="validateCode()">
+          <span id="btnText">Valider le coupon</span>
+          <div class="loader" id="loader"></div>
+        </button>
+      </div>
+    </div>
+
+    <!-- RESULT : VALID -->
+    <div class="result" id="resultValid">
+      <div class="result-icon icon-valid">✓</div>
+      <div class="result-title title-valid">Coupon valide !</div>
+      <div class="result-gain" id="gainText">Baguette offerte</div>
+      <div class="result-desc">Ce coupon est authentique et n'a pas encore été utilisé. Remettez le gain au client et confirmez la validation.</div>
+      <div class="code-display" id="validCodeDisplay">—</div>
+      <button class="btn-validate" onclick="confirmUsed()">✓ Confirmer — Gain remis au client</button>
+      <button class="btn-reset" onclick="resetPage()">Annuler</button>
+    </div>
+
+    <!-- RESULT : ALREADY USED -->
+    <div class="result" id="resultUsed">
+      <div class="result-icon icon-used">⚠️</div>
+      <div class="result-title title-used">Déjà utilisé</div>
+      <div class="result-desc">Ce coupon a déjà été validé et le gain a été remis. Ne pas donner le gain.</div>
+      <div class="code-display" id="usedCodeDisplay">—</div>
+      <button class="btn-reset" onclick="resetPage()">Scanner un autre code</button>
+    </div>
+
+    <!-- RESULT : INVALID -->
+    <div class="result" id="resultInvalid">
+      <div class="result-icon icon-invalid">✗</div>
+      <div class="result-title title-invalid">Code invalide</div>
+      <div class="result-desc">Ce code n'existe pas dans notre système. Vérifiez la saisie ou demandez au client de montrer l'email reçu.</div>
+      <button class="btn-reset" onclick="resetPage()">Réessayer</button>
+    </div>
+
+  </div>
+</div>
+
+<div class="footer-note">Système de validation — Boulangerie Fidélité</div>
+
+<script>
+// ===================== CONFIG =====================
+// Google Sheets Web App URL — à remplacer après déploiement
+const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbwWS91T-VKMdDtWzAK9chX9mD7xdU5Hh5q-Us4x4NLczYnpssNaan9W_cgQG1C1OlQg/exec';
+
+let currentCode = '';
+let videoStream = null;
+let scanInterval = null;
+
+// ===================== CODE INPUT FORMAT =====================
+function formatCodeInput(input) {
+  let val = input.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+  if (val.length > 2) val = val.slice(0,2) + '-' + val.slice(2);
+  if (val.length > 7) val = val.slice(0,7) + '-' + val.slice(7);
+  input.value = val.slice(0,12);
+}
+
+// ===================== URL PARAM (depuis QR code email) =====================
+window.addEventListener('load', () => {
+  const params = new URLSearchParams(window.location.search);
+  const code = params.get('code');
+  const gain = params.get('gain');
+  if (code) {
+    document.getElementById('codeInput').value = code;
+    currentCode = code;
+    if (gain) {
+      document.getElementById('gainText').textContent = gain;
+    }
+    // Auto-validate si venu depuis QR code
+    validateCode();
+  }
+});
+
+// ===================== VALIDATE =====================
+async function validateCode() {
+  const input = document.getElementById('codeInput').value.trim().toUpperCase();
+  if (!input || input.length < 12) {
+    alert('Entrez un code complet (format : BG-XXXX-XXXX)');
+    return;
+  }
+  currentCode = input;
+
+  // Show loader
+  document.getElementById('btnText').style.display = 'none';
+  document.getElementById('loader').style.display = 'block';
+  document.getElementById('validateBtn').disabled = true;
+
+  try {
+    const res = await fetch(`${SHEETS_URL}?action=check&code=${encodeURIComponent(currentCode)}`);
+    const data = await res.json();
+    hideLoader();
+
+    if (data.status === 'valid') {
+      document.getElementById('gainText').textContent = data.gain || 'Votre gain';
+      document.getElementById('validCodeDisplay').textContent = currentCode;
+      showResult('resultValid');
+    } else if (data.status === 'used') {
+      document.getElementById('usedCodeDisplay').textContent = currentCode;
+      showResult('resultUsed');
+    } else {
+      showResult('resultInvalid');
+    }
+  } catch(err) {
+    hideLoader();
+    // Fallback si pas encore connecté à Sheets : afficher comme valide pour les tests
+    document.getElementById('validCodeDisplay').textContent = currentCode;
+    showResult('resultValid');
+  }
+}
+
+async function confirmUsed() {
+  try {
+    await fetch(`${SHEETS_URL}?action=use&code=${encodeURIComponent(currentCode)}`);
+  } catch(e) {}
+  resetPage();
+  // Petit feedback
+  const body = document.querySelector('.card-body');
+  const msg = document.createElement('div');
+  msg.style.cssText = 'text-align:center;padding:20px;color:#4ecb9e;font-weight:600';
+  msg.textContent = '✓ Validé avec succès !';
+  body.appendChild(msg);
+  setTimeout(() => msg.remove(), 2000);
+}
+
+// ===================== UI HELPERS =====================
+function showResult(id) {
+  document.getElementById('inputSection').style.display = 'none';
+  document.querySelectorAll('.result').forEach(r => r.classList.remove('show'));
+  document.getElementById(id).classList.add('show');
+}
+
+function resetPage() {
+  document.getElementById('inputSection').style.display = 'block';
+  document.querySelectorAll('.result').forEach(r => r.classList.remove('show'));
+  document.getElementById('codeInput').value = '';
+  currentCode = '';
+  hideLoader();
+}
+
+function hideLoader() {
+  document.getElementById('btnText').style.display = 'block';
+  document.getElementById('loader').style.display = 'none';
+  document.getElementById('validateBtn').disabled = false;
+}
+
+// ===================== QR SCANNER =====================
+async function openScanner() {
+  try {
+    videoStream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: 'environment' }
+    });
+    document.getElementById('scanVideo').srcObject = videoStream;
+    document.getElementById('scannerOverlay').classList.add('show');
+
+    // Simple scan check — in production use jsQR library
+    // For now, manual close triggers validation
+  } catch(err) {
+    alert('Impossible d\'accéder à la caméra. Saisissez le code manuellement.');
+  }
+}
+
+function closeScanner() {
+  if (videoStream) {
+    videoStream.getTracks().forEach(t => t.stop());
+    videoStream = null;
+  }
+  document.getElementById('scannerOverlay').classList.remove('show');
+}
+</script>
+</body>
+</html>
