@@ -949,11 +949,7 @@ let isDragging = false;
 
 // Check already played
 window.addEventListener('load', () => {
-  const played = localStorage.getItem('boulangerie_played');
-  if (played === 'permanent') {
-    showScreen('screenAlready');
-    return;
-  }
+  // Blocage désactivé — mode test
   showScreen('screen1');
   initCarousel();
 });
