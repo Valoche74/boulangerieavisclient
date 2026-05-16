@@ -63,11 +63,8 @@
   .screen {
     position: fixed;
     inset: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: flex-start;
-    padding: 24px 20px 48px;
+    display: block;
+    padding: 0;
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.6s ease;
@@ -76,16 +73,14 @@
     overflow-x: hidden;
     -webkit-overflow-scrolling: touch;
   }
-  /* Centrer verticalement seulement si contenu < hauteur écran */
-  .screen::before {
-    content: '';
-    flex: 1;
-    min-height: 16px;
-  }
-  .screen::after {
-    content: '';
-    flex: 1;
-    min-height: 16px;
+  .screen-inner {
+    min-height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 24px 20px 60px;
+    box-sizing: border-box;
   }
   .screen.active {
     opacity: 1;
@@ -780,7 +775,7 @@
 <body>
 
 <!-- SCREEN 1 — AVIS GOOGLE -->
-<div class="screen active" id="screen1">
+<div class="screen active" id="screen1"><div class="screen-inner">
   <div class="s1-card">
     <div class="s1-header">
       <div class="s1-logo">🥖</div>
@@ -814,10 +809,10 @@
       <div class="s1-note" id="s1Note">Un grand merci pour votre soutien 🙏</div>
     </div>
   </div>
-</div>
+</div></div>
 
 <!-- SCREEN 2 — JEU DES CARTES -->
-<div class="screen" id="screen2">
+<div class="screen" id="screen2"><div class="screen-inner">
   <div class="s2-wrap">
     <div class="badge-pill">✦ Jeu de la Chance</div>
     <div class="s2-title">Choisissez votre carte</div>
@@ -885,10 +880,10 @@
 
     <button class="btn-cta" id="ctaBtn" onclick="goToForm()">Récupérer mon gain 🎁</button>
   </div>
-</div>
+</div></div>
 
 <!-- SCREEN 3 — FORMULAIRE -->
-<div class="screen" id="screen3">
+<div class="screen" id="screen3"><div class="screen-inner">
   <div class="s3-card">
     <div class="s3-header">
       <span class="s3-prize-emoji" id="prizeEmoji">🥐</span>
@@ -921,10 +916,10 @@
       <div class="s3-rgpd">🔒 Nous respectons votre vie privée.<br>Vos données sont sécurisées et ne seront pas revendues.</div>
     </div>
   </div>
-</div>
+</div></div>
 
 <!-- SCREEN 4 — SUCCESS -->
-<div class="screen" id="screen4">
+<div class="screen" id="screen4"><div class="screen-inner">
   <div class="s4-wrap">
     <div class="s4-check">✓</div>
     <div class="s4-title">Email envoyé !</div>
@@ -935,16 +930,16 @@
     </div>
     <div class="s4-badge" style="margin-top:16px">Valable 30 jours · Usage unique</div>
   </div>
-</div>
+</div></div>
 
 <!-- SCREEN ALREADY PLAYED -->
-<div class="screen" id="screenAlready">
+<div class="screen" id="screenAlready"><div class="screen-inner">
   <div class="already-played">
     <span class="already-icon">🎫</span>
     <div class="already-title">Déjà participé !</div>
     <div class="already-desc">Vous avez déjà récupéré votre gain. Un seul avis Google par personne — merci pour votre soutien !</div>
   </div>
-</div>
+</div></div>
 
 <script>
 // ===================== STATE =====================
