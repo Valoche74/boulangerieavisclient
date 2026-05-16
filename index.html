@@ -1029,56 +1029,33 @@ async function submitForm() {
   const gainEmoji = wonPrize ? wonPrize.emoji : '🎁';
   const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbwWS91T-VKMdDtWzAK9chX9mD7xdU5Hh5q-Us4x4NLczYnpssNaan9W_cgQG1C1OlQg/exec';
 
-  // Sauvegarder le code dans Google Sheets
+  // 1. Sauvegarder dans Google Sheets
   try {
     await fetch(`${SHEETS_URL}?action=save&code=${encodeURIComponent(code)}&gain=${encodeURIComponent(gain)}&prenom=${encodeURIComponent(prenom)}&email=${encodeURIComponent(email)}`);
   } catch(e) { console.log('Sheets save failed', e); }
 
+  // 2. Envoyer email via Apps Script (évite le blocage CORS)
   try {
-    const res = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: {
-        'Authorization': 'Bearer re_GDQfUZEH_Lc4Ycjiofp8GxzYc8q7eyfyu',
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        from: 'Boulangerie Fidélité <onboarding@resend.dev>',
-        to: [email],
-        subject: gainEmoji + ' Votre gain vous attend — Falman Emmanuelle et Flavien',
-        html: `
-          <div style="font-family:Arial,sans-serif;max-width:480px;margin:0 auto;background:#0F2218;color:#EDF2EB;border-radius:16px;overflow:hidden">
-            <div style="background:linear-gradient(135deg,#1C3A24,#142B1A);padding:32px 24px;text-align:center">
-              <div style="font-size:56px;margin-bottom:12px">${gainEmoji}</div>
-              <h1 style="font-size:24px;font-weight:700;margin:0 0 6px;color:#EDF2EB">Félicitations ${prenom} !</h1>
-              <div style="display:inline-block;padding:6px 16px;background:rgba(212,168,67,0.15);border:1px solid rgba(212,168,67,0.3);border-radius:99px;font-size:14px;color:#F0C96A;font-weight:500">Vous avez gagné : ${gain}</div>
-            </div>
-            <div style="padding:28px 24px">
-              <p style="font-size:14px;color:#7A9A82;margin:0 0 20px;line-height:1.6">Montrez simplement cet email en caisse lors de votre prochaine visite. Le boulanger scannera votre QR code pour valider votre gain.</p>
-              <div style="background:#142B1A;border:1px solid rgba(90,138,106,0.3);border-radius:12px;padding:20px;text-align:center;margin-bottom:20px">
-                <div style="font-size:12px;color:#7A9A82;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.08em">Votre code unique</div>
-                <div style="font-size:28px;font-weight:700;color:#F0C96A;letter-spacing:0.12em">${code}</div>
-                <div style="margin-top:12px">
-                  <img src="https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${encodeURIComponent('https://boulangerieavisclient.vercel.app/valider.html?code=' + code + '&gain=' + encodeURIComponent(gain))}&bgcolor=142B1A&color=F0C96A&format=png" style="border-radius:8px" alt="QR Code"/>
-                </div>
-                <div style="font-size:11px;color:#7A9A82;margin-top:8px">Valable 30 jours · Usage unique</div>
-              </div>
-              <p style="font-size:12px;color:#7A9A82;text-align:center;margin:0">Merci de votre soutien 🙏<br>L'équipe Falman Emmanuelle et Flavien</p>
-            </div>
-          </div>
-        `
-      })
-    });
+    const emailUrl = `${SHEETS_URL}?action=sendemail` +
+      `&prenom=${encodeURIComponent(prenom)}` +
+      `&email=${encodeURIComponent(email)}` +
+      `&gain=${encodeURIComponent(gain)}` +
+      `&emoji=${encodeURIComponent(gainEmoji)}` +
+      `&code=${encodeURIComponent(code)}` +
+      `&commerce=${encodeURIComponent('Falman Emmanuelle et Flavien')}`;
 
-    if (res.ok) {
-      // (blocage désactivé)
+    const res = await fetch(emailUrl);
+    const data = await res.json();
+
+    if (data.status === 'sent') {
       showScreen('screen4');
       document.getElementById('s4code').textContent = code;
     } else {
-      throw new Error('Erreur envoi');
+      throw new Error(data.message || 'Erreur envoi');
     }
   } catch(err) {
-    // Fallback — afficher quand même le gain même si email échoue
-    // (blocage désactivé)
+    console.log('Email error:', err);
+    // Fallback — on affiche quand même le gain
     showScreen('screen4');
     document.getElementById('s4code').textContent = code;
   }
