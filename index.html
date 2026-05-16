@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Boulangerie Premium — Tentez votre chance</title>
+<title>Falman Emmanuelle et Flavien — Tentez votre chance</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
@@ -771,7 +771,7 @@
   <div class="s1-card">
     <div class="s1-header">
       <div class="s1-logo">🥖</div>
-      <div class="s1-name">Boulangerie Premium</div>
+      <div class="s1-name">Falman Emmanuelle et Flavien</div>
       <div class="s1-sub">Jeu de la Chance</div>
     </div>
     <div class="s1-body">
@@ -784,7 +784,7 @@
         <span class="star">⭐</span>
         <span class="star">⭐</span>
       </div>
-      <a href="https://search.google.com/local/writereview?placeid=ChIJD7fiBh9u5kcRYJSMaMOCCwQ" target="_blank" rel="noopener" class="btn-primary" id="googleBtn" onclick="openGoogle(event)" style="display:block;text-decoration:none;text-align:center;">Laisser mon avis ⭐</a>
+      <a href="https://share.google/QuoXXYhDJqRf2bO4W" target="_blank" rel="noopener" class="btn-primary" id="googleBtn" onclick="openGoogle(event)" style="display:block;text-decoration:none;text-align:center;">Laisser mon avis ⭐</a>
 
       <div class="countdown-wrap" id="countdownWrap">
         <div class="countdown-ring">
@@ -961,7 +961,7 @@ function showScreen(id) {
 }
 
 // ---- Boulangerie cible : Boulangerie Dupain, Paris ----
-const GOOGLE_REVIEW_URL = 'https://search.google.com/local/writereview?placeid=ChIJD7fiBh9u5kcRYJSMaMOCCwQ';
+const GOOGLE_REVIEW_URL = 'https://share.google/QuoXXYhDJqRf2bO4W';
 
 let googleOpened = false;
 
@@ -1036,7 +1036,7 @@ async function submitForm() {
       body: JSON.stringify({
         from: 'Boulangerie Fidélité <onboarding@resend.dev>',
         to: [email],
-        subject: gainEmoji + ' Votre gain vous attend — Boulangerie Premium',
+        subject: gainEmoji + ' Votre gain vous attend — Falman Emmanuelle et Flavien',
         html: `
           <div style="font-family:Arial,sans-serif;max-width:480px;margin:0 auto;background:#0F2218;color:#EDF2EB;border-radius:16px;overflow:hidden">
             <div style="background:linear-gradient(135deg,#1C3A24,#142B1A);padding:32px 24px;text-align:center">
@@ -1054,7 +1054,7 @@ async function submitForm() {
                 </div>
                 <div style="font-size:11px;color:#7A9A82;margin-top:8px">Valable 30 jours · Usage unique</div>
               </div>
-              <p style="font-size:12px;color:#7A9A82;text-align:center;margin:0">Merci de votre soutien 🙏<br>L'équipe Boulangerie Premium</p>
+              <p style="font-size:12px;color:#7A9A82;text-align:center;margin:0">Merci de votre soutien 🙏<br>L'équipe Falman Emmanuelle et Flavien</p>
             </div>
           </div>
         `
