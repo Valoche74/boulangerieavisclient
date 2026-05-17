@@ -1022,35 +1022,31 @@ async function submitForm() {
   const code = generateCode();
   const gain = wonPrize ? wonPrize.name : 'Votre cadeau';
   const gainEmoji = wonPrize ? wonPrize.emoji : '🎁';
-  const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbydbdsUOR49i5BO6-eBIgvtFZN0etKi91IOvd3XlAaK8Ylo4AFqjd80w9CSeo_m9B8x/exec';
+  const STANDALONE_URL = 'https://script.google.com/macros/s/AKfycbydbdsUOR49i5BO6-eBIgvtFZN0etKi91IOvd3XlAaK8Ylo4AFqjd80w9CSeo_m9B8x/exec';
 
-  // 1. Sauvegarder dans Google Sheets
+  // Un seul appel — sauvegarde Sheets + envoi email simultané
   try {
-    await fetch(`${SHEETS_URL}?action=save&code=${encodeURIComponent(code)}&gain=${encodeURIComponent(gain)}&prenom=${encodeURIComponent(prenom)}&email=${encodeURIComponent(email)}`);
-  } catch(e) { console.log('Sheets save failed', e); }
+    const url = STANDALONE_URL
+      + '?action=save'
+      + '&code='    + encodeURIComponent(code)
+      + '&gain='    + encodeURIComponent(gain)
+      + '&prenom='  + encodeURIComponent(prenom)
+      + '&email='   + encodeURIComponent(email)
+      + '&emoji='   + encodeURIComponent(gainEmoji)
+      + '&commerce='+ encodeURIComponent('Falman Emmanuelle et Flavien');
 
-  // 2. Envoyer email via Apps Script (évite le blocage CORS)
-  try {
-    const emailUrl = `${SHEETS_URL}?action=sendemail` +
-      `&prenom=${encodeURIComponent(prenom)}` +
-      `&email=${encodeURIComponent(email)}` +
-      `&gain=${encodeURIComponent(gain)}` +
-      `&emoji=${encodeURIComponent(gainEmoji)}` +
-      `&code=${encodeURIComponent(code)}` +
-      `&commerce=${encodeURIComponent('Falman Emmanuelle et Flavien')}`;
-
-    const res = await fetch(emailUrl);
+    const res  = await fetch(url);
     const data = await res.json();
 
-    if (data.status === 'sent') {
+    if (data.status === 'saved' || data.status === 'duplicate') {
       showScreen('screen4');
       document.getElementById('s4code').textContent = code;
     } else {
-      throw new Error(data.message || 'Erreur envoi');
+      throw new Error(data.message || 'Erreur');
     }
   } catch(err) {
-    console.log('Email error:', err);
-    // Fallback — on affiche quand même le gain
+    console.log('Error:', err);
+    // Fallback — afficher quand même le gain
     showScreen('screen4');
     document.getElementById('s4code').textContent = code;
   }
