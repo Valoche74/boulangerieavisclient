@@ -3,1178 +3,950 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Falman Emmanuelle et Flavien — Tentez votre chance</title>
+<meta name="theme-color" content="#3a7a1e">
+<meta name="color-scheme" content="light">
+<title>Falman Emmanuelle et Flavien</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --bg: #08160E;
-    --bg2: #0F2218;
-    --card: #142B1A;
-    --card2: #1C3A24;
-    --gold: #D4A843;
-    --gold2: #F0C96A;
-    --gold-dim: rgba(212,168,67,0.15);
-    --sage: #5A8A6A;
-    --sage-light: #7AAE88;
-    --text: #EDF2EB;
-    --text-dim: #7A9A82;
-    --border: rgba(212,168,67,0.2);
-    --border-card: rgba(90,138,106,0.25);
-    --glow: 0 0 30px rgba(212,168,67,0.12);
-  }
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --cream:#F5EDD8;
+  --cream2:#EDE0C4;
+  --cream3:#FBF6EE;
+  --gold:#C8963E;
+  --gold2:#E2B25A;
+  --gold3:#F5D07A;
+  --gold-border:rgba(200,150,62,.35);
+  --green-dark:#2d5a12;
+  --green-mid:#3d7a18;
+  --ink:#1a1a14;
+  --ink2:#2e2e26;
+  --muted:#6b6045;
+  --muted2:#9a8c6e;
+}
 
-  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+/* ── FOND VERT TEXTURÉ ── */
+html,body{
+  height:100%;
+  font-family:'Inter',sans-serif;
+  -webkit-font-smoothing:antialiased;
+  overflow:hidden;
+  background:#3e7a1a;
+}
 
-  html, body {
-    height: 100%;
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'DM Sans', sans-serif;
-    overflow-x: hidden;
-  }
+/* Texture grain + variations lumineuses simulant l'image de référence */
+body::before{
+  content:'';
+  position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:
+    radial-gradient(ellipse 70% 55% at 25% 30%, rgba(110,190,40,.45) 0%, transparent 60%),
+    radial-gradient(ellipse 55% 70% at 80% 70%, rgba(30,90,8,.5) 0%, transparent 55%),
+    radial-gradient(ellipse 80% 40% at 50% 85%, rgba(50,110,15,.4) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 60% at 15% 75%, rgba(70,140,20,.3) 0%, transparent 50%),
+    radial-gradient(ellipse 90% 90% at 50% 50%, rgba(65,130,20,.2) 0%, transparent 100%);
+}
 
-  /* Noise texture overlay */
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
-    pointer-events: none;
-    z-index: 1000;
-    opacity: 0.4;
-  }
+/* Grain SVG identique à l'image — bruit fin, aspect textile/papier */
+body::after{
+  content:'';
+  position:fixed;inset:0;z-index:1;pointer-events:none;
+  opacity:.55;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+  background-size:180px 180px;
+}
 
-  /* Ambient light top */
-  body::after {
-    content: '';
-    position: fixed;
-    top: -200px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 600px;
-    height: 400px;
-    background: radial-gradient(ellipse, rgba(90,138,106,0.12) 0%, transparent 70%);
-    pointer-events: none;
-    z-index: 0;
-  }
+/* ── SCREENS ── */
+.screen{
+  position:fixed;inset:0;z-index:10;
+  display:block;overflow-y:auto;overflow-x:hidden;
+  -webkit-overflow-scrolling:touch;
+  opacity:0;pointer-events:none;
+  transition:opacity .55s cubic-bezier(.4,0,.2,1);
+}
+.screen.active{opacity:1;pointer-events:all}
+.screen-inner{
+  min-height:100%;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  padding:28px 20px 60px;position:relative;z-index:2;
+}
 
-  /* ===================== SCREENS ===================== */
-  .screen {
-    position: fixed;
-    inset: 0;
-    display: block;
-    padding: 0;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.6s ease;
-    z-index: 10;
-    overflow-y: auto;
-    overflow-x: hidden;
-    -webkit-overflow-scrolling: touch;
-  }
-  .screen-inner {
-    min-height: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 24px 20px 60px;
-    box-sizing: border-box;
-  }
-  .screen.active {
-    opacity: 1;
-    pointer-events: all;
-  }
+/* ══════════════════════════════════
+   SCREEN 1 — ACCUEIL
+══════════════════════════════════ */
+.s1-wrap{width:100%;max-width:380px;display:flex;flex-direction:column;align-items:center;gap:0}
 
-  /* ===================== SCREEN 1 — AVIS ===================== */
-  .s1-card {
-    width: 100%;
-    max-width: 380px;
-    background: var(--card);
-    border: 1px solid var(--border-card);
-    border-radius: 24px;
-    overflow: hidden;
-    box-shadow: 0 40px 80px rgba(0,0,0,0.5), var(--glow);
-  }
+/* Header boulangerie */
+.s1-header{text-align:center;margin-bottom:28px}
+.s1-logo-ring{
+  width:88px;height:88px;border-radius:50%;
+  background:rgba(245,237,216,.12);
+  border:1.5px solid rgba(245,237,216,.3);
+  display:flex;align-items:center;justify-content:center;
+  font-size:40px;
+  margin:0 auto 14px;
+  box-shadow:0 0 0 6px rgba(245,237,216,.06), 0 12px 40px rgba(0,0,0,.25);
+}
+.s1-boulangerie-name{
+  font-family:'Playfair Display',serif;
+  font-size:22px;font-weight:700;
+  color:var(--cream);
+  letter-spacing:.01em;line-height:1.2;
+  text-shadow:0 2px 12px rgba(0,0,0,.3);
+}
+.s1-tagline{
+  font-size:12px;font-weight:400;
+  color:rgba(245,237,216,.65);
+  letter-spacing:.06em;margin-top:4px;
+}
 
-  .s1-header {
-    background: linear-gradient(160deg, #1C3A24 0%, #142B1A 100%);
-    padding: 32px 24px 28px;
-    text-align: center;
-    position: relative;
-    overflow: hidden;
-  }
-  .s1-header::before {
-    content: '';
-    position: absolute;
-    top: -40px; left: 50%; transform: translateX(-50%);
-    width: 200px; height: 200px;
-    background: radial-gradient(circle, rgba(212,168,67,0.1) 0%, transparent 70%);
-  }
+/* Croissant 3D CSS */
+.croissant-wrap{
+  position:relative;width:180px;height:160px;
+  display:flex;align-items:center;justify-content:center;
+  margin-bottom:8px;
+  filter:drop-shadow(0 16px 40px rgba(0,0,0,.35));
+}
+.croissant-glow{
+  position:absolute;inset:-20px;
+  border-radius:50%;
+  background:radial-gradient(circle, rgba(226,178,90,.22) 0%, transparent 70%);
+  pointer-events:none;
+  animation:glowPulse 3s ease-in-out infinite;
+}
+@keyframes glowPulse{0%,100%{opacity:.6;transform:scale(1)}50%{opacity:1;transform:scale(1.08)}}
 
-  .s1-logo {
-    width: 72px; height: 72px;
-    background: var(--text);
-    border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    margin: 0 auto 16px;
-    font-size: 28px;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.3), 0 0 0 4px rgba(255,255,255,0.08);
-    position: relative; z-index: 1;
-  }
+.croissant-3d{
+  font-size:110px;
+  display:block;
+  animation:float3d 4s ease-in-out infinite;
+  transform-origin:center;
+  user-select:none;
+}
+@keyframes float3d{
+  0%,100%{transform:translateY(0) rotate(-3deg) scale(1)}
+  25%{transform:translateY(-8px) rotate(0deg) scale(1.04)}
+  50%{transform:translateY(-12px) rotate(3deg) scale(1.02)}
+  75%{transform:translateY(-5px) rotate(1deg) scale(1.05)}
+}
 
-  .s1-name {
-    font-family: 'Playfair Display', serif;
-    font-size: 22px;
-    font-weight: 700;
-    color: var(--text);
-    position: relative; z-index: 1;
-    margin-bottom: 4px;
-  }
-  .s1-sub {
-    font-size: 13px;
-    color: var(--text-dim);
-    position: relative; z-index: 1;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-  }
+/* Étoiles Google */
+.s1-stars{
+  display:flex;gap:5px;justify-content:center;margin-bottom:22px;
+}
+.s1-star{
+  font-size:22px;
+  opacity:0;transform:translateY(6px) scale(.7);
+  animation:starIn .45s ease forwards;
+}
+.s1-star:nth-child(1){animation-delay:.15s}
+.s1-star:nth-child(2){animation-delay:.25s}
+.s1-star:nth-child(3){animation-delay:.35s}
+.s1-star:nth-child(4){animation-delay:.45s}
+.s1-star:nth-child(5){animation-delay:.55s}
+@keyframes starIn{to{opacity:1;transform:none}}
 
-  .s1-body {
-    padding: 28px 24px;
-  }
+/* Card principale */
+.s1-card{
+  width:100%;
+  background:rgba(245,237,216,.97);
+  border-radius:28px;
+  overflow:hidden;
+  box-shadow:0 20px 60px rgba(0,0,0,.35), 0 0 0 1px rgba(200,150,62,.2) inset;
+}
 
-  .s1-title {
-    font-family: 'Playfair Display', serif;
-    font-size: 20px;
-    color: var(--text);
-    text-align: center;
-    margin-bottom: 10px;
-  }
-  .s1-desc {
-    font-size: 13.5px;
-    color: var(--text-dim);
-    text-align: center;
-    line-height: 1.7;
-    margin-bottom: 24px;
-  }
+.s1-card-top{
+  padding:28px 24px 22px;
+  background:linear-gradient(180deg, rgba(200,150,62,.08) 0%, transparent 100%);
+  border-bottom:1px solid var(--gold-border);
+  text-align:center;
+}
+.s1-heading{
+  font-family:'Playfair Display',serif;
+  font-size:26px;font-weight:900;
+  color:var(--ink);line-height:1.2;letter-spacing:-.01em;margin-bottom:8px;
+}
+.s1-heading .accent{color:var(--gold)}
+.s1-subtext{
+  font-size:13px;color:var(--muted);line-height:1.65;
+}
 
-  .stars-row {
-    display: flex;
-    justify-content: center;
-    gap: 6px;
-    margin-bottom: 28px;
-  }
-  .star {
-    font-size: 26px;
-    opacity: 0;
-    transform: scale(0.5);
-    animation: starPop 0.4s forwards;
-    filter: drop-shadow(0 0 8px rgba(212,168,67,0.6));
-  }
-  .star:nth-child(1) { animation-delay: 0.2s; }
-  .star:nth-child(2) { animation-delay: 0.4s; }
-  .star:nth-child(3) { animation-delay: 0.6s; }
-  .star:nth-child(4) { animation-delay: 0.8s; }
-  .star:nth-child(5) { animation-delay: 1.0s; }
+.s1-card-bottom{padding:22px 24px 26px;display:flex;flex-direction:column;gap:12px}
 
-  @keyframes starPop {
-    0% { opacity: 0; transform: scale(0.5) rotate(-10deg); }
-    70% { transform: scale(1.2) rotate(5deg); opacity: 1; }
-    100% { opacity: 1; transform: scale(1) rotate(0deg); }
-  }
+/* Bouton principal Google */
+.btn-google{
+  display:flex;align-items:center;justify-content:center;gap:10px;
+  width:100%;padding:17px 20px;
+  background:linear-gradient(135deg, var(--gold) 0%, var(--gold2) 60%, var(--gold3) 100%);
+  color:var(--ink);border:none;border-radius:16px;
+  font-family:'Inter',sans-serif;font-size:15px;font-weight:700;
+  cursor:pointer;text-decoration:none;text-align:center;
+  box-shadow:0 6px 24px rgba(200,150,62,.45), 0 2px 8px rgba(0,0,0,.15);
+  transition:all .2s ease;
+  position:relative;overflow:hidden;
+  letter-spacing:.01em;
+}
+.btn-google::after{
+  content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.25),transparent);
+  transition:left .55s ease;
+}
+.btn-google:hover::after{left:100%}
+.btn-google:active{transform:scale(.97)}
+.btn-google-icon{font-size:18px;flex-shrink:0}
 
-  .btn-primary {
-    width: 100%;
-    padding: 16px;
-    background: linear-gradient(135deg, var(--gold) 0%, var(--gold2) 100%);
-    color: #0A1A0E;
-    border: none;
-    border-radius: 14px;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 15px;
-    font-weight: 600;
-    cursor: pointer;
-    margin-bottom: 12px;
-    box-shadow: 0 8px 24px rgba(212,168,67,0.25);
-    transition: all 0.2s ease;
-    letter-spacing: 0.02em;
-  }
-  .btn-primary:active { transform: scale(0.97); }
+/* Note optionnelle */
+.s1-optional{
+  display:flex;align-items:flex-start;gap:8px;
+  background:rgba(200,150,62,.06);
+  border:1px solid rgba(200,150,62,.18);
+  border-radius:12px;padding:11px 14px;
+}
+.s1-optional-icon{font-size:14px;flex-shrink:0;margin-top:1px}
+.s1-optional-text{font-size:12px;color:var(--muted);line-height:1.55}
 
-  .btn-secondary {
-    width: 100%;
-    padding: 14px;
-    background: transparent;
-    color: var(--text-dim);
-    border: 1px solid var(--border-card);
-    border-radius: 14px;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 14px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    letter-spacing: 0.02em;
-  }
-  .btn-secondary:active { background: rgba(255,255,255,0.04); }
+/* Skip link */
+.s1-skip{
+  text-align:center;font-size:12px;color:rgba(245,237,216,.55);
+  margin-top:16px;cursor:pointer;text-decoration:underline;
+  text-underline-offset:3px;
+  transition:color .2s;
+}
+.s1-skip:hover{color:rgba(245,237,216,.85)}
 
-  .s1-note {
-    text-align: center;
-    font-size: 11.5px;
-    color: var(--text-dim);
-    margin-top: 16px;
-    opacity: 0.7;
-  }
+/* Message déverrouillé */
+.s1-unlock{
+  display:none;align-items:center;justify-content:center;gap:8px;
+  padding:11px 18px;
+  background:rgba(61,122,24,.15);
+  border:1px solid rgba(100,180,40,.35);
+  border-radius:12px;
+  font-size:13px;color:#7ecb40;font-weight:600;
+}
+.s1-unlock.show{display:flex;animation:fadeUp .4s ease}
+.s1-unlock-dot{width:7px;height:7px;border-radius:50%;background:#7ecb40;animation:pulse2 1.5s ease-in-out infinite}
+@keyframes pulse2{0%,100%{opacity:1}50%{opacity:.3}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 
-  .countdown-wrap {
-    display: none;
-    flex-direction: column;
-    align-items: center;
-    gap: 10px;
-    margin: 16px 0 4px;
-  }
-  .countdown-wrap.visible { display: flex; }
+/* ══════════════════════════════════
+   SCREEN 2 — CARTE À GRATTER
+══════════════════════════════════ */
+.s2-wrap{width:100%;max-width:400px;display:flex;flex-direction:column;align-items:center}
 
-  .countdown-ring {
-    position: relative;
-    width: 56px; height: 56px;
-  }
-  .countdown-ring svg {
-    transform: rotate(-90deg);
-  }
-  .countdown-ring circle {
-    fill: none;
-    stroke-width: 3;
-  }
-  .ring-bg { stroke: rgba(255,255,255,0.08); }
-  .ring-fill {
-    stroke: var(--gold);
-    stroke-dasharray: 138.2;
-    stroke-dashoffset: 0;
-    stroke-linecap: round;
-    transition: stroke-dashoffset 1s linear;
-  }
-  .countdown-num {
-    position: absolute;
-    inset: 0;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--gold2);
-  }
-  .countdown-label {
-    font-size: 12px;
-    color: var(--text-dim);
-    text-align: center;
-    line-height: 1.5;
-  }
-  .unlock-pulse {
-    display: none;
-    align-items: center;
-    gap: 6px;
-    padding: 8px 16px;
-    background: rgba(29,158,117,0.15);
-    border: 1px solid rgba(29,158,117,0.4);
-    border-radius: 99px;
-    font-size: 13px;
-    color: #4ecb9e;
-    font-weight: 500;
-    animation: unlockAnim 0.4s ease forwards;
-    margin: 8px 0 0;
-  }
-  .unlock-pulse.visible { display: flex; }
-  @keyframes unlockAnim {
-    from { transform: scale(0.9); opacity: 0; }
-    to { transform: scale(1); opacity: 1; }
-  }
+.s2-header{text-align:center;margin-bottom:24px}
+.s2-eyebrow{
+  display:inline-flex;align-items:center;gap:6px;
+  font-size:10px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;
+  color:rgba(245,237,216,.7);margin-bottom:10px;
+}
+.s2-eyebrow::before,.s2-eyebrow::after{content:'✦';font-size:7px;opacity:.7}
+.s2-title{
+  font-family:'Playfair Display',serif;
+  font-size:28px;font-weight:700;font-style:italic;
+  color:var(--cream);line-height:1.2;letter-spacing:-.01em;margin-bottom:6px;
+}
+.s2-sub{font-size:13px;color:rgba(245,237,216,.6);line-height:1.55}
 
-  /* ===================== SCREEN 2 — JEU ===================== */
-  .s2-wrap {
-    width: 100%;
-    max-width: 420px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 20px 0 32px;
-  }
+/* Conteneur carte à gratter */
+.scratch-container{
+  position:relative;
+  width:calc(100% - 0px);
+  max-width:340px;
+  margin:0 auto 20px;
+}
 
-  .badge-pill {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 6px 16px;
-    background: rgba(212,168,67,0.12);
-    border: 1px solid var(--border);
-    border-radius: 99px;
-    font-size: 12px;
-    font-weight: 500;
-    color: var(--gold2);
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    margin-bottom: 20px;
-  }
+/* Carte cadeau (fond crème, toujours visible en dessous) */
+.scratch-card-bg{
+  width:100%;
+  background:var(--cream3);
+  border-radius:20px;
+  border:1.5px solid var(--gold-border);
+  box-shadow:0 16px 48px rgba(0,0,0,.3), 0 0 0 4px rgba(200,150,62,.06) inset;
+  overflow:hidden;
+  position:relative;
+}
 
-  .s2-title {
-    font-family: 'Playfair Display', serif;
-    font-size: 28px;
-    font-weight: 700;
-    color: var(--text);
-    text-align: center;
-    margin-bottom: 8px;
-  }
-  .s2-sub {
-    font-size: 14px;
-    color: var(--text-dim);
-    text-align: center;
-    margin-bottom: 32px;
-    line-height: 1.6;
-  }
+/* Zone de récompense cachée */
+.scratch-prize-reveal{
+  padding:36px 20px 32px;
+  display:flex;flex-direction:column;align-items:center;gap:10px;
+  text-align:center;
+  opacity:0;transition:opacity .5s ease;
+}
+.scratch-prize-reveal.visible{opacity:1}
+.scratch-prize-emoji{font-size:72px;display:block;line-height:1;margin-bottom:6px;animation:prizePop .6s cubic-bezier(.36,.07,.19,.97) forwards}
+@keyframes prizePop{0%{transform:scale(0) rotate(-15deg);opacity:0}60%{transform:scale(1.18) rotate(4deg)}80%{transform:scale(.95)}100%{transform:scale(1) rotate(0);opacity:1}}
+.scratch-prize-tag{
+  display:inline-flex;align-items:center;gap:6px;
+  background:rgba(200,150,62,.12);
+  border:1px solid rgba(200,150,62,.3);
+  border-radius:999px;
+  padding:5px 16px;
+  font-size:11px;font-weight:700;color:var(--gold);
+  letter-spacing:.08em;text-transform:uppercase;
+}
+.scratch-prize-name{
+  font-family:'Playfair Display',serif;
+  font-size:22px;font-weight:700;color:var(--ink);letter-spacing:-.01em;
+}
+.scratch-prize-congrats{font-size:13px;color:var(--muted);line-height:1.5}
+.scratch-prize-divider{
+  width:40px;height:1px;background:var(--gold-border);margin:4px 0;
+}
 
-  /* Carousel */
-  .carousel-container {
-    width: 100%;
-    position: relative;
-    overflow: hidden;
-    padding: 20px 0 28px;
-  }
+/* Ornements carte */
+.scratch-card-ornament-top{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 18px 0;
+}
+.ornament-badge{
+  font-size:9px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--gold);opacity:.8;
+}
+.ornament-stars{font-size:11px;letter-spacing:2px;color:var(--gold);opacity:.6}
 
-  .carousel-track {
-    display: flex;
-    transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-    will-change: transform;
-  }
+/* Canvas scratch par-dessus */
+.scratch-canvas-wrap{
+  position:absolute;top:0;left:0;right:0;bottom:0;
+  border-radius:20px;overflow:hidden;
+  pointer-events:all;
+  z-index:10;
+}
+#scratchCanvas{
+  display:block;width:100%;height:100%;
+  cursor:crosshair;
+  border-radius:20px;
+  touch-action:none;
+}
 
-  .card-slot {
-    min-width: calc(100vw - 80px);
-    max-width: 280px;
-    margin: 0 10px;
-    perspective: 1000px;
-    flex-shrink: 0;
-  }
+/* Progress scratch */
+.scratch-progress-wrap{
+  display:flex;align-items:center;gap:10px;
+  margin-bottom:6px;width:100%;max-width:340px;
+}
+.scratch-progress-bar{
+  flex:1;height:4px;
+  background:rgba(245,237,216,.2);
+  border-radius:999px;overflow:hidden;
+}
+.scratch-progress-fill{
+  height:100%;width:0%;
+  background:linear-gradient(90deg, var(--gold), var(--gold3));
+  border-radius:999px;
+  transition:width .2s ease;
+}
+.scratch-hint{
+  font-size:11px;color:rgba(245,237,216,.55);
+  white-space:nowrap;flex-shrink:0;
+}
 
-  /* First card centered */
-  .carousel-track { padding-left: calc(50vw - 140px - 10px); }
+/* Bouton CTA après scratch */
+.btn-claim{
+  display:none;
+  width:100%;max-width:340px;
+  padding:17px;
+  background:linear-gradient(135deg, var(--gold), var(--gold2));
+  color:var(--ink);border:none;border-radius:16px;
+  font-family:'Inter',sans-serif;font-size:15px;font-weight:700;
+  cursor:pointer;letter-spacing:.01em;
+  box-shadow:0 6px 24px rgba(200,150,62,.4);
+  animation:slideUp .5s ease forwards;
+}
+.btn-claim.show{display:block}
+@keyframes slideUp{from{transform:translateY(14px);opacity:0}to{transform:none;opacity:1}}
+.btn-claim:active{transform:scale(.97)}
 
-  .mystery-card {
-    width: 100%;
-    aspect-ratio: 3/4;
-    position: relative;
-    cursor: pointer;
-    transform-style: preserve-3d;
-    transition: transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-  }
+/* Fallback bouton */
+.btn-fallback{
+  display:none;
+  margin-top:10px;
+  background:none;border:1.5px solid rgba(245,237,216,.3);
+  border-radius:12px;padding:12px 20px;
+  font-size:13px;color:rgba(245,237,216,.7);
+  cursor:pointer;font-family:'Inter',sans-serif;
+  transition:all .2s;
+}
+.btn-fallback:hover{border-color:rgba(245,237,216,.6);color:var(--cream)}
+.btn-fallback.show{display:block}
 
-  .mystery-card.flipped {
-    transform: rotateY(180deg);
-  }
+/* ══════════════════════════════════
+   SCREEN 3 — FORMULAIRE
+══════════════════════════════════ */
+.s3-wrap{width:100%;max-width:380px}
+.s3-card{
+  background:var(--cream3);
+  border-radius:28px;overflow:hidden;
+  box-shadow:0 20px 60px rgba(0,0,0,.35);
+  border:1px solid rgba(200,150,62,.15);
+}
+.s3-hero{
+  padding:32px 24px 24px;
+  background:linear-gradient(180deg, rgba(200,150,62,.09) 0%, transparent 100%);
+  border-bottom:1px solid var(--gold-border);
+  text-align:center;display:flex;flex-direction:column;align-items:center;gap:10px;
+}
+.s3-emoji-big{font-size:64px;display:block;animation:bounceIn .6s cubic-bezier(.36,.07,.19,.97) forwards}
+@keyframes bounceIn{0%{transform:scale(0) rotate(-10deg);opacity:0}60%{transform:scale(1.15) rotate(4deg)}100%{transform:scale(1) rotate(0);opacity:1}}
+.s3-congrats{
+  font-family:'Playfair Display',serif;
+  font-size:26px;font-weight:700;color:var(--ink);letter-spacing:-.01em;
+}
+.s3-prize-pill{
+  display:inline-block;padding:6px 18px;
+  background:rgba(200,150,62,.1);
+  border:1px solid var(--gold-border);
+  border-radius:999px;
+  font-size:13px;font-weight:700;color:var(--gold);
+}
 
-  .card-face {
-    position: absolute;
-    inset: 0;
-    border-radius: 20px;
-    backface-visibility: hidden;
-    -webkit-backface-visibility: hidden;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-  }
+.s3-body{padding:24px}
+.s3-section-title{
+  font-size:15px;font-weight:700;color:var(--ink);letter-spacing:-.01em;margin-bottom:4px;
+}
+.s3-section-sub{font-size:12px;color:var(--muted);margin-bottom:20px}
 
-  .card-front {
-    background: linear-gradient(145deg, #1E4028 0%, #142B1A 50%, #1A3823 100%);
-    border: 1px solid rgba(90,138,106,0.35);
-    box-shadow: 0 20px 50px rgba(0,0,0,0.4), 0 0 0 1px rgba(212,168,67,0.08) inset;
-    transition: box-shadow 0.3s, transform 0.3s;
-  }
+.field{margin-bottom:13px}
+.field-label{font-size:11px;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:.08em;margin-bottom:7px;display:block}
+.field-input{
+  width:100%;padding:14px 16px;
+  background:#fff;
+  border:1.5px solid rgba(200,150,62,.2);
+  border-radius:14px;
+  color:var(--ink);font-family:'Inter',sans-serif;font-size:15px;font-weight:500;
+  outline:none;transition:border-color .2s,box-shadow .2s;
+}
+.field-input::placeholder{color:var(--muted2)}
+.field-input:focus{border-color:rgba(200,150,62,.5);box-shadow:0 0 0 3px rgba(200,150,62,.08)}
 
-  .card-slot:not(.picked) .card-front:hover,
-  .card-slot.active .card-front {
-    box-shadow: 0 24px 60px rgba(0,0,0,0.5), 0 0 0 1.5px rgba(212,168,67,0.3), 0 0 30px rgba(212,168,67,0.08);
-    transform: translateY(-4px);
-  }
+.s3-submit{
+  width:100%;padding:17px;margin-top:16px;
+  background:linear-gradient(135deg, var(--gold), var(--gold2));
+  color:var(--ink);border:none;border-radius:16px;
+  font-family:'Inter',sans-serif;font-size:15px;font-weight:700;
+  cursor:pointer;letter-spacing:.01em;
+  box-shadow:0 6px 24px rgba(200,150,62,.35);transition:all .2s;
+}
+.s3-submit:active{transform:scale(.98)}
+.s3-submit:disabled{opacity:.5;cursor:default}
+.s3-legal{text-align:center;font-size:11px;color:var(--muted2);margin-top:13px;line-height:1.6}
 
-  .card-back {
-    background: linear-gradient(145deg, #1A3823 0%, #0F2218 100%);
-    border: 1px solid var(--border-card);
-    transform: rotateY(180deg);
-    flex-direction: column;
-    gap: 12px;
-    padding: 20px;
-  }
+/* ══════════════════════════════════
+   SCREEN 4 — SUCCÈS
+══════════════════════════════════ */
+.s4-wrap{text-align:center;max-width:320px}
+.s4-check{
+  width:84px;height:84px;margin:0 auto 24px;
+  background:rgba(61,122,24,.12);
+  border:1.5px solid rgba(100,180,40,.3);
+  border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-size:32px;
+  animation:checkPop .6s cubic-bezier(.36,.07,.19,.97) forwards;
+}
+@keyframes checkPop{0%{transform:scale(0);opacity:0}70%{transform:scale(1.1)}100%{transform:scale(1);opacity:1}}
+.s4-title{
+  font-family:'Playfair Display',serif;
+  font-size:30px;font-weight:700;
+  color:var(--cream);letter-spacing:-.02em;margin-bottom:10px;
+}
+.s4-desc{font-size:14px;color:rgba(245,237,216,.65);line-height:1.75;margin-bottom:22px}
+.s4-code-block{
+  background:rgba(245,237,216,.1);
+  border:1px solid rgba(200,150,62,.25);
+  border-radius:22px;padding:22px;
+  backdrop-filter:blur(12px);
+}
+.s4-code-label{font-size:10px;font-weight:700;color:rgba(245,237,216,.4);letter-spacing:.15em;text-transform:uppercase;margin-bottom:10px}
+.s4-code-value{font-size:38px;font-weight:800;color:var(--gold3);letter-spacing:.18em;line-height:1;font-variant-numeric:tabular-nums}
+.s4-code-sub{font-size:11px;color:rgba(245,237,216,.45);margin-top:10px;letter-spacing:.02em}
 
-  .card-sparkle {
-    position: absolute;
-    top: -10px; right: -10px;
-    width: 32px; height: 32px;
-    background: var(--gold);
-    border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 14px;
-    box-shadow: 0 4px 12px rgba(212,168,67,0.4);
-    z-index: 2;
-  }
+/* ══════════════════════════════════
+   SCREEN ALREADY
+══════════════════════════════════ */
+.already-wrap{text-align:center;max-width:280px}
+.already-emoji{font-size:52px;display:block;margin-bottom:18px}
+.already-title{
+  font-family:'Playfair Display',serif;
+  font-size:24px;font-weight:700;
+  color:var(--cream);margin-bottom:12px;
+}
+.already-desc{font-size:14px;color:rgba(245,237,216,.6);line-height:1.7}
 
-  .card-qmark {
-    width: 70px; height: 70px;
-    background: rgba(255,255,255,0.06);
-    border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 30px;
-    font-weight: 300;
-    color: rgba(255,255,255,0.4);
-    margin-bottom: 12px;
-  }
-
-  .card-label {
-    font-size: 13px;
-    font-weight: 500;
-    color: rgba(255,255,255,0.5);
-    letter-spacing: 0.04em;
-  }
-
-  .card-result-emoji {
-    font-size: 56px;
-    filter: drop-shadow(0 4px 16px rgba(0,0,0,0.3));
-  }
-  .card-result-name {
-    font-family: 'Playfair Display', serif;
-    font-size: 17px;
-    color: var(--text);
-    text-align: center;
-    font-weight: 600;
-  }
-  .card-result-sub {
-    font-size: 12px;
-    color: var(--text-dim);
-    text-align: center;
-  }
-
-  /* Dots */
-  .carousel-dots {
-    display: flex;
-    gap: 8px;
-    justify-content: center;
-    margin-bottom: 28px;
-  }
-  .dot {
-    width: 6px; height: 6px;
-    border-radius: 50%;
-    background: var(--border-card);
-    transition: all 0.3s;
-  }
-  .dot.active {
-    width: 20px;
-    border-radius: 3px;
-    background: var(--gold);
-  }
-
-  /* Probabilities */
-  .proba-bar {
-    display: flex;
-    gap: 6px;
-    background: rgba(255,255,255,0.04);
-    border: 1px solid var(--border-card);
-    border-radius: 12px;
-    padding: 10px 14px;
-    margin-bottom: 32px;
-    width: calc(100% - 40px);
-    max-width: 320px;
-  }
-  .proba-item {
-    flex: 1;
-    text-align: center;
-  }
-  .proba-name {
-    font-size: 11px;
-    color: var(--text-dim);
-    display: block;
-    margin-bottom: 3px;
-  }
-  .proba-pct {
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--text);
-  }
-  .proba-item.rare .proba-name,
-  .proba-item.rare .proba-pct {
-    color: var(--gold);
-  }
-  .proba-divider {
-    width: 1px;
-    background: var(--border-card);
-    align-self: stretch;
-  }
-
-  .tap-hint {
-    font-size: 12px;
-    color: var(--text-dim);
-    text-align: center;
-    opacity: 0.6;
-    animation: pulse 2s ease-in-out infinite;
-    margin-top: -20px;
-    margin-bottom: 20px;
-  }
-  @keyframes pulse { 0%,100%{opacity:0.4} 50%{opacity:0.8} }
-
-  /* CTA after reveal */
-  .btn-cta {
-    width: calc(100% - 40px);
-    max-width: 320px;
-    padding: 18px;
-    background: linear-gradient(135deg, var(--gold) 0%, var(--gold2) 100%);
-    color: #0A1A0E;
-    border: none;
-    border-radius: 16px;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 16px;
-    font-weight: 600;
-    cursor: pointer;
-    box-shadow: 0 8px 32px rgba(212,168,67,0.3);
-    display: none;
-    animation: slideUp 0.5s ease forwards;
-    letter-spacing: 0.02em;
-  }
-  .btn-cta.visible { display: block; }
-  @keyframes slideUp {
-    from { transform: translateY(20px); opacity: 0; }
-    to { transform: translateY(0); opacity: 1; }
-  }
-
-  /* ===================== SCREEN 3 — FORMULAIRE ===================== */
-  .s3-card {
-    width: 100%;
-    max-width: 380px;
-    background: var(--card);
-    border: 1px solid var(--border-card);
-    border-radius: 24px;
-    overflow: hidden;
-    box-shadow: 0 40px 80px rgba(0,0,0,0.5), var(--glow);
-  }
-
-  .s3-header {
-    background: linear-gradient(160deg, #1C3A24 0%, #142B1A 100%);
-    padding: 36px 24px 28px;
-    text-align: center;
-    position: relative;
-    overflow: hidden;
-  }
-  .s3-header::before {
-    content: '';
-    position: absolute;
-    top: -60px; left: 50%; transform: translateX(-50%);
-    width: 240px; height: 240px;
-    background: radial-gradient(circle, rgba(212,168,67,0.12) 0%, transparent 70%);
-  }
-
-  .s3-prize-emoji {
-    font-size: 64px;
-    display: block;
-    margin-bottom: 12px;
-    position: relative; z-index: 1;
-    animation: bounce 0.8s cubic-bezier(0.36, 0.07, 0.19, 0.97) forwards;
-  }
-  @keyframes bounce {
-    0% { transform: scale(0) rotate(-10deg); opacity: 0; }
-    60% { transform: scale(1.2) rotate(5deg); opacity: 1; }
-    80% { transform: scale(0.95) rotate(-2deg); }
-    100% { transform: scale(1) rotate(0deg); opacity: 1; }
-  }
-
-  .s3-congrats {
-    font-family: 'Playfair Display', serif;
-    font-size: 26px;
-    font-weight: 700;
-    color: var(--text);
-    position: relative; z-index: 1;
-    margin-bottom: 6px;
-  }
-  .s3-prize-label {
-    display: inline-block;
-    padding: 5px 14px;
-    background: rgba(212,168,67,0.15);
-    border: 1px solid rgba(212,168,67,0.3);
-    border-radius: 99px;
-    font-size: 13px;
-    color: var(--gold2);
-    font-weight: 500;
-    position: relative; z-index: 1;
-  }
-
-  .s3-body {
-    padding: 28px 24px;
-  }
-
-  .s3-form-title {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 22px;
-  }
-  .s3-form-icon {
-    width: 36px; height: 36px;
-    background: var(--gold-dim);
-    border-radius: 10px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 16px;
-    flex-shrink: 0;
-  }
-  .s3-form-label {
-    font-size: 16px;
-    font-weight: 600;
-    color: var(--text);
-  }
-  .s3-form-sub {
-    font-size: 12px;
-    color: var(--text-dim);
-    margin-top: 1px;
-  }
-
-  .field-group {
-    margin-bottom: 14px;
-  }
-  .field-label {
-    font-size: 12px;
-    font-weight: 500;
-    color: var(--text-dim);
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    margin-bottom: 6px;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-  }
-  .field-label span { font-size: 14px; }
-
-  .field-input {
-    width: 100%;
-    padding: 14px 16px;
-    background: rgba(255,255,255,0.04);
-    border: 1px solid var(--border-card);
-    border-radius: 12px;
-    color: var(--text);
-    font-family: 'DM Sans', sans-serif;
-    font-size: 15px;
-    outline: none;
-    transition: border-color 0.2s, box-shadow 0.2s;
-  }
-  .field-input::placeholder { color: rgba(255,255,255,0.2); }
-  .field-input:focus {
-    border-color: rgba(90,138,106,0.6);
-    box-shadow: 0 0 0 3px rgba(90,138,106,0.1);
-  }
-
-  .s3-submit {
-    width: 100%;
-    padding: 17px;
-    background: linear-gradient(135deg, var(--gold) 0%, var(--gold2) 100%);
-    color: #0A1A0E;
-    border: none;
-    border-radius: 14px;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 15px;
-    font-weight: 600;
-    cursor: pointer;
-    margin-top: 22px;
-    box-shadow: 0 8px 24px rgba(212,168,67,0.25);
-    transition: all 0.2s;
-    letter-spacing: 0.02em;
-  }
-  .s3-submit:active { transform: scale(0.98); }
-
-  .s3-rgpd {
-    text-align: center;
-    font-size: 11px;
-    color: var(--text-dim);
-    margin-top: 14px;
-    opacity: 0.5;
-    line-height: 1.6;
-  }
-
-  /* ===================== SCREEN 4 — SUCCESS ===================== */
-  .s4-wrap {
-    text-align: center;
-    max-width: 320px;
-  }
-  .s4-check {
-    width: 80px; height: 80px;
-    background: rgba(90,138,106,0.15);
-    border: 1px solid rgba(90,138,106,0.4);
-    border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 36px;
-    margin: 0 auto 24px;
-    animation: checkPop 0.6s cubic-bezier(0.36, 0.07, 0.19, 0.97) forwards;
-  }
-  @keyframes checkPop {
-    0% { transform: scale(0); opacity: 0; }
-    70% { transform: scale(1.1); opacity: 1; }
-    100% { transform: scale(1); opacity: 1; }
-  }
-  .s4-title {
-    font-family: 'Playfair Display', serif;
-    font-size: 26px;
-    color: var(--text);
-    margin-bottom: 12px;
-  }
-  .s4-desc {
-    font-size: 14px;
-    color: var(--text-dim);
-    line-height: 1.7;
-  }
-  .s4-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    margin-top: 20px;
-    padding: 8px 18px;
-    background: var(--gold-dim);
-    border: 1px solid var(--border);
-    border-radius: 99px;
-    font-size: 13px;
-    color: var(--gold2);
-    font-weight: 500;
-  }
-
-  /* ===================== PARTICLES ===================== */
-  .particle {
-    position: fixed;
-    pointer-events: none;
-    border-radius: 50%;
-    animation: particleFly 1.2s ease-out forwards;
-    z-index: 500;
-  }
-  @keyframes particleFly {
-    0% { transform: translate(0,0) scale(1); opacity: 1; }
-    100% { transform: translate(var(--tx), var(--ty)) scale(0); opacity: 0; }
-  }
-
-  /* ===================== ALREADY PLAYED ===================== */
-  .already-played {
-    text-align: center;
-    max-width: 300px;
-  }
-  .already-icon {
-    font-size: 48px;
-    margin-bottom: 16px;
-    display: block;
-  }
-  .already-title {
-    font-family: 'Playfair Display', serif;
-    font-size: 22px;
-    color: var(--text);
-    margin-bottom: 10px;
-  }
-  .already-desc {
-    font-size: 13px;
-    color: var(--text-dim);
-    line-height: 1.7;
-  }
+/* ── PARTICLES ── */
+.particle{position:fixed;pointer-events:none;border-radius:50%;animation:pfly 1.4s ease-out forwards;z-index:500}
+@keyframes pfly{0%{transform:translate(0,0) scale(1);opacity:1}100%{transform:translate(var(--tx),var(--ty)) scale(0);opacity:0}}
 </style>
 </head>
 <body>
 
-<!-- SCREEN 1 — AVIS GOOGLE -->
-<div class="screen active" id="screen1"><div class="screen-inner">
+<!-- ══ S1 — ACCUEIL ══ -->
+<div class="screen active" id="screen1">
+<div class="screen-inner">
+<div class="s1-wrap">
+
+  <!-- Logo + nom -->
+  <div class="s1-header">
+    <div class="s1-logo-ring">🥖</div>
+    <div class="s1-boulangerie-name">Falman Emmanuelle<br>et Flavien</div>
+    <div class="s1-tagline">Boulangerie Artisanale · Cruseilles</div>
+  </div>
+
+  <!-- Croissant 3D flottant -->
+  <div class="croissant-wrap">
+    <div class="croissant-glow"></div>
+    <span class="croissant-3d">🥐</span>
+  </div>
+
+  <!-- Étoiles -->
+  <div class="s1-stars">
+    <span class="s1-star">⭐</span>
+    <span class="s1-star">⭐</span>
+    <span class="s1-star">⭐</span>
+    <span class="s1-star">⭐</span>
+    <span class="s1-star">⭐</span>
+  </div>
+
+  <!-- Carte principale -->
   <div class="s1-card">
-    <div class="s1-header">
-      <div class="s1-logo">🥖</div>
-      <div class="s1-name">Falman Emmanuelle et Flavien</div>
-      <div class="s1-sub">Jeu de la Chance</div>
+    <div class="s1-card-top">
+      <div class="s1-heading">Un cadeau vous<br>attend <span class="accent">ici.</span></div>
+      <div class="s1-subtext">Votre avis nous aide énormément. Laissez-le sur Google, puis revenez gratter votre carte cadeau.</div>
     </div>
-    <div class="s1-body">
-      <div class="s1-title">Soutenez-nous sur Google</div>
-      <div class="s1-desc">Pour débloquer le jeu et tenter de gagner un produit offert, laissez-nous un avis honnête sur notre établissement.</div>
-      <div class="stars-row">
-        <span class="star">⭐</span>
-        <span class="star">⭐</span>
-        <span class="star">⭐</span>
-        <span class="star">⭐</span>
-        <span class="star">⭐</span>
+    <div class="s1-card-bottom">
+      <a href="https://search.google.com/local/writereview?placeid=ChIJq6qas52Hi0cRMtoyv9EFxDI"
+         target="_blank" rel="noopener"
+         class="btn-google"
+         id="googleBtn"
+         onclick="openGoogle(event)">
+        <span class="btn-google-icon">🌟</span>
+        Laisser votre avis Google
+      </a>
+      <div class="s1-unlock" id="unlockMsg">
+        <div class="s1-unlock-dot"></div>
+        Parfait — grattez votre carte cadeau&nbsp;!
       </div>
-      <a href="https://search.google.com/local/writereview?placeid=ChIJq6qas52Hi0cRMtoyv9EFxDI" target="_blank" rel="noopener" class="btn-primary" id="googleBtn" onclick="openGoogle(event)" style="display:block;text-decoration:none;text-align:center;">Laisser mon avis ⭐</a>
-
-      <div class="countdown-wrap" id="countdownWrap">
-        <div class="countdown-ring">
-          <svg width="56" height="56" viewBox="0 0 56 56">
-            <circle class="ring-bg" cx="28" cy="28" r="22"/>
-            <circle class="ring-fill" id="ringFill" cx="28" cy="28" r="22"/>
-          </svg>
-          <div class="countdown-num" id="countNum">20:00</div>
-        </div>
-        <div class="countdown-label">Prenez le temps de laisser<br>votre avis — revenez ensuite ici</div>
+      <div class="s1-optional">
+        <span class="s1-optional-icon">💛</span>
+        <span class="s1-optional-text">Quand vous avez terminé, revenez découvrir votre cadeau. L'avis est libre et optionnel.</span>
       </div>
-
-      <div class="unlock-pulse" id="unlockMsg">✓ Avis détecté — la roue se débloque !</div>
-      <div class="s1-note" id="s1Note">Un grand merci pour votre soutien 🙏</div>
     </div>
   </div>
-</div></div>
 
-<!-- SCREEN 2 — JEU DES CARTES -->
-<div class="screen" id="screen2"><div class="screen-inner">
-  <div class="s2-wrap">
-    <div class="badge-pill">✦ Jeu de la Chance</div>
-    <div class="s2-title">Choisissez votre carte</div>
-    <div class="s2-sub">Sélectionnez une carte mystère et<br>découvrez votre surprise délicieuse</div>
+  <div class="s1-skip" id="skipBtn" onclick="goToScratch()">Continuer sans laisser d'avis</div>
 
-    <div class="carousel-container">
-      <div class="carousel-track" id="track">
-        <div class="card-slot active" id="slot0">
-          <div class="mystery-card" id="card0" onclick="pickCard(0)">
-            <div class="card-face card-front">
-              <div class="card-sparkle">✦</div>
-              <div class="card-qmark">?</div>
-              <div class="card-label">Carte 1</div>
-            </div>
-            <div class="card-face card-back" id="back0"></div>
-          </div>
-        </div>
-        <div class="card-slot" id="slot1">
-          <div class="mystery-card" id="card1" onclick="pickCard(1)">
-            <div class="card-face card-front">
-              <div class="card-sparkle">✦</div>
-              <div class="card-qmark">?</div>
-              <div class="card-label">Carte 2</div>
-            </div>
-            <div class="card-face card-back" id="back1"></div>
-          </div>
-        </div>
-        <div class="card-slot" id="slot2">
-          <div class="mystery-card" id="card2" onclick="pickCard(2)">
-            <div class="card-face card-front">
-              <div class="card-sparkle">✦</div>
-              <div class="card-qmark">?</div>
-              <div class="card-label">Carte 3</div>
-            </div>
-            <div class="card-face card-back" id="back2"></div>
-          </div>
-        </div>
-      </div>
-    </div>
+</div>
+</div>
+</div>
 
-    <div class="carousel-dots">
-      <div class="dot active" id="dot0"></div>
-      <div class="dot" id="dot1"></div>
-      <div class="dot" id="dot2"></div>
-    </div>
+<!-- ══ S2 — CARTE À GRATTER ══ -->
+<div class="screen" id="screen2">
+<div class="screen-inner">
+<div class="s2-wrap">
 
-    <div class="tap-hint" id="tapHint">Glissez ou tapez une carte</div>
-
-    <div class="proba-bar">
-      <div class="proba-item">
-        <span class="proba-name">🥐 Croissant</span>
-        <span class="proba-pct">50%</span>
-      </div>
-      <div class="proba-divider"></div>
-      <div class="proba-item">
-        <span class="proba-name">🥖 Baguette</span>
-        <span class="proba-pct">48%</span>
-      </div>
-      <div class="proba-divider"></div>
-      <div class="proba-item rare">
-        <span class="proba-name">🍰 Pâtisserie</span>
-        <span class="proba-pct">2% ✨</span>
-      </div>
-    </div>
-
-    <button class="btn-cta" id="ctaBtn" onclick="goToForm()">Récupérer mon gain 🎁</button>
+  <div class="s2-header">
+    <div class="s2-eyebrow">Votre cadeau</div>
+    <div class="s2-title">Grattez pour révéler<br>votre surprise.</div>
+    <div class="s2-sub">Utilisez votre doigt sur la zone dorée</div>
   </div>
-</div></div>
 
-<!-- SCREEN 3 — FORMULAIRE -->
-<div class="screen" id="screen3"><div class="screen-inner">
+  <!-- Carte à gratter -->
+  <div class="scratch-container" id="scratchContainer">
+
+    <!-- Fond crème visible (cadeau en dessous) -->
+    <div class="scratch-card-bg" id="scratchCardBg">
+      <div class="scratch-card-ornament-top">
+        <span class="ornament-badge">✦ Carte Cadeau</span>
+        <span class="ornament-stars">★★★★★</span>
+      </div>
+      <div class="scratch-prize-reveal" id="prizeReveal">
+        <span class="scratch-prize-emoji" id="prizeEmoji">🥐</span>
+        <div class="scratch-prize-tag">✦ Vous avez gagné</div>
+        <div class="scratch-prize-name" id="prizeName">Croissant Artisanal</div>
+        <div class="scratch-prize-divider"></div>
+        <div class="scratch-prize-congrats">Présentez ce gain en caisse lors de votre visite&nbsp;🎁</div>
+      </div>
+    </div>
+
+    <!-- Canvas par-dessus -->
+    <div class="scratch-canvas-wrap" id="canvasWrap">
+      <canvas id="scratchCanvas"></canvas>
+    </div>
+
+  </div>
+
+  <!-- Barre de progression -->
+  <div class="scratch-progress-wrap">
+    <div class="scratch-progress-bar">
+      <div class="scratch-progress-fill" id="progressFill"></div>
+    </div>
+    <div class="scratch-hint" id="scratchHint">Grattez ✦</div>
+  </div>
+
+  <!-- Fallback si canvas indisponible -->
+  <button class="btn-fallback" id="fallbackBtn" onclick="revealPrize(true)">
+    Révéler mon cadeau →
+  </button>
+
+  <!-- CTA après révélation -->
+  <button class="btn-claim" id="claimBtn" onclick="goToForm()">
+    Recevoir mon coupon par email 🎁
+  </button>
+
+</div>
+</div>
+</div>
+
+<!-- ══ S3 — FORMULAIRE ══ -->
+<div class="screen" id="screen3">
+<div class="screen-inner">
+<div class="s3-wrap">
   <div class="s3-card">
-    <div class="s3-header">
-      <span class="s3-prize-emoji" id="prizeEmoji">🥐</span>
+    <div class="s3-hero">
+      <span class="s3-emoji-big" id="s3Emoji">🥐</span>
       <div class="s3-congrats">Félicitations !</div>
-      <div class="s3-prize-label" id="prizeLabel">Vous avez gagné : Croissant Artisanal</div>
+      <div class="s3-prize-pill" id="s3PrizeLabel">Votre cadeau</div>
     </div>
     <div class="s3-body">
-      <div class="s3-form-title">
-        <div class="s3-form-icon">🎁</div>
-        <div>
-          <div class="s3-form-label">Réclamez votre gain</div>
-          <div class="s3-form-sub">Remplissez le formulaire ci-dessous</div>
-        </div>
-      </div>
-
-      <div class="field-group">
-        <div class="field-label"><span>👤</span> Prénom</div>
-        <input class="field-input" type="text" placeholder="Jean" id="fieldPrenom">
-      </div>
-      <div class="field-group">
-        <div class="field-label"><span>👤</span> Nom</div>
-        <input class="field-input" type="text" placeholder="Dupont" id="fieldNom">
-      </div>
-      <div class="field-group">
-        <div class="field-label"><span>✉️</span> Email</div>
-        <input class="field-input" type="email" placeholder="jean.dupont@exemple.fr" id="fieldEmail">
-      </div>
-
-      <button class="s3-submit" onclick="submitForm()">Recevoir mon gain 🎁</button>
-      <div class="s3-rgpd">🔒 Nous respectons votre vie privée.<br>Vos données sont sécurisées et ne seront pas revendues.</div>
+      <div class="s3-section-title">Recevez votre coupon</div>
+      <div class="s3-section-sub">Un code unique vous sera envoyé par email</div>
+      <div class="field"><label class="field-label">Prénom</label><input class="field-input" type="text" id="fieldPrenom" placeholder="Jean" autocomplete="given-name"></div>
+      <div class="field"><label class="field-label">Nom</label><input class="field-input" type="text" id="fieldNom" placeholder="Dupont" autocomplete="family-name"></div>
+      <div class="field"><label class="field-label">Email</label><input class="field-input" type="email" id="fieldEmail" placeholder="jean@exemple.fr" autocomplete="email"></div>
+      <button class="s3-submit" onclick="submitForm()">Recevoir mon coupon 🎁</button>
+      <div class="s3-legal">🔒 Données sécurisées · Non revendues · RGPD</div>
     </div>
   </div>
-</div></div>
+</div>
+</div>
+</div>
 
-<!-- SCREEN 4 — SUCCESS -->
-<div class="screen" id="screen4"><div class="screen-inner">
-  <div class="s4-wrap">
-    <div class="s4-check">✓</div>
-    <div class="s4-title">Email envoyé !</div>
-    <div class="s4-desc">Vérifiez votre boîte email. Présentez le QR code au boulanger pour récupérer votre gain.</div>
-    <div style="background:rgba(212,168,67,0.1);border:1px solid rgba(212,168,67,0.3);border-radius:12px;padding:16px 20px;margin-top:16px;text-align:center">
-      <div style="font-size:11px;color:#7A9A82;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.08em">Votre code</div>
-      <div id="s4code" style="font-size:22px;font-weight:700;color:#F0C96A;letter-spacing:0.12em">—</div>
-    </div>
-    <div class="s4-badge" style="margin-top:16px">Valable 30 jours · Usage unique</div>
+<!-- ══ S4 — SUCCÈS ══ -->
+<div class="screen" id="screen4">
+<div class="screen-inner">
+<div class="s4-wrap">
+  <div class="s4-check">✓</div>
+  <div class="s4-title">Email envoyé !</div>
+  <div class="s4-desc">Vérifiez votre boîte email et présentez le coupon en caisse lors de votre prochaine visite.</div>
+  <div class="s4-code-block">
+    <div class="s4-code-label">Votre code unique</div>
+    <div class="s4-code-value" id="s4code">—</div>
+    <div class="s4-code-sub">Valable 30 jours · Usage unique</div>
   </div>
-</div></div>
+</div>
+</div>
+</div>
 
-<!-- SCREEN ALREADY PLAYED -->
-<div class="screen" id="screenAlready"><div class="screen-inner">
-  <div class="already-played">
-    <span class="already-icon">🎫</span>
-    <div class="already-title">Déjà participé !</div>
-    <div class="already-desc">Vous avez déjà récupéré votre gain. Un seul avis Google par personne — merci pour votre soutien !</div>
-  </div>
-</div></div>
+<!-- ══ ALREADY ══ -->
+<div class="screen" id="screenAlready">
+<div class="screen-inner">
+<div class="already-wrap">
+  <span class="already-emoji">🎫</span>
+  <div class="already-title">Déjà participé !</div>
+  <div class="already-desc">Vous avez déjà récupéré votre cadeau. Un seul gain par personne. Merci pour votre confiance&nbsp;!</div>
+</div>
+</div>
+</div>
 
 <script>
-// ===================== STATE =====================
+/* ══════════════════════════════════════
+   CONFIG — probabilités internes uniquement,
+   jamais affichées au client
+══════════════════════════════════════ */
 const PRIZES = [
-  { name: 'Croissant Artisanal', emoji: '🥐', prob: 0.50, rare: false },
-  { name: 'Baguette Tradition', emoji: '🥖', prob: 0.98, rare: false },
-  { name: 'Pâtisserie du Jour', emoji: '🍰', prob: 1.00, rare: true }
+  {name:"Croissant Artisanal", emoji:"🥐", prob:.5},
+  {name:"Baguette Tradition",  emoji:"🥖", prob:.98},
+  {name:"Pâtisserie du Jour",  emoji:"🍰", prob:1}
 ];
+const STANDALONE_URL = "https://script.google.com/macros/s/AKfycbydbdsUOR49i5BO6-eBIgvtFZN0etKi91IOvd3XlAaK8Ylo4AFqjd80w9CSeo_m9B8x/exec";
+const BAKERY_NAME = "Falman"; // filigrane carte à gratter
 
-let currentCard = 0;
-let picked = false;
 let wonPrize = null;
-let startX = 0;
-let isDragging = false;
+let googleOpened = false;
+let scratchRevealed = false;
 
-// Check already played
-window.addEventListener('load', () => {
-  // Blocage désactivé — mode test
-  showScreen('screen1');
-  initCarousel();
+/* ── Navigation ── */
+function showScreen(id){
+  document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+  window.scrollTo(0,0);
+}
+
+window.addEventListener("load",()=>{
+  showScreen("screen1");
+  drawPrize(); // tirage au sort dès le chargement
 });
 
-// ===================== NAVIGATION =====================
-function showScreen(id) {
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
-}
-
-// ---- Boulangerie cible : Boulangerie Dupain, Paris ----
-const GOOGLE_REVIEW_URL = 'https://search.google.com/local/writereview?placeid=ChIJq6qas52Hi0cRMtoyv9EFxDI';
-
-let googleOpened = false;
-
-function openGoogle(e) {
-  if (googleOpened) { e.preventDefault(); return; }
-  googleOpened = true;
-  // Acces immediat — Google s'ouvre ET la roue se debloque
-  const msg = document.getElementById('unlockMsg');
-  msg.classList.add('visible');
-  document.getElementById('s1Note').style.display = 'none';
+/* ── Screen 1 : avis Google ── */
+function openGoogle(e){
+  if(googleOpened){e.preventDefault();return;}
+  googleOpened=true;
+  const btn=document.getElementById("googleBtn");
+  btn.innerHTML='<span class="btn-google-icon">✓</span>Merci — votre avis est précieux&nbsp;!';
+  btn.style.opacity=".6";
+  btn.style.pointerEvents="none";
+  document.getElementById("unlockMsg").classList.add("show");
   spawnParticles();
-  setTimeout(() => showScreen('screen2'), 1200);
+  setTimeout(()=>showScreen("screen2"),1400);
 }
 
-function unlockGame() {
-  const msg = document.getElementById('unlockMsg');
-  msg.classList.add('visible');
-  spawnParticles();
-  setTimeout(() => showScreen('screen2'), 1200);
+function goToScratch(){
+  showScreen("screen2");
 }
 
-function goToGame() {
-  spawnParticles();
-  setTimeout(() => showScreen('screen2'), 400);
+/* ── Tirage au sort (interne) ── */
+function drawPrize(){
+  const r=Math.random();
+  wonPrize=r<.5?PRIZES[0]:r<.98?PRIZES[1]:PRIZES[2];
+  document.getElementById("prizeEmoji").textContent=wonPrize.emoji;
+  document.getElementById("prizeName").textContent=wonPrize.name;
 }
 
-function goToForm() {
-  showScreen('screen3');
-  document.getElementById('prizeEmoji').textContent = wonPrize.emoji;
-  document.getElementById('prizeLabel').textContent = 'Vous avez gagné : ' + wonPrize.name;
-}
+/* ══════════════════════════════════════
+   CARTE À GRATTER — Canvas HTML5
+══════════════════════════════════════ */
+let canvas, ctx, isScratching=false, scratchedPixels=0, totalPixels=0, revealDone=false;
+const REVEAL_THRESHOLD = 0.60; // 60% gratté → révélation auto
+const BRUSH_SIZE = 38;
 
-function generateCode() {
-  return Math.floor(100000 + Math.random() * 900000).toString();
-}
+window.addEventListener("load", ()=>{
+  // Légère attente pour que le DOM soit prêt
+  setTimeout(initScratch, 200);
+});
 
-async function submitForm() {
-  const prenom = document.getElementById('fieldPrenom').value.trim();
-  const nom = document.getElementById('fieldNom').value.trim();
-  const email = document.getElementById('fieldEmail').value.trim();
-  if (!prenom || !nom || !email) {
-    alert('Veuillez remplir tous les champs.');
+function initScratch(){
+  canvas=document.getElementById("scratchCanvas");
+  if(!canvas||!canvas.getContext){
+    document.getElementById("fallbackBtn").classList.add("show");
+    document.getElementById("canvasWrap").style.display="none";
     return;
   }
+  ctx=canvas.getContext("2d");
 
-  const btn = document.querySelector('.s3-submit');
-  btn.textContent = 'Envoi en cours...';
-  btn.disabled = true;
+  const bg=document.getElementById("scratchCardBg");
+  const w=bg.offsetWidth;
+  const h=bg.offsetHeight;
 
-  const code = generateCode();
-  const gain = wonPrize ? wonPrize.name : 'Votre cadeau';
-  const gainEmoji = wonPrize ? wonPrize.emoji : '🎁';
-  const STANDALONE_URL = 'https://script.google.com/macros/s/AKfycbydbdsUOR49i5BO6-eBIgvtFZN0etKi91IOvd3XlAaK8Ylo4AFqjd80w9CSeo_m9B8x/exec';
+  canvas.width=w;
+  canvas.height=h;
+  canvas.style.width=w+"px";
+  canvas.style.height=h+"px";
 
-  // Un seul appel — sauvegarde Sheets + envoi email simultané
-  try {
-    const url = STANDALONE_URL
-      + '?action=save'
-      + '&code='    + encodeURIComponent(code)
-      + '&gain='    + encodeURIComponent(gain)
-      + '&prenom='  + encodeURIComponent(prenom)
-      + '&email='   + encodeURIComponent(email)
-      + '&emoji='   + encodeURIComponent(gainEmoji)
-      + '&commerce='+ encodeURIComponent('Falman Emmanuelle et Flavien');
+  totalPixels=w*h;
+  drawScratchLayer(w,h);
 
-    const res  = await fetch(url);
-    const data = await res.json();
+  // Touch events
+  canvas.addEventListener("touchstart",onTouchStart,{passive:true});
+  canvas.addEventListener("touchmove",onTouchMove,{passive:true});
+  canvas.addEventListener("touchend",()=>{isScratching=false},{passive:true});
 
-    if (data.status === 'saved' || data.status === 'duplicate') {
-      showScreen('screen4');
-      document.getElementById('s4code').textContent = code;
-    } else {
-      throw new Error(data.message || 'Erreur');
-    }
-  } catch(err) {
-    console.log('Error:', err);
-    // Fallback — afficher quand même le gain
-    showScreen('screen4');
-    document.getElementById('s4code').textContent = code;
+  // Mouse events
+  canvas.addEventListener("mousedown",e=>{isScratching=true;scratch(e.offsetX,e.offsetY)});
+  canvas.addEventListener("mousemove",e=>{if(isScratching)scratch(e.offsetX,e.offsetY)});
+  canvas.addEventListener("mouseup",()=>{isScratching=false});
+  canvas.addEventListener("mouseleave",()=>{isScratching=false});
+}
+
+function drawScratchLayer(w,h){
+  // Fond doré/argenté — couleur principale de la surface à gratter
+  const grad=ctx.createLinearGradient(0,0,w,h);
+  grad.addColorStop(0,"#c8963e");
+  grad.addColorStop(0.35,"#daa84a");
+  grad.addColorStop(0.65,"#e8b85c");
+  grad.addColorStop(1,"#c09030");
+  ctx.fillStyle=grad;
+  ctx.fillRect(0,0,w,h);
+
+  // Texture grain légère par-dessus
+  for(let i=0;i<w*h/120;i++){
+    const x=Math.random()*w, y=Math.random()*h;
+    const a=Math.random()*.08+.02;
+    ctx.fillStyle=`rgba(0,0,0,${a})`;
+    ctx.beginPath();ctx.arc(x,y,Math.random()*1.5,0,Math.PI*2);ctx.fill();
+  }
+  for(let i=0;i<w*h/180;i++){
+    const x=Math.random()*w, y=Math.random()*h;
+    ctx.fillStyle=`rgba(255,255,255,${Math.random()*.06+.01})`;
+    ctx.beginPath();ctx.arc(x,y,Math.random()*1.2,0,Math.PI*2);ctx.fill();
+  }
+
+  // Filigrane boulangerie — opacité faible, centré
+  ctx.save();
+  ctx.globalAlpha=0.13;
+  ctx.fillStyle="#3d2800";
+  ctx.font=`italic bold ${Math.min(w*.18,48)}px 'Playfair Display', serif`;
+  ctx.textAlign="center";
+  ctx.textBaseline="middle";
+  ctx.fillText(BAKERY_NAME, w/2, h/2);
+  ctx.restore();
+
+  // Bordure intérieure subtile
+  ctx.strokeStyle="rgba(255,255,255,.18)";
+  ctx.lineWidth=1.5;
+  ctx.strokeRect(6,6,w-12,h-12);
+
+  // Instruction "grattez ici"
+  ctx.save();
+  ctx.globalAlpha=0.55;
+  ctx.fillStyle="#3d2000";
+  ctx.font=`600 ${Math.min(w*.038,13)}px Inter, sans-serif`;
+  ctx.textAlign="center";
+  ctx.textBaseline="middle";
+  ctx.fillText("— Grattez ici pour révéler —", w/2, h*.82);
+  ctx.restore();
+}
+
+function onTouchStart(e){
+  isScratching=true;
+  const t=e.touches[0];
+  const r=canvas.getBoundingClientRect();
+  scratch(t.clientX-r.left, t.clientY-r.top);
+}
+
+function onTouchMove(e){
+  if(!isScratching)return;
+  const t=e.touches[0];
+  const r=canvas.getBoundingClientRect();
+  scratch(t.clientX-r.left, t.clientY-r.top);
+}
+
+function scratch(x,y){
+  if(revealDone)return;
+  ctx.globalCompositeOperation="destination-out";
+  ctx.beginPath();
+  ctx.arc(x,y,BRUSH_SIZE,0,Math.PI*2);
+  ctx.fill();
+  ctx.globalCompositeOperation="source-over";
+  checkProgress();
+}
+
+function checkProgress(){
+  if(revealDone)return;
+  // Sampling : 1 pixel sur 16 pour les performances mobile
+  const data=ctx.getImageData(0,0,canvas.width,canvas.height).data;
+  let transparent=0;
+  for(let i=3;i<data.length;i+=64){
+    if(data[i]<128)transparent++;
+  }
+  const sampledTotal=Math.floor(data.length/(4*16));
+  const pct=transparent/sampledTotal;
+
+  document.getElementById("progressFill").style.width=(Math.min(pct,1)*100)+"%";
+  if(pct<.25){
+    document.getElementById("scratchHint").textContent="Continuez…";
+  } else if(pct<.5){
+    document.getElementById("scratchHint").textContent="Encore un peu…";
+  } else {
+    document.getElementById("scratchHint").textContent="Presque&nbsp;✦";
+  }
+
+  if(pct>=REVEAL_THRESHOLD){
+    revealPrize(false);
   }
 }
 
-// ===================== CAROUSEL =====================
-function initCarousel() {
-  const track = document.getElementById('track');
+function revealPrize(force){
+  if(revealDone)return;
+  revealDone=true;
 
-  track.addEventListener('touchstart', e => {
-    startX = e.touches[0].clientX;
-    isDragging = true;
-  }, { passive: true });
-
-  track.addEventListener('touchend', e => {
-    if (!isDragging) return;
-    const diff = startX - e.changedTouches[0].clientX;
-    if (Math.abs(diff) > 40) {
-      if (diff > 0 && currentCard < 2) scrollTo(currentCard + 1);
-      else if (diff < 0 && currentCard > 0) scrollTo(currentCard - 1);
-    }
-    isDragging = false;
-  }, { passive: true });
-}
-
-function scrollTo(idx) {
-  if (picked) return;
-  currentCard = idx;
-  const cardWidth = document.querySelector('.card-slot').offsetWidth + 20;
-  document.getElementById('track').style.transform = `translateX(-${idx * cardWidth}px)`;
-  document.querySelectorAll('.dot').forEach((d, i) => {
-    d.classList.toggle('active', i === idx);
-  });
-  document.querySelectorAll('.card-slot').forEach((s, i) => {
-    s.classList.toggle('active', i === idx);
-  });
-}
-
-// ===================== CARD PICK =====================
-function pickCard(idx) {
-  if (picked) return;
-  if (idx !== currentCard) { scrollTo(idx); return; }
-  picked = true;
-  document.getElementById('tapHint').style.display = 'none';
-
-  // Determine prize
-  const r = Math.random();
-  wonPrize = r < 0.50 ? PRIZES[0] : r < 0.98 ? PRIZES[1] : PRIZES[2];
-
-  // Fill all backs
-  for (let i = 0; i < 3; i++) {
-    const back = document.getElementById('back' + i);
-    const prize = i === idx ? wonPrize : getLoserPrize(i, idx);
-    back.innerHTML = `
-      <div class="card-result-emoji">${prize.emoji}</div>
-      <div class="card-result-name">${prize.name}</div>
-      <div class="card-result-sub">${i === idx ? '✨ Votre gain' : ''}</div>
-    `;
+  // Effacer complètement le canvas avec animation
+  if(canvas&&ctx){
+    ctx.globalCompositeOperation="destination-out";
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+    ctx.globalCompositeOperation="source-over";
+    // Fade out du canvas
+    canvas.style.transition="opacity .7s ease";
+    canvas.style.opacity="0";
+    setTimeout(()=>{
+      const cw=document.getElementById("canvasWrap");
+      if(cw)cw.style.pointerEvents="none";
+    },700);
   }
 
-  // Flip chosen card immediately
-  document.getElementById('card' + idx).classList.add('flipped');
+  // Révéler la récompense
+  const reveal=document.getElementById("prizeReveal");
+  reveal.classList.add("visible");
 
-  // Flip others after delay
-  setTimeout(() => {
-    for (let i = 0; i < 3; i++) {
-      if (i !== idx) document.getElementById('card' + i).classList.add('flipped');
-    }
-  }, 900);
+  // Progression à 100%
+  document.getElementById("progressFill").style.width="100%";
+  document.getElementById("scratchHint").textContent="Révélé ✦";
 
-  // Show confetti if rare
-  if (wonPrize.rare) spawnConfetti();
+  // Confettis si rare
+  if(wonPrize&&wonPrize.prob===1)spawnConfetti();
+  else spawnParticles();
 
-  // Show CTA
-  setTimeout(() => {
-    document.getElementById('ctaBtn').classList.add('visible');
-  }, 1600);
+  // Bouton récupération
+  setTimeout(()=>{
+    document.getElementById("claimBtn").classList.add("show");
+    document.getElementById("fallbackBtn").classList.remove("show");
+  }, 800);
 }
 
-function getLoserPrize(cardIdx, winnerIdx) {
-  const losers = PRIZES.filter((_, i) => i !== PRIZES.indexOf(wonPrize));
-  return losers[cardIdx % losers.length];
-}
-
-// ===================== PARTICLES =====================
-function spawnParticles() {
-  const colors = ['#D4A843', '#F0C96A', '#5A8A6A', '#fff'];
-  for (let i = 0; i < 24; i++) {
-    const p = document.createElement('div');
-    p.className = 'particle';
-    const size = Math.random() * 8 + 4;
-    const angle = Math.random() * Math.PI * 2;
-    const distance = Math.random() * 200 + 80;
-    p.style.cssText = `
-      width:${size}px; height:${size}px;
-      background:${colors[Math.floor(Math.random()*colors.length)]};
-      left:${window.innerWidth/2}px; top:${window.innerHeight/2}px;
-      --tx:${Math.cos(angle)*distance}px;
-      --ty:${Math.sin(angle)*distance}px;
-      animation-delay:${Math.random()*0.3}s;
-    `;
-    document.body.appendChild(p);
-    setTimeout(() => p.remove(), 1500);
+/* ── Screen 3 : formulaire ── */
+function goToForm(){
+  showScreen("screen3");
+  if(wonPrize){
+    document.getElementById("s3Emoji").textContent=wonPrize.emoji;
+    document.getElementById("s3PrizeLabel").textContent="Vous avez gagné : "+wonPrize.name;
   }
 }
 
-function spawnConfetti() {
-  const colors = ['#D4A843','#F0C96A','#5A8A6A','#fff','#D4A843'];
-  for (let i = 0; i < 50; i++) {
-    setTimeout(() => {
-      const p = document.createElement('div');
-      p.className = 'particle';
-      const size = Math.random() * 10 + 4;
-      const angle = Math.random() * Math.PI * 2;
-      const distance = Math.random() * 300 + 100;
-      p.style.cssText = `
-        width:${size}px; height:${Math.random() > 0.5 ? size : size/2}px;
-        border-radius:${Math.random() > 0.5 ? '50%' : '2px'};
-        background:${colors[Math.floor(Math.random()*colors.length)]};
-        left:${window.innerWidth/2}px; top:${window.innerHeight/3}px;
-        --tx:${Math.cos(angle)*distance}px;
-        --ty:${Math.sin(angle)*distance+100}px;
-      `;
-      document.body.appendChild(p);
-      setTimeout(() => p.remove(), 1500);
-    }, i * 30);
+function generateCode(){return Math.floor(100000+Math.random()*900000).toString()}
+
+async function submitForm(){
+  const prenom=document.getElementById("fieldPrenom").value.trim();
+  const nom=document.getElementById("fieldNom").value.trim();
+  const email=document.getElementById("fieldEmail").value.trim();
+  if(!prenom||!nom||!email){alert("Veuillez remplir tous les champs.");return;}
+  const btn=document.querySelector(".s3-submit");
+  btn.textContent="Envoi en cours…";btn.disabled=true;
+  const code=generateCode();
+  const gain=wonPrize?wonPrize.name:"Votre cadeau";
+  const gainEmoji=wonPrize?wonPrize.emoji:"🎁";
+  try{
+    const url=STANDALONE_URL+"?action=save"
+      +"&code="+encodeURIComponent(code)
+      +"&gain="+encodeURIComponent(gain)
+      +"&prenom="+encodeURIComponent(prenom)
+      +"&email="+encodeURIComponent(email)
+      +"&emoji="+encodeURIComponent(gainEmoji)
+      +"&commerce="+encodeURIComponent("Falman Emmanuelle et Flavien");
+    const res=await fetch(url);
+    const data=await res.json();
+    if(data.status==="saved"||data.status==="duplicate"){
+      showScreen("screen4");
+      document.getElementById("s4code").textContent=code;
+    } else throw new Error(data.message);
+  } catch(err){
+    console.log(err);
+    showScreen("screen4");
+    document.getElementById("s4code").textContent=code;
   }
 }
+
+/* ── Particules ── */
+function spawnParticles(){
+  const c=["#C8963E","#E2B25A","#F5D07A","#ffffff","#a8d48a"];
+  for(let i=0;i<28;i++){
+    const p=document.createElement("div");
+    p.className="particle";
+    const sz=Math.random()*8+3,a=Math.random()*Math.PI*2,d=Math.random()*200+80;
+    p.style.cssText=`width:${sz}px;height:${sz}px;background:${c[Math.floor(Math.random()*c.length)]};left:${innerWidth/2}px;top:${innerHeight/2}px;--tx:${Math.cos(a)*d}px;--ty:${Math.sin(a)*d}px;animation-delay:${Math.random()*.15}s`;
+    document.body.appendChild(p);setTimeout(()=>p.remove(),1500);
+  }
+}
+function spawnConfetti(){
+  const c=["#C8963E","#E2B25A","#F5D07A","#ffffff","#a8d48a","#f4c4d0"];
+  for(let i=0;i<60;i++) setTimeout(()=>{
+    const p=document.createElement("div");p.className="particle";
+    const sz=Math.random()*9+4,a=Math.random()*Math.PI*2,d=Math.random()*320+100;
+    p.style.cssText=`width:${sz}px;height:${Math.random()>.5?sz:sz/2}px;border-radius:${Math.random()>.5?"50%":"3px"};background:${c[Math.floor(Math.random()*c.length)]};left:${innerWidth/2}px;top:${innerHeight*.3}px;--tx:${Math.cos(a)*d}px;--ty:${Math.sin(a)*d+80}px`;
+    document.body.appendChild(p);setTimeout(()=>p.remove(),1500);
+  },i*22);
+}
+
+/* ── Resize canvas si rotation écran ── */
+window.addEventListener("resize",()=>{
+  if(!revealDone)setTimeout(initScratch,300);
+});
 </script>
 </body>
 </html>
