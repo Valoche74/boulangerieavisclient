@@ -12,7 +12,6 @@
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 :root{
   --cream:#F5EDD8;
-  --cream2:#EDE0C4;
   --cream3:#FBF6EE;
   --gold:#C8963E;
   --gold2:#E2B25A;
@@ -23,117 +22,109 @@
   --muted2:#9a8c6e;
 }
 
-/* ── FOND VERT TEXTURÉ (body entier) ── */
-html{
-  background:#3e7a1a;
-  min-height:100%;
-}
+html{ background:#3e7a1a; min-height:100%; }
 body{
   font-family:'Inter',sans-serif;
   -webkit-font-smoothing:antialiased;
   background:#3e7a1a;
   min-height:100vh;
-  /* Scroll libre sur tout le body */
   overflow-y:auto;
   overflow-x:hidden;
   -webkit-overflow-scrolling:touch;
 }
-
-/* Texture : radial lights + grain SVG fixé */
 body::before{
-  content:'';
-  position:fixed;inset:0;z-index:0;pointer-events:none;
+  content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
   background:
-    radial-gradient(ellipse 70% 55% at 22% 28%, rgba(120,200,45,.48) 0%, transparent 58%),
-    radial-gradient(ellipse 50% 65% at 82% 72%, rgba(25,85,6,.55) 0%, transparent 52%),
-    radial-gradient(ellipse 75% 38% at 50% 88%, rgba(48,108,14,.42) 0%, transparent 58%),
-    radial-gradient(ellipse 55% 55% at 12% 78%, rgba(68,138,18,.32) 0%, transparent 48%);
+    radial-gradient(ellipse 70% 55% at 22% 28%,rgba(120,200,45,.48) 0%,transparent 58%),
+    radial-gradient(ellipse 50% 65% at 82% 72%,rgba(25,85,6,.55) 0%,transparent 52%),
+    radial-gradient(ellipse 75% 38% at 50% 88%,rgba(48,108,14,.42) 0%,transparent 58%),
+    radial-gradient(ellipse 55% 55% at 12% 78%,rgba(68,138,18,.32) 0%,transparent 48%);
 }
 body::after{
-  content:'';
-  position:fixed;inset:0;z-index:1;pointer-events:none;
-  opacity:.52;
+  content:'';position:fixed;inset:0;z-index:1;pointer-events:none;opacity:.52;
   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='280' height='280'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.78' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='280' height='280' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
   background-size:160px 160px;
 }
 
-/* ══════════════════════════════════
-   SYSTÈME DE SCREENS
-   Chaque screen = block normal dans le flux,
-   caché/visible via display none/block
-══════════════════════════════════ */
+/* SCREENS */
 .screen{display:none}
 .screen.active{display:block}
-
 .screen-inner{
-  min-height:100vh;
-  display:flex;flex-direction:column;
+  min-height:100vh;display:flex;flex-direction:column;
   align-items:center;justify-content:center;
-  padding:40px 20px 60px;
-  position:relative;z-index:2;
+  padding:32px 20px 56px;position:relative;z-index:2;
 }
 
-/* ══════════════════════════════════
-   SCREEN 1 — ACCUEIL
-══════════════════════════════════ */
-.s1-wrap{
-  width:100%;max-width:380px;
-  display:flex;flex-direction:column;align-items:center;
-  gap:0;
-}
+/* ══ SCREEN 1 ══ */
+.s1-wrap{width:100%;max-width:380px;display:flex;flex-direction:column;align-items:center}
 
-/* ── CROISSANT avec nom dessus ── */
-.croissant-block{
-  position:relative;
+/* ── Viewer 3D ── */
+.viewer-block{
+  position:relative;width:100%;max-width:320px;
+  margin:0 auto 0;
   display:flex;flex-direction:column;align-items:center;
-  margin-bottom:20px;
 }
-.croissant-glow{
+.viewer-glow{
   position:absolute;
-  width:220px;height:200px;
-  top:50%;left:50%;transform:translate(-50%,-50%);
+  width:260px;height:200px;
+  top:50%;left:50%;transform:translate(-50%,-52%);
   border-radius:50%;
-  background:radial-gradient(circle, rgba(226,178,90,.28) 0%, transparent 68%);
+  background:radial-gradient(circle,rgba(226,178,90,.32) 0%,transparent 68%);
   pointer-events:none;
   animation:glowPulse 3.5s ease-in-out infinite;
 }
-@keyframes glowPulse{0%,100%{opacity:.55;transform:translate(-50%,-50%) scale(1)}50%{opacity:1;transform:translate(-50%,-50%) scale(1.1)}}
+@keyframes glowPulse{0%,100%{opacity:.5;transform:translate(-50%,-52%) scale(1)}50%{opacity:1;transform:translate(-50%,-52%) scale(1.12)}}
 
-.croissant-emoji{
-  font-size:120px;
+/* Canvas Three.js */
+#threeCanvas{
   display:block;
-  line-height:1;
-  user-select:none;
+  width:280px!important;
+  height:240px!important;
+  cursor:grab;
+  touch-action:none;
+  border-radius:12px;
+}
+#threeCanvas:active{cursor:grabbing}
+
+/* Fallback emoji */
+.croissant-fallback{
+  display:none;
+  font-size:110px;line-height:1;
   animation:float3d 4s ease-in-out infinite;
-  filter:drop-shadow(0 18px 36px rgba(0,0,0,.3));
+  filter:drop-shadow(0 16px 32px rgba(0,0,0,.3));
+  user-select:none;
 }
 @keyframes float3d{
   0%,100%{transform:translateY(0) rotate(-3deg)}
   25%{transform:translateY(-9px) rotate(0deg)}
-  50%{transform:translateY(-14px) rotate(3deg)}
-  75%{transform:translateY(-6px) rotate(1deg)}
+  50%{transform:translateY(-13px) rotate(3deg)}
+  75%{transform:translateY(-5px) rotate(1deg)}
 }
+.croissant-fallback.show{display:block}
+.viewer-loading{
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  font-size:12px;color:rgba(245,237,216,.5);letter-spacing:.05em;
+  pointer-events:none;
+  animation:fadePulse 1.5s ease-in-out infinite;
+}
+@keyframes fadePulse{0%,100%{opacity:.3}50%{opacity:.8}}
+.viewer-loading.gone{display:none}
 
-/* Nom de la boulangerie collé sous le croissant, style badge */
-.croissant-name{
-  margin-top:-4px;
+/* Nom sous le viewer */
+.viewer-name{
+  margin-top:6px;
   font-family:'Playfair Display',serif;
-  font-size:18px;font-weight:700;font-style:italic;
+  font-size:17px;font-weight:700;font-style:italic;
   color:var(--cream);
-  text-shadow:0 2px 16px rgba(0,0,0,.45), 0 0 40px rgba(0,0,0,.25);
+  text-shadow:0 2px 14px rgba(0,0,0,.4);
+  text-align:center;line-height:1.2;
   letter-spacing:.02em;
-  text-align:center;
-  line-height:1.2;
 }
 
-/* Étoiles Google */
-.s1-stars{
-  display:flex;gap:4px;justify-content:center;
-  margin-bottom:22px;
-}
+/* Étoiles */
+.s1-stars{display:flex;gap:4px;justify-content:center;margin:16px 0 20px}
 .s1-star{
-  font-size:20px;
-  opacity:0;transform:translateY(5px) scale(.75);
+  font-size:20px;opacity:0;transform:translateY(5px) scale(.75);
   animation:starIn .4s ease forwards;
 }
 .s1-star:nth-child(1){animation-delay:.12s}
@@ -143,72 +134,59 @@ body::after{
 .s1-star:nth-child(5){animation-delay:.52s}
 @keyframes starIn{to{opacity:1;transform:none}}
 
-/* Card principale */
+/* Card */
 .s1-card{
   width:100%;
   background:rgba(251,246,238,.97);
-  border-radius:26px;
-  overflow:hidden;
-  box-shadow:0 20px 56px rgba(0,0,0,.38), 0 0 0 1px rgba(200,150,62,.18) inset;
+  border-radius:26px;overflow:hidden;
+  box-shadow:0 20px 56px rgba(0,0,0,.38),0 0 0 1px rgba(200,150,62,.18) inset;
 }
 .s1-card-top{
-  padding:26px 22px 20px;
-  background:linear-gradient(180deg, rgba(200,150,62,.07) 0%, transparent 100%);
-  border-bottom:1px solid var(--gold-border);
-  text-align:center;
+  padding:24px 22px 18px;
+  background:linear-gradient(180deg,rgba(200,150,62,.07) 0%,transparent 100%);
+  border-bottom:1px solid var(--gold-border);text-align:center;
 }
 .s1-heading{
   font-family:'Playfair Display',serif;
-  font-size:24px;font-weight:900;
-  color:var(--ink);line-height:1.2;letter-spacing:-.01em;margin-bottom:8px;
+  font-size:23px;font-weight:900;color:var(--ink);
+  line-height:1.2;letter-spacing:-.01em;margin-bottom:7px;
 }
 .s1-heading .accent{color:var(--gold)}
 .s1-subtext{font-size:13px;color:var(--muted);line-height:1.65}
 
-.s1-card-bottom{padding:20px 22px 24px;display:flex;flex-direction:column;gap:11px}
+.s1-card-bottom{padding:18px 22px 22px;display:flex;flex-direction:column;gap:10px}
 
-/* Bouton Google */
 .btn-google{
   display:flex;align-items:center;justify-content:center;gap:9px;
-  width:100%;padding:16px 18px;
+  width:100%;padding:15px 18px;
   background:linear-gradient(135deg,var(--gold) 0%,var(--gold2) 60%,var(--gold3) 100%);
   color:var(--ink);border:none;border-radius:15px;
   font-family:'Inter',sans-serif;font-size:15px;font-weight:700;
   cursor:pointer;text-decoration:none;text-align:center;
-  box-shadow:0 6px 22px rgba(200,150,62,.48), 0 2px 6px rgba(0,0,0,.14);
-  transition:transform .15s ease,box-shadow .15s ease;
-  position:relative;overflow:hidden;
-  letter-spacing:.01em;
+  box-shadow:0 6px 22px rgba(200,150,62,.48),0 2px 6px rgba(0,0,0,.14);
+  transition:transform .15s ease;position:relative;overflow:hidden;letter-spacing:.01em;
 }
 .btn-google:active{transform:scale(.97)}
 
-/* Note optionnelle */
 .s1-optional{
   display:flex;align-items:flex-start;gap:8px;
-  background:rgba(200,150,62,.05);
-  border:1px solid rgba(200,150,62,.15);
+  background:rgba(200,150,62,.05);border:1px solid rgba(200,150,62,.15);
   border-radius:11px;padding:10px 13px;
 }
 .s1-optional-icon{font-size:13px;flex-shrink:0;margin-top:1px}
 .s1-optional-text{font-size:12px;color:var(--muted);line-height:1.55}
 
-/* Skip */
 .s1-skip{
-  text-align:center;font-size:12px;
-  color:rgba(245,237,216,.48);
-  margin-top:14px;cursor:pointer;
-  text-decoration:underline;text-underline-offset:3px;
-  transition:color .2s;
+  text-align:center;font-size:12px;color:rgba(245,237,216,.45);
+  margin-top:13px;cursor:pointer;text-decoration:underline;
+  text-underline-offset:3px;transition:color .2s;
 }
-.s1-skip:hover{color:rgba(245,237,216,.82)}
+.s1-skip:hover{color:rgba(245,237,216,.8)}
 
-/* Message déverrouillé */
 .s1-unlock{
   display:none;align-items:center;justify-content:center;gap:8px;
-  padding:10px 16px;
-  background:rgba(61,122,24,.14);
-  border:1px solid rgba(100,180,40,.32);
-  border-radius:11px;
+  padding:10px 16px;background:rgba(61,122,24,.14);
+  border:1px solid rgba(100,180,40,.32);border-radius:11px;
   font-size:13px;color:#7ecb40;font-weight:600;
 }
 .s1-unlock.show{display:flex;animation:fadeUp .4s ease}
@@ -216,193 +194,174 @@ body::after{
 @keyframes pulse2{0%,100%{opacity:1}50%{opacity:.3}}
 @keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 
-/* ══════════════════════════════════
-   SCREEN 2 — CARTE À GRATTER
-══════════════════════════════════ */
-.s2-wrap{
-  width:100%;max-width:400px;
-  display:flex;flex-direction:column;align-items:center;
-}
+/* ══ SCREEN 2 — TICKET À GRATTER ══ */
+.s2-wrap{width:100%;max-width:400px;display:flex;flex-direction:column;align-items:center}
 
-.s2-header{text-align:center;margin-bottom:22px}
+.s2-header{text-align:center;margin-bottom:20px}
 .s2-eyebrow{
-  display:inline-flex;align-items:center;gap:6px;
+  display:inline-flex;align-items:center;gap:5px;
   font-size:10px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;
-  color:rgba(245,237,216,.65);margin-bottom:9px;
+  color:rgba(245,237,216,.6);margin-bottom:8px;
 }
-.s2-eyebrow::before,.s2-eyebrow::after{content:'✦';font-size:7px;opacity:.65}
+.s2-eyebrow::before,.s2-eyebrow::after{content:'✦';font-size:7px;opacity:.6}
 .s2-title{
   font-family:'Playfair Display',serif;
-  font-size:27px;font-weight:700;font-style:italic;
-  color:var(--cream);line-height:1.2;letter-spacing:-.01em;margin-bottom:5px;
+  font-size:26px;font-weight:700;font-style:italic;
+  color:var(--cream);line-height:1.2;margin-bottom:5px;
 }
-.s2-sub{font-size:13px;color:rgba(245,237,216,.55);line-height:1.5}
+.s2-sub{font-size:13px;color:rgba(245,237,216,.52);line-height:1.5}
 
-/* Conteneur carte à gratter */
-.scratch-container{
+/* Ticket */
+.ticket-outer{
+  width:calc(100% - 4px);max-width:340px;
+  margin:0 auto 16px;
   position:relative;
-  width:100%;max-width:340px;
-  margin:0 auto 18px;
+  /* ombre ticket premium */
+  filter:drop-shadow(0 14px 36px rgba(0,0,0,.38));
 }
 
-/* Carte fond crème */
-.scratch-card-bg{
+/* Fond crème de la carte */
+.ticket-card{
   width:100%;
   background:var(--cream3);
-  border-radius:20px;
+  border-radius:18px;
   border:1.5px solid var(--gold-border);
-  box-shadow:0 14px 44px rgba(0,0,0,.32), 0 0 0 4px rgba(200,150,62,.05) inset;
   overflow:hidden;
   position:relative;
 }
 
-/* Zone récompense cachée */
-.scratch-prize-reveal{
-  padding:34px 20px 30px;
-  display:flex;flex-direction:column;align-items:center;gap:9px;
+/* Ornements top */
+.ticket-top-bar{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:12px 16px 0;
+}
+.ticket-label{font-size:9px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);opacity:.75}
+.ticket-stars{font-size:10px;letter-spacing:2px;color:var(--gold);opacity:.55}
+
+/* Zone récompense — visible SOUS le canvas */
+.ticket-prize{
+  padding:32px 20px 28px;
+  display:flex;flex-direction:column;align-items:center;gap:8px;
   text-align:center;
-  /* invisible par défaut mais dans le flux pour donner la hauteur à la carte */
-  visibility:hidden;
-  opacity:0;
+  /* visibilité gérée par visibility pour que la hauteur soit toujours là */
+  visibility:hidden;opacity:0;
+  transition:opacity .5s ease .1s;
+}
+.ticket-prize.show{visibility:visible;opacity:1}
+.prize-emoji{font-size:64px;display:block;line-height:1;margin-bottom:2px}
+.ticket-prize.show .prize-emoji{animation:popIn .55s cubic-bezier(.36,.07,.19,.97) both}
+@keyframes popIn{0%{transform:scale(0) rotate(-14deg);opacity:0}60%{transform:scale(1.16) rotate(4deg)}100%{transform:scale(1) rotate(0);opacity:1}}
+.prize-badge{
+  display:inline-flex;align-items:center;gap:4px;
+  background:rgba(200,150,62,.1);border:1px solid rgba(200,150,62,.28);
+  border-radius:999px;padding:4px 12px;
+  font-size:10px;font-weight:700;color:var(--gold);letter-spacing:.08em;text-transform:uppercase;
+}
+.prize-name{
+  font-family:'Playfair Display',serif;
+  font-size:20px;font-weight:700;color:var(--ink);
+}
+.prize-divider{width:32px;height:1px;background:var(--gold-border);margin:2px 0}
+.prize-msg{font-size:12px;color:var(--muted);line-height:1.5}
+
+/* Canvas scratch par-dessus, même dimensions que .ticket-card */
+.scratch-layer{
+  position:absolute;inset:0;
+  border-radius:18px;overflow:hidden;
+  z-index:10;
+  opacity:1;
+  /* PAS de transition par défaut : aucun fondu possible pendant le grattage */
+}
+/* La transition n'existe QUE sur l'état .fading, déclenché après le seuil 60% */
+.scratch-layer.fading{
+  opacity:0;pointer-events:none;
   transition:opacity .45s ease;
 }
-.scratch-prize-reveal.visible{visibility:visible;opacity:1}
-
-.scratch-prize-emoji{
-  font-size:70px;display:block;line-height:1;margin-bottom:4px;
-}
-.scratch-prize-reveal.visible .scratch-prize-emoji{
-  animation:prizePop .55s cubic-bezier(.36,.07,.19,.97) forwards;
-}
-@keyframes prizePop{
-  0%{transform:scale(0) rotate(-14deg);opacity:0}
-  60%{transform:scale(1.16) rotate(4deg)}
-  100%{transform:scale(1) rotate(0);opacity:1}
-}
-.scratch-prize-tag{
-  display:inline-flex;align-items:center;gap:5px;
-  background:rgba(200,150,62,.1);
-  border:1px solid rgba(200,150,62,.28);
-  border-radius:999px;padding:4px 14px;
-  font-size:10px;font-weight:700;color:var(--gold);
-  letter-spacing:.08em;text-transform:uppercase;
-}
-.scratch-prize-name{
-  font-family:'Playfair Display',serif;
-  font-size:21px;font-weight:700;color:var(--ink);
-}
-.scratch-prize-divider{width:36px;height:1px;background:var(--gold-border);margin:2px 0}
-.scratch-prize-congrats{font-size:12px;color:var(--muted);line-height:1.5}
-
-/* Ornements */
-.scratch-card-ornament-top{
-  display:flex;align-items:center;justify-content:space-between;
-  padding:13px 16px 0;
-}
-.ornament-badge{font-size:9px;font-weight:700;letter-spacing:.13em;text-transform:uppercase;color:var(--gold);opacity:.75}
-.ornament-stars{font-size:10px;letter-spacing:2px;color:var(--gold);opacity:.55}
-
-/* Canvas par-dessus */
-.scratch-canvas-wrap{
-  position:absolute;top:0;left:0;right:0;bottom:0;
-  border-radius:20px;overflow:hidden;
-  z-index:10;
-  /* transition fade-out lors de la révélation */
-  transition:opacity .65s ease;
-}
-.scratch-canvas-wrap.hidden{opacity:0;pointer-events:none}
 #scratchCanvas{
   display:block;width:100%;height:100%;
-  cursor:crosshair;
-  border-radius:20px;
   touch-action:none;
+  cursor:crosshair;
+  border-radius:18px;
 }
 
-/* Hint discret */
-.scratch-hint-text{
-  font-size:12px;color:rgba(245,237,216,.5);
-  margin-bottom:6px;
-  letter-spacing:.04em;
-  animation:blink 2s ease-in-out infinite;
+/* Hint & progress */
+.scratch-meta{
+  display:flex;align-items:center;gap:10px;
+  margin-bottom:4px;width:100%;max-width:340px;
 }
-@keyframes blink{0%,100%{opacity:.4}50%{opacity:.85}}
-.scratch-hint-text.hidden{display:none}
+.scratch-progress{
+  flex:1;height:3px;
+  background:rgba(245,237,216,.18);border-radius:999px;overflow:hidden;
+}
+.scratch-fill{
+  height:100%;width:0%;
+  background:linear-gradient(90deg,var(--gold),var(--gold3));
+  border-radius:999px;transition:width .25s ease;
+}
+.scratch-hint{
+  font-size:11px;color:rgba(245,237,216,.48);
+  white-space:nowrap;flex-shrink:0;letter-spacing:.03em;
+}
+.scratch-hint.done{color:rgba(245,237,216,.75)}
 
-/* Fallback */
+/* Boutons */
 .btn-fallback{
   display:none;
-  margin-bottom:8px;
-  background:none;
-  border:1.5px solid rgba(245,237,216,.28);
-  border-radius:11px;padding:11px 20px;
-  font-size:13px;color:rgba(245,237,216,.65);
-  cursor:pointer;font-family:'Inter',sans-serif;
-  transition:all .2s;
+  background:none;border:1.5px solid rgba(245,237,216,.25);
+  border-radius:11px;padding:10px 18px;margin-bottom:8px;
+  font-size:13px;color:rgba(245,237,216,.6);
+  cursor:pointer;font-family:'Inter',sans-serif;transition:all .2s;
 }
 .btn-fallback.show{display:block}
+.btn-fallback:hover{border-color:rgba(245,237,216,.55);color:var(--cream)}
 
-/* CTA après révélation */
 .btn-claim{
   display:none;
-  width:100%;max-width:340px;
-  padding:16px;
+  width:100%;max-width:340px;padding:15px;
   background:linear-gradient(135deg,var(--gold),var(--gold2));
   color:var(--ink);border:none;border-radius:15px;
   font-family:'Inter',sans-serif;font-size:15px;font-weight:700;
-  cursor:pointer;letter-spacing:.01em;
+  cursor:pointer;
   box-shadow:0 6px 22px rgba(200,150,62,.42);
-  animation:slideUp .5s ease forwards;
 }
-.btn-claim.show{display:block}
+.btn-claim.show{display:block;animation:slideUp .5s ease both}
 @keyframes slideUp{from{transform:translateY(12px);opacity:0}to{transform:none;opacity:1}}
 .btn-claim:active{transform:scale(.97)}
 
-/* ══════════════════════════════════
-   SCREEN 3 — FORMULAIRE
-══════════════════════════════════ */
+/* ══ SCREEN 3 ══ */
 .s3-wrap{width:100%;max-width:380px}
 .s3-card{
-  background:var(--cream3);
-  border-radius:26px;overflow:hidden;
-  box-shadow:0 20px 56px rgba(0,0,0,.35);
-  border:1px solid rgba(200,150,62,.14);
+  background:var(--cream3);border-radius:26px;overflow:hidden;
+  box-shadow:0 20px 56px rgba(0,0,0,.35);border:1px solid rgba(200,150,62,.14);
 }
 .s3-hero{
-  padding:30px 22px 22px;
+  padding:28px 22px 20px;
   background:linear-gradient(180deg,rgba(200,150,62,.08) 0%,transparent 100%);
   border-bottom:1px solid var(--gold-border);
-  text-align:center;display:flex;flex-direction:column;align-items:center;gap:9px;
+  text-align:center;display:flex;flex-direction:column;align-items:center;gap:8px;
 }
-.s3-emoji-big{font-size:60px;display:block;animation:bounceIn .6s cubic-bezier(.36,.07,.19,.97) forwards}
-@keyframes bounceIn{0%{transform:scale(0) rotate(-10deg);opacity:0}60%{transform:scale(1.14) rotate(4deg)}100%{transform:scale(1) rotate(0);opacity:1}}
-.s3-congrats{
-  font-family:'Playfair Display',serif;
-  font-size:25px;font-weight:700;color:var(--ink);
-}
+.s3-emoji-big{font-size:58px;display:block;animation:popIn .6s cubic-bezier(.36,.07,.19,.97) both}
+.s3-congrats{font-family:'Playfair Display',serif;font-size:24px;font-weight:700;color:var(--ink)}
 .s3-prize-pill{
-  display:inline-block;padding:5px 16px;
-  background:rgba(200,150,62,.1);
-  border:1px solid var(--gold-border);
-  border-radius:999px;
-  font-size:12px;font-weight:700;color:var(--gold);
+  display:inline-block;padding:5px 14px;
+  background:rgba(200,150,62,.1);border:1px solid var(--gold-border);
+  border-radius:999px;font-size:12px;font-weight:700;color:var(--gold);
 }
-.s3-body{padding:22px}
-.s3-section-title{font-size:15px;font-weight:700;color:var(--ink);margin-bottom:3px}
-.s3-section-sub{font-size:12px;color:var(--muted2);margin-bottom:18px}
-.field{margin-bottom:12px}
-.field-label{font-size:11px;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;display:block}
+.s3-body{padding:20px 22px 24px}
+.s3-section-title{font-size:15px;font-weight:700;color:var(--ink);margin-bottom:2px}
+.s3-section-sub{font-size:12px;color:var(--muted2);margin-bottom:16px}
+.field{margin-bottom:11px}
+.field-label{font-size:11px;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:.08em;margin-bottom:5px;display:block}
 .field-input{
   width:100%;padding:13px 15px;
-  background:#fff;
-  border:1.5px solid rgba(200,150,62,.18);
-  border-radius:13px;
+  background:#fff;border:1.5px solid rgba(200,150,62,.18);border-radius:13px;
   color:var(--ink);font-family:'Inter',sans-serif;font-size:15px;font-weight:500;
   outline:none;transition:border-color .2s,box-shadow .2s;
 }
 .field-input::placeholder{color:var(--muted2)}
 .field-input:focus{border-color:rgba(200,150,62,.48);box-shadow:0 0 0 3px rgba(200,150,62,.07)}
 .s3-submit{
-  width:100%;padding:16px;margin-top:14px;
+  width:100%;padding:15px;margin-top:12px;
   background:linear-gradient(135deg,var(--gold),var(--gold2));
   color:var(--ink);border:none;border-radius:15px;
   font-family:'Inter',sans-serif;font-size:15px;font-weight:700;
@@ -410,77 +369,59 @@ body::after{
 }
 .s3-submit:active{transform:scale(.98)}
 .s3-submit:disabled{opacity:.5;cursor:default}
-.s3-legal{text-align:center;font-size:11px;color:var(--muted2);margin-top:12px;line-height:1.6}
+.s3-legal{text-align:center;font-size:11px;color:var(--muted2);margin-top:11px;line-height:1.6}
 
-/* ══════════════════════════════════
-   SCREEN 4 — SUCCÈS
-══════════════════════════════════ */
-.s4-wrap{text-align:center;max-width:320px}
+/* ══ SCREEN 4 ══ */
+.s4-wrap{text-align:center;max-width:310px}
 .s4-check{
-  width:80px;height:80px;margin:0 auto 22px;
-  background:rgba(61,122,24,.12);
-  border:1.5px solid rgba(100,180,40,.28);
+  width:78px;height:78px;margin:0 auto 20px;
+  background:rgba(61,122,24,.12);border:1.5px solid rgba(100,180,40,.28);
   border-radius:50%;display:flex;align-items:center;justify-content:center;
-  font-size:30px;
-  animation:checkPop .6s cubic-bezier(.36,.07,.19,.97) forwards;
+  font-size:30px;animation:popIn .6s cubic-bezier(.36,.07,.19,.97) both;
 }
-@keyframes checkPop{0%{transform:scale(0);opacity:0}70%{transform:scale(1.1)}100%{transform:scale(1);opacity:1}}
-.s4-title{
-  font-family:'Playfair Display',serif;
-  font-size:29px;font-weight:700;
-  color:var(--cream);margin-bottom:9px;
-}
-.s4-desc{font-size:13px;color:rgba(245,237,216,.62);line-height:1.75;margin-bottom:20px}
+.s4-title{font-family:'Playfair Display',serif;font-size:28px;font-weight:700;color:var(--cream);margin-bottom:8px}
+.s4-desc{font-size:13px;color:rgba(245,237,216,.6);line-height:1.75;margin-bottom:20px}
 .s4-code-block{
-  background:rgba(245,237,216,.09);
-  border:1px solid rgba(200,150,62,.22);
-  border-radius:20px;padding:20px;
-  backdrop-filter:blur(10px);
+  background:rgba(245,237,216,.09);border:1px solid rgba(200,150,62,.22);
+  border-radius:20px;padding:20px;backdrop-filter:blur(10px);
 }
-.s4-code-label{font-size:10px;font-weight:700;color:rgba(245,237,216,.38);letter-spacing:.15em;text-transform:uppercase;margin-bottom:9px}
+.s4-code-label{font-size:10px;font-weight:700;color:rgba(245,237,216,.38);letter-spacing:.15em;text-transform:uppercase;margin-bottom:8px}
 .s4-code-value{font-size:36px;font-weight:800;color:var(--gold3);letter-spacing:.18em;line-height:1;font-variant-numeric:tabular-nums}
-.s4-code-sub{font-size:11px;color:rgba(245,237,216,.42);margin-top:9px}
+.s4-code-sub{font-size:11px;color:rgba(245,237,216,.4);margin-top:8px}
 
-/* ══════════════════════════════════
-   SCREEN ALREADY
-══════════════════════════════════ */
+/* ══ ALREADY ══ */
 .already-wrap{text-align:center;max-width:280px}
-.already-emoji{font-size:50px;display:block;margin-bottom:16px}
-.already-title{
-  font-family:'Playfair Display',serif;
-  font-size:23px;font-weight:700;color:var(--cream);margin-bottom:11px;
-}
-.already-desc{font-size:14px;color:rgba(245,237,216,.58);line-height:1.7}
+.already-emoji{font-size:50px;display:block;margin-bottom:14px}
+.already-title{font-family:'Playfair Display',serif;font-size:22px;font-weight:700;color:var(--cream);margin-bottom:10px}
+.already-desc{font-size:14px;color:rgba(245,237,216,.56);line-height:1.7}
 
-/* ── PARTICLES ── */
+/* Particles */
 .particle{position:fixed;pointer-events:none;border-radius:50%;animation:pfly 1.4s ease-out forwards;z-index:999}
 @keyframes pfly{0%{transform:translate(0,0) scale(1);opacity:1}100%{transform:translate(var(--tx),var(--ty)) scale(0);opacity:0}}
 </style>
 </head>
 <body>
 
-<!-- ══ S1 — ACCUEIL ══ -->
+<!-- ══ S1 ══ -->
 <div class="screen active" id="screen1">
 <div class="screen-inner">
 <div class="s1-wrap">
 
-  <!-- Croissant flottant avec nom de la boulangerie -->
-  <div class="croissant-block">
-    <div class="croissant-glow"></div>
-    <span class="croissant-emoji">🥐</span>
-    <div class="croissant-name">Falman<br>Emmanuelle &amp; Flavien</div>
+  <div class="viewer-block">
+    <div class="viewer-glow"></div>
+    <!-- Canvas Three.js -->
+    <canvas id="threeCanvas"></canvas>
+    <!-- Fallback emoji si GLB échoue -->
+    <div class="croissant-fallback" id="croissantFallback">🥐</div>
+    <div class="viewer-loading" id="viewerLoading">Chargement…</div>
+    <div class="viewer-name">Falman<br>Emmanuelle &amp; Flavien</div>
   </div>
 
-  <!-- Étoiles -->
   <div class="s1-stars">
-    <span class="s1-star">⭐</span>
-    <span class="s1-star">⭐</span>
-    <span class="s1-star">⭐</span>
-    <span class="s1-star">⭐</span>
-    <span class="s1-star">⭐</span>
+    <span class="s1-star">⭐</span><span class="s1-star">⭐</span>
+    <span class="s1-star">⭐</span><span class="s1-star">⭐</span><span class="s1-star">⭐</span>
   </div>
 
-  <!-- Carte principale -->
   <div class="s1-card">
     <div class="s1-card-top">
       <div class="s1-heading">Un cadeau vous<br>attend <span class="accent">ici.</span></div>
@@ -489,8 +430,7 @@ body::after{
     <div class="s1-card-bottom">
       <a href="https://search.google.com/local/writereview?placeid=ChIJq6qas52Hi0cRMtoyv9EFxDI"
          target="_blank" rel="noopener"
-         class="btn-google"
-         id="googleBtn"
+         class="btn-google" id="googleBtn"
          onclick="openGoogle(event)">
         🌟&nbsp; Laisser votre avis Google
       </a>
@@ -506,58 +446,55 @@ body::after{
   </div>
 
   <div class="s1-skip" onclick="goToScratch()">Continuer sans laisser d'avis</div>
-
 </div>
 </div>
 </div>
 
-<!-- ══ S2 — CARTE À GRATTER ══ -->
+<!-- ══ S2 ══ -->
 <div class="screen" id="screen2">
 <div class="screen-inner">
 <div class="s2-wrap">
 
   <div class="s2-header">
     <div class="s2-eyebrow">Votre cadeau</div>
-    <div class="s2-title">Grattez pour révéler<br>votre surprise.</div>
-    <div class="s2-sub">Passez le doigt une fois sur la zone dorée</div>
+    <div class="s2-title">Grattez pour révéler.</div>
+    <div class="s2-sub">Passez le doigt sur la surface dorée</div>
   </div>
 
-  <!-- Carte à gratter -->
-  <div class="scratch-container" id="scratchContainer">
-    <div class="scratch-card-bg" id="scratchCardBg">
-      <div class="scratch-card-ornament-top">
-        <span class="ornament-badge">✦ Carte Cadeau</span>
-        <span class="ornament-stars">★★★★★</span>
+  <div class="ticket-outer" id="ticketOuter">
+    <div class="ticket-card" id="ticketCard">
+      <div class="ticket-top-bar">
+        <span class="ticket-label">✦ Carte Cadeau</span>
+        <span class="ticket-stars">★★★★★</span>
       </div>
-      <div class="scratch-prize-reveal" id="prizeReveal">
-        <span class="scratch-prize-emoji" id="prizeEmoji">🥐</span>
-        <div class="scratch-prize-tag">✦ Vous avez gagné</div>
-        <div class="scratch-prize-name" id="prizeName">Croissant Artisanal</div>
-        <div class="scratch-prize-divider"></div>
-        <div class="scratch-prize-congrats">Présentez ce gain en caisse lors de votre visite 🎁</div>
+      <!-- Récompense cachée sous le canvas -->
+      <div class="ticket-prize" id="ticketPrize">
+        <span class="prize-emoji" id="prizeEmoji">🥐</span>
+        <div class="prize-badge">✦ Vous avez gagné</div>
+        <div class="prize-name" id="prizeName">Croissant Artisanal</div>
+        <div class="prize-divider"></div>
+        <div class="prize-msg">Présentez ce gain en caisse lors de votre visite 🎁</div>
       </div>
-    </div>
-    <!-- Canvas par-dessus -->
-    <div class="scratch-canvas-wrap" id="canvasWrap">
-      <canvas id="scratchCanvas"></canvas>
+      <!-- Canvas par-dessus -->
+      <div class="scratch-layer" id="scratchLayer">
+        <canvas id="scratchCanvas"></canvas>
+      </div>
     </div>
   </div>
 
-  <div class="scratch-hint-text" id="scratchHint">Touchez la carte pour révéler ✦</div>
+  <div class="scratch-meta">
+    <div class="scratch-progress"><div class="scratch-fill" id="scratchFill"></div></div>
+    <div class="scratch-hint" id="scratchHint">Grattez ✦</div>
+  </div>
 
-  <button class="btn-fallback" id="fallbackBtn" onclick="revealPrize()">
-    Révéler mon cadeau →
-  </button>
-
-  <button class="btn-claim" id="claimBtn" onclick="goToForm()">
-    Recevoir mon coupon par email 🎁
-  </button>
+  <button class="btn-fallback" id="fallbackBtn" onclick="revealPrize()">Révéler mon cadeau →</button>
+  <button class="btn-claim" id="claimBtn" onclick="goToForm()">Recevoir mon coupon par email 🎁</button>
 
 </div>
 </div>
 </div>
 
-<!-- ══ S3 — FORMULAIRE ══ -->
+<!-- ══ S3 ══ -->
 <div class="screen" id="screen3">
 <div class="screen-inner">
 <div class="s3-wrap">
@@ -581,7 +518,7 @@ body::after{
 </div>
 </div>
 
-<!-- ══ S4 — SUCCÈS ══ -->
+<!-- ══ S4 ══ -->
 <div class="screen" id="screen4">
 <div class="screen-inner">
 <div class="s4-wrap">
@@ -603,250 +540,488 @@ body::after{
 <div class="already-wrap">
   <span class="already-emoji">🎫</span>
   <div class="already-title">Déjà participé !</div>
-  <div class="already-desc">Vous avez déjà récupéré votre cadeau. Un seul gain par personne. Merci pour votre confiance !</div>
+  <div class="already-desc">Vous avez déjà récupéré votre cadeau. Un seul gain par personne. Merci !</div>
 </div>
 </div>
 </div>
 
+<!-- Three.js r128 CDN -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
 <script>
-/* ══════════════════════════════════
+/* ═══════════════════════════════════════════
    CONFIG
-══════════════════════════════════ */
+═══════════════════════════════════════════ */
 const PRIZES = [
   {name:"Croissant Artisanal", emoji:"🥐", prob:.5},
   {name:"Baguette Tradition",  emoji:"🥖", prob:.98},
   {name:"Pâtisserie du Jour",  emoji:"🍰", prob:1}
 ];
 const STANDALONE_URL = "https://script.google.com/macros/s/AKfycbydbdsUOR49i5BO6-eBIgvtFZN0etKi91IOvd3XlAaK8Ylo4AFqjd80w9CSeo_m9B8x/exec";
-const BAKERY_NAME = "Falman";
+const GLB_PATH = "/assets/croissant-ai-textured.glb";
+const BAKERY_WATERMARK = "Falman";
 
 let wonPrize = null;
 let googleOpened = false;
 let revealDone = false;
 
-/* ── Navigation ── */
+/* ─── Navigation ─── */
 function showScreen(id){
   document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
   document.getElementById(id).classList.add("active");
   window.scrollTo(0,0);
 }
-
 window.addEventListener("load", ()=>{
   showScreen("screen1");
   drawPrize();
-  // init canvas après le chargement (S2 est masqué, on init quand même la taille via un observer)
-  setTimeout(initScratch, 300);
+  initThree();
+  // Pré-init le canvas scratch (caché) pour avoir les bonnes dimensions
+  setTimeout(initScratch, 400);
 });
 
-/* ── Tirage au sort interne ── */
+/* ─── Tirage au sort ─── */
 function drawPrize(){
   const r = Math.random();
-  wonPrize = r < .5 ? PRIZES[0] : r < .98 ? PRIZES[1] : PRIZES[2];
+  wonPrize = r<.5 ? PRIZES[0] : r<.98 ? PRIZES[1] : PRIZES[2];
   document.getElementById("prizeEmoji").textContent = wonPrize.emoji;
   document.getElementById("prizeName").textContent  = wonPrize.name;
 }
 
-/* ── S1 : bouton Google ── */
+/* ─── S1 avis Google ─── */
 function openGoogle(e){
-  if(googleOpened){ e.preventDefault(); return; }
+  if(googleOpened){e.preventDefault();return;}
   googleOpened = true;
   const btn = document.getElementById("googleBtn");
   btn.innerHTML = '✓&nbsp; Merci — votre avis est précieux !';
-  btn.style.opacity = ".6";
-  btn.style.pointerEvents = "none";
+  btn.style.opacity = ".6"; btn.style.pointerEvents = "none";
   document.getElementById("unlockMsg").classList.add("show");
   spawnParticles();
   setTimeout(()=>{ showScreen("screen2"); reinitScratch(); }, 1400);
 }
-
 function goToScratch(){
-  showScreen("screen2");
-  reinitScratch();
+  showScreen("screen2"); reinitScratch();
 }
 
-/* ══════════════════════════════════
-   CARTE À GRATTER
-   Logique : un seul touch/click → révélation instantanée
-   Le canvas fait l'animation de "grattage rapide"
-   puis disparaît en fade.
-══════════════════════════════════ */
-let canvas, ctx;
+/* ═══════════════════════════════════════════
+   THREE.JS — VIEWER 3D GLB
+═══════════════════════════════════════════ */
+let threeRenderer, threeScene, threeCamera, threeModel;
+let autoRotate = true;
+let isDragging = false;
+let prevPointer = {x:0, y:0};
+let autoRotateTimeout = null;
 
-function initScratch(){
-  canvas = document.getElementById("scratchCanvas");
-  if(!canvas || !canvas.getContext){
-    document.getElementById("fallbackBtn").classList.add("show");
-    document.getElementById("canvasWrap").style.display = "none";
-    return;
-  }
-  ctx = canvas.getContext("2d");
-  sizeCanvas();
-  drawScratchLayer();
+function initThree(){
+  const canvas = document.getElementById("threeCanvas");
+  const W = 280, H = 240;
 
-  // ── UN SEUL TOUCH = RÉVÉLATION IMMÉDIATE ──
-  canvas.addEventListener("touchstart", onFirstTouch, {passive:true, once:true});
-  canvas.addEventListener("mousedown",  onFirstTouch, {once:true});
-}
-
-function reinitScratch(){
-  // Réinitialise si on revient sur l'écran (ex: retour arrière)
-  if(revealDone) return;
-  revealDone = false;
-  const cw = document.getElementById("canvasWrap");
-  cw.classList.remove("hidden");
-  cw.style.opacity = "1";
-  sizeCanvas();
-  drawScratchLayer();
-  canvas.addEventListener("touchstart", onFirstTouch, {passive:true, once:true});
-  canvas.addEventListener("mousedown",  onFirstTouch, {once:true});
-}
-
-function sizeCanvas(){
-  const bg = document.getElementById("scratchCardBg");
-  const w  = bg.offsetWidth;
-  const h  = bg.offsetHeight;
-  canvas.width  = w;
-  canvas.height = h;
-  canvas.style.width  = w + "px";
-  canvas.style.height = h + "px";
-}
-
-function drawScratchLayer(){
-  const w = canvas.width;
-  const h = canvas.height;
-
-  // Fond doré dégradé
-  const grad = ctx.createLinearGradient(0, 0, w, h);
-  grad.addColorStop(0,   "#bf8e35");
-  grad.addColorStop(.3,  "#d4a24a");
-  grad.addColorStop(.65, "#e8b85c");
-  grad.addColorStop(1,   "#b88828");
-  ctx.fillStyle = grad;
-  ctx.fillRect(0, 0, w, h);
-
-  // Grain léger
-  for(let i = 0; i < (w*h)/100; i++){
-    const x = Math.random()*w, y = Math.random()*h;
-    ctx.fillStyle = `rgba(0,0,0,${Math.random()*.07+.01})`;
-    ctx.beginPath(); ctx.arc(x, y, Math.random()*1.4, 0, Math.PI*2); ctx.fill();
-  }
-  for(let i = 0; i < (w*h)/150; i++){
-    const x = Math.random()*w, y = Math.random()*h;
-    ctx.fillStyle = `rgba(255,255,255,${Math.random()*.06+.01})`;
-    ctx.beginPath(); ctx.arc(x, y, Math.random()*1.1, 0, Math.PI*2); ctx.fill();
+  if(!window.THREE){
+    showFallback(); return;
   }
 
-  // Reflet lumineux diagonal
-  const shine = ctx.createLinearGradient(0, 0, w, h*.5);
-  shine.addColorStop(0,   "rgba(255,255,255,.14)");
-  shine.addColorStop(.4,  "rgba(255,255,255,.04)");
-  shine.addColorStop(1,   "rgba(255,255,255,.0)");
-  ctx.fillStyle = shine;
-  ctx.fillRect(0, 0, w, h);
+  // Renderer
+  threeRenderer = new THREE.WebGLRenderer({canvas, antialias:true, alpha:true});
+  threeRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  threeRenderer.setSize(W, H);
+  threeRenderer.outputEncoding = THREE.sRGBEncoding;
+  threeRenderer.toneMapping = THREE.ACESFilmicToneMapping;
+  threeRenderer.toneMappingExposure = 1.4;
+  threeRenderer.shadowMap.enabled = true;
 
-  // Filigrane "Falman" centré, opacité ~14%
-  ctx.save();
-  ctx.globalAlpha = 0.14;
-  ctx.fillStyle = "#2d1800";
-  const fs = Math.min(w * .2, 52);
-  ctx.font = `italic bold ${fs}px 'Playfair Display', Georgia, serif`;
-  ctx.textAlign = "center";
-  ctx.textBaseline = "middle";
-  ctx.fillText(BAKERY_NAME, w/2, h/2);
-  ctx.restore();
+  // Scene
+  threeScene = new THREE.Scene();
 
-  // Bordure intérieure dorée subtile
-  ctx.strokeStyle = "rgba(255,255,255,.2)";
-  ctx.lineWidth = 1.5;
-  ctx.strokeRect(7, 7, w-14, h-14);
+  // Camera — pas de zoom autorisé
+  threeCamera = new THREE.PerspectiveCamera(42, W/H, 0.1, 100);
+  threeCamera.position.set(0, 0.5, 3.2);
 
-  // Texte "Grattez ici"
-  ctx.save();
-  ctx.globalAlpha = .5;
-  ctx.fillStyle = "#2d1800";
-  ctx.font = `500 ${Math.min(w*.036, 12)}px Inter, sans-serif`;
-  ctx.textAlign = "center";
-  ctx.textBaseline = "middle";
-  ctx.fillText("— Grattez ici pour révéler —", w/2, h*.83);
-  ctx.restore();
+  // Éclairage premium boulangerie
+  const ambient = new THREE.AmbientLight(0xfff5e0, 1.0);
+  threeScene.add(ambient);
+
+  const sun = new THREE.DirectionalLight(0xfff0c8, 2.2);
+  sun.position.set(2, 4, 3);
+  sun.castShadow = true;
+  threeScene.add(sun);
+
+  const fill = new THREE.DirectionalLight(0xe8d4a0, 0.6);
+  fill.position.set(-3, 1, -2);
+  threeScene.add(fill);
+
+  const rimGold = new THREE.PointLight(0xf0c060, 1.8, 8);
+  rimGold.position.set(1.5, -1, 2);
+  threeScene.add(rimGold);
+
+  const topWarm = new THREE.PointLight(0xffd080, 1.2, 6);
+  topWarm.position.set(0, 3, 0);
+  threeScene.add(topWarm);
+
+  // Charger le GLB via GLTFLoader embarqué (Three r128 n'a pas de GLTFLoader bundlé → on le charge dynamiquement)
+  loadGLTFLoader().then(GLTFLoader=>{
+    const loader = new GLTFLoader();
+    loader.load(
+      GLB_PATH,
+      (gltf)=>{
+        threeModel = gltf.scene;
+        // Centrer et scaler le modèle
+        const box = new THREE.Box3().setFromObject(threeModel);
+        const center = box.getCenter(new THREE.Vector3());
+        const size   = box.getSize(new THREE.Vector3());
+        const maxDim = Math.max(size.x, size.y, size.z);
+        const scale  = 1.8 / maxDim;
+        threeModel.scale.setScalar(scale);
+        threeModel.position.sub(center.multiplyScalar(scale));
+        threeModel.position.y -= 0.1;
+
+        // Activer les ombres sur tous les meshes
+        threeModel.traverse(n=>{
+          if(n.isMesh){
+            n.castShadow = true;
+            n.receiveShadow = true;
+            if(n.material){
+              n.material.envMapIntensity = 1.2;
+            }
+          }
+        });
+
+        threeScene.add(threeModel);
+        document.getElementById("viewerLoading").classList.add("gone");
+        startRenderLoop();
+        attachDragEvents(canvas);
+      },
+      (xhr)=>{ /* progress — pas d'UI nécessaire */ },
+      (err)=>{ console.warn("GLB load error:", err); showFallback(); }
+    );
+  }).catch(()=>showFallback());
 }
 
-function onFirstTouch(e){
-  if(revealDone) return;
-
-  // Position du touch pour l'animation
-  let cx = canvas.width/2, cy = canvas.height/2;
-  if(e.touches){
-    const r = canvas.getBoundingClientRect();
-    cx = e.touches[0].clientX - r.left;
-    cy = e.touches[0].clientY - r.top;
-  } else if(e.offsetX !== undefined){
-    cx = e.offsetX; cy = e.offsetY;
-  }
-
-  // Animation de "grattage rapide" : on efface en expanding circles depuis le point de touch
-  animateScratch(cx, cy, ()=>{
-    revealPrize();
+/* Charge GLTFLoader depuis CDN jsDelivr (script tag dynamique) */
+function loadGLTFLoader(){
+  return new Promise((resolve, reject)=>{
+    if(window.THREE && window.THREE.GLTFLoader){ resolve(window.THREE.GLTFLoader); return; }
+    const s = document.createElement("script");
+    s.src = "https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js";
+    s.onload = ()=>{
+      if(window.THREE && window.THREE.GLTFLoader) resolve(window.THREE.GLTFLoader);
+      else reject("GLTFLoader not found after load");
+    };
+    s.onerror = ()=>reject("GLTFLoader CDN error");
+    document.head.appendChild(s);
   });
 }
 
-function animateScratch(startX, startY, onDone){
-  const w = canvas.width;
-  const h = canvas.height;
-  const maxR = Math.sqrt(w*w + h*h); // rayon max pour couvrir tout le canvas
-  let r = 0;
-  const speed = maxR / 8; // vitesse: couvre tout en ~8 frames
-  let raf;
+function showFallback(){
+  document.getElementById("threeCanvas").style.display  = "none";
+  document.getElementById("viewerLoading").classList.add("gone");
+  document.getElementById("croissantFallback").classList.add("show");
+}
 
-  function step(){
-    r += speed;
-    ctx.globalCompositeOperation = "destination-out";
-    ctx.beginPath();
-    ctx.arc(startX, startY, r, 0, Math.PI*2);
-    ctx.fill();
-    ctx.globalCompositeOperation = "source-over";
-
-    if(r < maxR){
-      raf = requestAnimationFrame(step);
-    } else {
-      // Effacement total garanti
-      ctx.globalCompositeOperation = "destination-out";
-      ctx.fillRect(0, 0, w, h);
-      ctx.globalCompositeOperation = "source-over";
-      cancelAnimationFrame(raf);
-      onDone();
+function startRenderLoop(){
+  function loop(){
+    requestAnimationFrame(loop);
+    if(threeModel && autoRotate){
+      threeModel.rotation.y += 0.006;
     }
+    threeRenderer.render(threeScene, threeCamera);
   }
-  requestAnimationFrame(step);
+  loop();
+}
+
+/* Drag manuel — rotation par delta pointer, pas de zoom */
+function attachDragEvents(canvas){
+  // Pointer Events unifiés (mouse + touch)
+  canvas.addEventListener("pointerdown", e=>{
+    isDragging = true;
+    autoRotate = false;
+    clearTimeout(autoRotateTimeout);
+    prevPointer = {x:e.clientX, y:e.clientY};
+    canvas.setPointerCapture(e.pointerId);
+  },{passive:true});
+
+  canvas.addEventListener("pointermove", e=>{
+    if(!isDragging || !threeModel) return;
+    const dx = e.clientX - prevPointer.x;
+    const dy = e.clientY - prevPointer.y;
+    threeModel.rotation.y += dx * 0.012;
+    threeModel.rotation.x += dy * 0.008;
+    // Limiter le tilt vertical
+    threeModel.rotation.x = Math.max(-0.7, Math.min(0.7, threeModel.rotation.x));
+    prevPointer = {x:e.clientX, y:e.clientY};
+  },{passive:true});
+
+  canvas.addEventListener("pointerup", ()=>{
+    isDragging = false;
+    // Reprendre auto-rotate après 1.8s d'inactivité
+    autoRotateTimeout = setTimeout(()=>{ autoRotate = true; }, 1800);
+  },{passive:true});
+
+  canvas.addEventListener("pointercancel", ()=>{
+    isDragging = false;
+    autoRotateTimeout = setTimeout(()=>{ autoRotate = true; }, 1800);
+  },{passive:true});
+
+  // Désactiver le zoom souris (wheel)
+  canvas.addEventListener("wheel", e=>{ e.preventDefault(); }, {passive:false});
+}
+
+/* ═══════════════════════════════════════════
+   CARTE À GRATTER — Gomme locale exacte
+   Principe : destination-out SANS shadowBlur.
+   Trait relié entre les points pour éviter les trous.
+   Opacité du canvas JAMAIS modifiée pendant le grattage.
+   Seul revealPrize() peut fader le canvas, après le seuil.
+═══════════════════════════════════════════ */
+let sc, sctx;
+let scratchActive = false;
+let scratchDone   = false;
+let lastPoint     = null;          // point précédent pour relier le trait
+let progressRafId = null;          // rAF pour le sampling (pas de timer setInterval)
+const BRUSH_R    = 28;             // rayon gomme en CSS px (multiplié par DPR dans scratchAt)
+const REVEAL_PCT = 0.60;
+
+function initScratch(){
+  sc = document.getElementById("scratchCanvas");
+  const card = document.getElementById("ticketCard");
+  if(!sc || !sc.getContext){
+    document.getElementById("fallbackBtn").classList.add("show");
+    return;
+  }
+  sctx = sc.getContext("2d");
+
+  // Dimensions physiques (DPR) pour que 1 px CSS = 1 px réel × DPR
+  const dpr = window.devicePixelRatio || 1;
+  const cssW = card.offsetWidth;
+  const cssH = card.offsetHeight;
+  sc.width  = cssW * dpr;
+  sc.height = cssH * dpr;
+  sc.style.width  = cssW + "px";
+  sc.style.height = cssH + "px";
+
+  scratchDone  = false;
+  lastPoint    = null;
+  scratchActive = false;
+
+  drawScratchSurface(sc.width, sc.height, dpr);
+  attachScratchEvents();
+}
+
+function reinitScratch(){
+  // Annuler toute fading en cours
+  const sl = document.getElementById("scratchLayer");
+  sl.classList.remove("fading");
+  sl.style.opacity = "1";
+  sl.style.pointerEvents = "auto";
+  scratchDone = false;
+  // Attendre que le screen soit peint pour avoir les bonnes dimensions CSS
+  requestAnimationFrame(()=> requestAnimationFrame(initScratch));
+}
+
+function drawScratchSurface(W, H, dpr){
+  // ── Fond doré mat / beige métallisé ──
+  const grad = sctx.createLinearGradient(0, 0, W, H);
+  grad.addColorStop(0,   "#bf8830");
+  grad.addColorStop(.28, "#d4a245");
+  grad.addColorStop(.55, "#e6b558");
+  grad.addColorStop(.82, "#d09838");
+  grad.addColorStop(1,   "#b88228");
+  sctx.fillStyle = grad;
+  sctx.fillRect(0, 0, W, H);
+
+  // ── Micro-grain (sans globalAlpha pour ne pas interférer avec destination-out) ──
+  for(let i=0; i<(W*H)/100; i++){
+    const x=Math.random()*W, y=Math.random()*H;
+    sctx.fillStyle=`rgba(0,0,0,${(Math.random()*.07+.01).toFixed(3)})`;
+    sctx.beginPath(); sctx.arc(x,y,Math.random()*1.4,0,Math.PI*2); sctx.fill();
+  }
+  for(let i=0; i<(W*H)/160; i++){
+    const x=Math.random()*W, y=Math.random()*H;
+    sctx.fillStyle=`rgba(255,255,255,${(Math.random()*.06+.01).toFixed(3)})`;
+    sctx.beginPath(); sctx.arc(x,y,Math.random()*1.1,0,Math.PI*2); sctx.fill();
+  }
+
+  // ── Reflet diagonal ──
+  const shine = sctx.createLinearGradient(0,0,W,H*.55);
+  shine.addColorStop(0,"rgba(255,255,255,.16)");
+  shine.addColorStop(.5,"rgba(255,255,255,.04)");
+  shine.addColorStop(1,"rgba(255,255,255,0)");
+  sctx.fillStyle = shine;
+  sctx.fillRect(0, 0, W, H);
+
+  // ── Filigrane — opacité 14%, dessiné en source-over AVANT tout grattage ──
+  sctx.save();
+  sctx.globalCompositeOperation = "source-over";
+  sctx.globalAlpha = 0.14;
+  sctx.fillStyle = "#2c1800";
+  const fsize = Math.min(W * .19, 50 * dpr);
+  sctx.font = `italic bold ${fsize}px 'Playfair Display', Georgia, serif`;
+  sctx.textAlign = "center";
+  sctx.textBaseline = "middle";
+  sctx.fillText(BAKERY_WATERMARK, W/2, H/2);
+  sctx.restore();
+
+  // ── Bordure intérieure ──
+  sctx.strokeStyle = "rgba(255,255,255,.22)";
+  sctx.lineWidth = 1.5 * dpr;
+  sctx.strokeRect(8*dpr, 8*dpr, W-16*dpr, H-16*dpr);
+
+  // ── Label "Grattez ici" ──
+  sctx.save();
+  sctx.globalCompositeOperation = "source-over";
+  sctx.globalAlpha = .44;
+  sctx.fillStyle = "#2c1800";
+  sctx.font = `500 ${Math.min(W*.032, 11*dpr)}px Inter,sans-serif`;
+  sctx.textAlign = "center";
+  sctx.textBaseline = "middle";
+  sctx.fillText("— Grattez ici pour révéler —", W/2, H*.84);
+  sctx.restore();
+}
+
+/* ── Conversion position doigt → coordonnées canvas physiques ── */
+function getPoint(e){
+  const rect = sc.getBoundingClientRect();
+  const dpr  = window.devicePixelRatio || 1;
+  return {
+    x: (e.clientX - rect.left) * dpr,
+    y: (e.clientY - rect.top)  * dpr
+  };
+}
+
+/* ── Gomme locale : arc PLEIN + trait relié, AUCUN shadowBlur ── */
+function scratchAt(point){
+  const dpr = window.devicePixelRatio || 1;
+  const r   = BRUSH_R * dpr;
+
+  sctx.save();
+  sctx.globalCompositeOperation = "destination-out";
+  // Pas de shadowBlur — il diffuserait globalement
+  sctx.shadowBlur = 0;
+  sctx.shadowColor = "transparent";
+
+  // Cercle plein sous le doigt
+  sctx.beginPath();
+  sctx.arc(point.x, point.y, r, 0, Math.PI * 2);
+  sctx.fill();
+
+  // Relier au point précédent pour boucher les trous à vitesse rapide
+  if(lastPoint){
+    sctx.lineWidth   = r * 2;
+    sctx.lineCap     = "round";
+    sctx.lineJoin    = "round";
+    sctx.beginPath();
+    sctx.moveTo(lastPoint.x, lastPoint.y);
+    sctx.lineTo(point.x,     point.y);
+    sctx.stroke();
+  }
+  sctx.restore();
+  lastPoint = point;
+}
+
+/* ── Event handlers ── */
+function onScratchDown(e){
+  if(scratchDone) return;
+  e.preventDefault();
+  scratchActive = true;
+  lastPoint = null;
+  sc.setPointerCapture(e.pointerId);
+  scratchAt(getPoint(e));
+  scheduleProgressCheck();
+}
+function onScratchMove(e){
+  if(!scratchActive || scratchDone) return;
+  scratchAt(getPoint(e));
+}
+function onScratchUp(e){
+  scratchActive = false;
+  lastPoint = null;
+  // Vérification finale au relâcher
+  scheduleProgressCheck();
+}
+
+function attachScratchEvents(){
+  // Nettoyer avant de ré-attacher (guard contre double-init)
+  sc.removeEventListener("pointerdown",   onScratchDown);
+  sc.removeEventListener("pointermove",   onScratchMove);
+  sc.removeEventListener("pointerup",     onScratchUp);
+  sc.removeEventListener("pointercancel", onScratchUp);
+
+  // passive:false sur pointerdown pour pouvoir appeler e.preventDefault()
+  // (évite que le scroll intercepte le premier touch)
+  sc.addEventListener("pointerdown",   onScratchDown,  {passive:false});
+  sc.addEventListener("pointermove",   onScratchMove,  {passive:true});
+  sc.addEventListener("pointerup",     onScratchUp,    {passive:true});
+  sc.addEventListener("pointercancel", onScratchUp,    {passive:true});
+}
+
+/* ── Calcul % gratté — via rAF dédié, jamais dans pointermove ── */
+function scheduleProgressCheck(){
+  if(progressRafId) cancelAnimationFrame(progressRafId);
+  progressRafId = requestAnimationFrame(checkReveal);
+}
+
+function checkReveal(){
+  progressRafId = null;
+  if(scratchDone || !sctx) return;
+
+  // Sampling 1 pixel sur 24 pour la perf mobile
+  const data = sctx.getImageData(0, 0, sc.width, sc.height).data;
+  let transparent = 0;
+  const step = 96; // 4 canaux × 24
+  for(let i=3; i<data.length; i+=step){
+    if(data[i] < 64) transparent++;
+  }
+  const total = Math.floor(data.length / step);
+  const pct   = transparent / total;
+
+  // Barre de progression (visuelle uniquement, pas liée à l'opacité)
+  document.getElementById("scratchFill").style.width = Math.min(pct*100, 100) + "%";
+  const hint = document.getElementById("scratchHint");
+  if(pct < .2)      hint.textContent = "Grattez ✦";
+  else if(pct < .4) hint.textContent = "Continuez…";
+  else if(pct < .6) hint.textContent = "Presque…";
+
+  // Seuil atteint → révélation
+  if(pct >= REVEAL_PCT) revealPrize();
 }
 
 function revealPrize(){
-  if(revealDone) return;
-  revealDone = true;
+  if(scratchDone) return;
+  scratchDone = true;
 
-  // Fade out canvas
-  const cw = document.getElementById("canvasWrap");
-  cw.classList.add("hidden");
+  // Annuler tout check en cours
+  if(progressRafId){ cancelAnimationFrame(progressRafId); progressRafId = null; }
+
+  // Arrêter le grattage
+  scratchActive = false;
+  lastPoint = null;
+
+  // ── Seul moment où l'opacité du canvas est modifiée ──
+  // Un court fade (0.5s) après le seuil, jamais avant.
+  const sl = document.getElementById("scratchLayer");
+  sl.classList.add("fading");          // → opacity:0 via transition CSS
+  sl.style.pointerEvents = "none";     // désactiver les events immédiatement
 
   // Montrer la récompense
-  document.getElementById("prizeReveal").classList.add("visible");
-  document.getElementById("scratchHint").classList.add("hidden");
+  document.getElementById("ticketPrize").classList.add("show");
+  document.getElementById("scratchFill").style.width = "100%";
+  document.getElementById("scratchHint").textContent = "Révélé ✦";
+  document.getElementById("scratchHint").classList.add("done");
 
   // Particules
   if(wonPrize && wonPrize.prob === 1) spawnConfetti();
   else spawnParticles();
 
-  // Bouton réclamation
+  // CTA
   setTimeout(()=>{
     document.getElementById("claimBtn").classList.add("show");
-  }, 700);
+    document.getElementById("fallbackBtn").classList.remove("show");
+  }, 600);
 }
 
-/* ── S3 : formulaire ── */
+/* ─── S3 formulaire ─── */
 function goToForm(){
   showScreen("screen3");
   if(wonPrize){
-    document.getElementById("s3Emoji").textContent = wonPrize.emoji;
+    document.getElementById("s3Emoji").textContent    = wonPrize.emoji;
     document.getElementById("s3PrizeLabel").textContent = "Vous avez gagné : " + wonPrize.name;
   }
 }
@@ -857,7 +1032,7 @@ async function submitForm(){
   const prenom = document.getElementById("fieldPrenom").value.trim();
   const nom    = document.getElementById("fieldNom").value.trim();
   const email  = document.getElementById("fieldEmail").value.trim();
-  if(!prenom || !nom || !email){ alert("Veuillez remplir tous les champs."); return; }
+  if(!prenom||!nom||!email){ alert("Veuillez remplir tous les champs."); return; }
   const btn = document.querySelector(".s3-submit");
   btn.textContent = "Envoi en cours…"; btn.disabled = true;
   const code = generateCode();
@@ -874,7 +1049,7 @@ async function submitForm(){
       + "&commerce="+ encodeURIComponent("Falman Emmanuelle et Flavien");
     const res  = await fetch(url);
     const data = await res.json();
-    if(data.status === "saved" || data.status === "duplicate"){
+    if(data.status==="saved"||data.status==="duplicate"){
       showScreen("screen4");
       document.getElementById("s4code").textContent = code;
     } else throw new Error(data.message);
@@ -885,30 +1060,30 @@ async function submitForm(){
   }
 }
 
-/* ── Particules ── */
+/* ─── Particules ─── */
 function spawnParticles(){
   const c = ["#C8963E","#E2B25A","#F5D07A","#fff","#b5d98a"];
-  for(let i=0; i<28; i++){
-    const p = document.createElement("div");
-    p.className = "particle";
-    const sz=Math.random()*8+3, a=Math.random()*Math.PI*2, d=Math.random()*200+80;
+  for(let i=0;i<28;i++){
+    const p=document.createElement("div"); p.className="particle";
+    const sz=Math.random()*8+3,a=Math.random()*Math.PI*2,d=Math.random()*200+80;
     p.style.cssText=`width:${sz}px;height:${sz}px;background:${c[Math.floor(Math.random()*c.length)]};left:${innerWidth/2}px;top:${innerHeight*.4}px;--tx:${Math.cos(a)*d}px;--ty:${Math.sin(a)*d}px;animation-delay:${Math.random()*.12}s`;
-    document.body.appendChild(p); setTimeout(()=>p.remove(), 1500);
+    document.body.appendChild(p); setTimeout(()=>p.remove(),1500);
   }
 }
 function spawnConfetti(){
-  const c = ["#C8963E","#E2B25A","#F5D07A","#fff","#b5d98a","#f4c4d0"];
-  for(let i=0; i<55; i++) setTimeout(()=>{
-    const p = document.createElement("div"); p.className="particle";
-    const sz=Math.random()*9+4, a=Math.random()*Math.PI*2, d=Math.random()*300+100;
-    p.style.cssText=`width:${sz}px;height:${Math.random()>.5?sz:sz/2}px;border-radius:${Math.random()>.5?"50%":"3px"};background:${c[Math.floor(Math.random()*c.length)]};left:${innerWidth/2}px;top:${innerHeight*.3}px;--tx:${Math.cos(a)*d}px;--ty:${Math.sin(a)*d+80}px`;
-    document.body.appendChild(p); setTimeout(()=>p.remove(), 1500);
+  const c=["#C8963E","#E2B25A","#F5D07A","#fff","#b5d98a","#f4c4d0"];
+  for(let i=0;i<55;i++) setTimeout(()=>{
+    const p=document.createElement("div"); p.className="particle";
+    const sz=Math.random()*9+4,a=Math.random()*Math.PI*2,d=Math.random()*300+100;
+    p.style.cssText=`width:${sz}px;height:${Math.random()>.5?sz:sz/2}px;border-radius:${Math.random()>.5?"50%":"3px"};background:${c[Math.floor(Math.random()*c.length)]};left:${innerWidth/2}px;top:${innerHeight*.35}px;--tx:${Math.cos(a)*d}px;--ty:${Math.sin(a)*d+80}px`;
+    document.body.appendChild(p); setTimeout(()=>p.remove(),1500);
   }, i*20);
 }
 
-/* ── Resize : recalcule le canvas si orientation change ── */
+/* ─── Resize ─── */
 window.addEventListener("resize", ()=>{
-  if(!revealDone && canvas) sizeCanvas();
+  if(threeRenderer) threeRenderer.setSize(280, 240);
+  if(!scratchDone) initScratch();
 });
 </script>
 </body>
