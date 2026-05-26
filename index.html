@@ -18,209 +18,197 @@
   --gold2:#E2B25A;
   --gold3:#F5D07A;
   --gold-border:rgba(200,150,62,.35);
-  --green-dark:#2d5a12;
-  --green-mid:#3d7a18;
   --ink:#1a1a14;
-  --ink2:#2e2e26;
   --muted:#6b6045;
   --muted2:#9a8c6e;
 }
 
-/* ── FOND VERT TEXTURÉ ── */
-html,body{
-  height:100%;
+/* ── FOND VERT TEXTURÉ (body entier) ── */
+html{
+  background:#3e7a1a;
+  min-height:100%;
+}
+body{
   font-family:'Inter',sans-serif;
   -webkit-font-smoothing:antialiased;
-  overflow:hidden;
   background:#3e7a1a;
+  min-height:100vh;
+  /* Scroll libre sur tout le body */
+  overflow-y:auto;
+  overflow-x:hidden;
+  -webkit-overflow-scrolling:touch;
 }
 
-/* Texture grain + variations lumineuses simulant l'image de référence */
+/* Texture : radial lights + grain SVG fixé */
 body::before{
   content:'';
   position:fixed;inset:0;z-index:0;pointer-events:none;
   background:
-    radial-gradient(ellipse 70% 55% at 25% 30%, rgba(110,190,40,.45) 0%, transparent 60%),
-    radial-gradient(ellipse 55% 70% at 80% 70%, rgba(30,90,8,.5) 0%, transparent 55%),
-    radial-gradient(ellipse 80% 40% at 50% 85%, rgba(50,110,15,.4) 0%, transparent 60%),
-    radial-gradient(ellipse 60% 60% at 15% 75%, rgba(70,140,20,.3) 0%, transparent 50%),
-    radial-gradient(ellipse 90% 90% at 50% 50%, rgba(65,130,20,.2) 0%, transparent 100%);
+    radial-gradient(ellipse 70% 55% at 22% 28%, rgba(120,200,45,.48) 0%, transparent 58%),
+    radial-gradient(ellipse 50% 65% at 82% 72%, rgba(25,85,6,.55) 0%, transparent 52%),
+    radial-gradient(ellipse 75% 38% at 50% 88%, rgba(48,108,14,.42) 0%, transparent 58%),
+    radial-gradient(ellipse 55% 55% at 12% 78%, rgba(68,138,18,.32) 0%, transparent 48%);
 }
-
-/* Grain SVG identique à l'image — bruit fin, aspect textile/papier */
 body::after{
   content:'';
   position:fixed;inset:0;z-index:1;pointer-events:none;
-  opacity:.55;
-  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
-  background-size:180px 180px;
+  opacity:.52;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='280' height='280'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.78' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='280' height='280' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+  background-size:160px 160px;
 }
 
-/* ── SCREENS ── */
-.screen{
-  position:fixed;inset:0;z-index:10;
-  display:block;overflow-y:auto;overflow-x:hidden;
-  -webkit-overflow-scrolling:touch;
-  opacity:0;pointer-events:none;
-  transition:opacity .55s cubic-bezier(.4,0,.2,1);
-}
-.screen.active{opacity:1;pointer-events:all}
+/* ══════════════════════════════════
+   SYSTÈME DE SCREENS
+   Chaque screen = block normal dans le flux,
+   caché/visible via display none/block
+══════════════════════════════════ */
+.screen{display:none}
+.screen.active{display:block}
+
 .screen-inner{
-  min-height:100%;display:flex;flex-direction:column;
+  min-height:100vh;
+  display:flex;flex-direction:column;
   align-items:center;justify-content:center;
-  padding:28px 20px 60px;position:relative;z-index:2;
+  padding:40px 20px 60px;
+  position:relative;z-index:2;
 }
 
 /* ══════════════════════════════════
    SCREEN 1 — ACCUEIL
 ══════════════════════════════════ */
-.s1-wrap{width:100%;max-width:380px;display:flex;flex-direction:column;align-items:center;gap:0}
-
-/* Header boulangerie */
-.s1-header{text-align:center;margin-bottom:28px}
-.s1-logo-ring{
-  width:88px;height:88px;border-radius:50%;
-  background:rgba(245,237,216,.12);
-  border:1.5px solid rgba(245,237,216,.3);
-  display:flex;align-items:center;justify-content:center;
-  font-size:40px;
-  margin:0 auto 14px;
-  box-shadow:0 0 0 6px rgba(245,237,216,.06), 0 12px 40px rgba(0,0,0,.25);
-}
-.s1-boulangerie-name{
-  font-family:'Playfair Display',serif;
-  font-size:22px;font-weight:700;
-  color:var(--cream);
-  letter-spacing:.01em;line-height:1.2;
-  text-shadow:0 2px 12px rgba(0,0,0,.3);
-}
-.s1-tagline{
-  font-size:12px;font-weight:400;
-  color:rgba(245,237,216,.65);
-  letter-spacing:.06em;margin-top:4px;
+.s1-wrap{
+  width:100%;max-width:380px;
+  display:flex;flex-direction:column;align-items:center;
+  gap:0;
 }
 
-/* Croissant 3D CSS */
-.croissant-wrap{
-  position:relative;width:180px;height:160px;
-  display:flex;align-items:center;justify-content:center;
-  margin-bottom:8px;
-  filter:drop-shadow(0 16px 40px rgba(0,0,0,.35));
+/* ── CROISSANT avec nom dessus ── */
+.croissant-block{
+  position:relative;
+  display:flex;flex-direction:column;align-items:center;
+  margin-bottom:20px;
 }
 .croissant-glow{
-  position:absolute;inset:-20px;
+  position:absolute;
+  width:220px;height:200px;
+  top:50%;left:50%;transform:translate(-50%,-50%);
   border-radius:50%;
-  background:radial-gradient(circle, rgba(226,178,90,.22) 0%, transparent 70%);
+  background:radial-gradient(circle, rgba(226,178,90,.28) 0%, transparent 68%);
   pointer-events:none;
-  animation:glowPulse 3s ease-in-out infinite;
+  animation:glowPulse 3.5s ease-in-out infinite;
 }
-@keyframes glowPulse{0%,100%{opacity:.6;transform:scale(1)}50%{opacity:1;transform:scale(1.08)}}
+@keyframes glowPulse{0%,100%{opacity:.55;transform:translate(-50%,-50%) scale(1)}50%{opacity:1;transform:translate(-50%,-50%) scale(1.1)}}
 
-.croissant-3d{
-  font-size:110px;
+.croissant-emoji{
+  font-size:120px;
   display:block;
-  animation:float3d 4s ease-in-out infinite;
-  transform-origin:center;
+  line-height:1;
   user-select:none;
+  animation:float3d 4s ease-in-out infinite;
+  filter:drop-shadow(0 18px 36px rgba(0,0,0,.3));
 }
 @keyframes float3d{
-  0%,100%{transform:translateY(0) rotate(-3deg) scale(1)}
-  25%{transform:translateY(-8px) rotate(0deg) scale(1.04)}
-  50%{transform:translateY(-12px) rotate(3deg) scale(1.02)}
-  75%{transform:translateY(-5px) rotate(1deg) scale(1.05)}
+  0%,100%{transform:translateY(0) rotate(-3deg)}
+  25%{transform:translateY(-9px) rotate(0deg)}
+  50%{transform:translateY(-14px) rotate(3deg)}
+  75%{transform:translateY(-6px) rotate(1deg)}
+}
+
+/* Nom de la boulangerie collé sous le croissant, style badge */
+.croissant-name{
+  margin-top:-4px;
+  font-family:'Playfair Display',serif;
+  font-size:18px;font-weight:700;font-style:italic;
+  color:var(--cream);
+  text-shadow:0 2px 16px rgba(0,0,0,.45), 0 0 40px rgba(0,0,0,.25);
+  letter-spacing:.02em;
+  text-align:center;
+  line-height:1.2;
 }
 
 /* Étoiles Google */
 .s1-stars{
-  display:flex;gap:5px;justify-content:center;margin-bottom:22px;
+  display:flex;gap:4px;justify-content:center;
+  margin-bottom:22px;
 }
 .s1-star{
-  font-size:22px;
-  opacity:0;transform:translateY(6px) scale(.7);
-  animation:starIn .45s ease forwards;
+  font-size:20px;
+  opacity:0;transform:translateY(5px) scale(.75);
+  animation:starIn .4s ease forwards;
 }
-.s1-star:nth-child(1){animation-delay:.15s}
-.s1-star:nth-child(2){animation-delay:.25s}
-.s1-star:nth-child(3){animation-delay:.35s}
-.s1-star:nth-child(4){animation-delay:.45s}
-.s1-star:nth-child(5){animation-delay:.55s}
+.s1-star:nth-child(1){animation-delay:.12s}
+.s1-star:nth-child(2){animation-delay:.22s}
+.s1-star:nth-child(3){animation-delay:.32s}
+.s1-star:nth-child(4){animation-delay:.42s}
+.s1-star:nth-child(5){animation-delay:.52s}
 @keyframes starIn{to{opacity:1;transform:none}}
 
 /* Card principale */
 .s1-card{
   width:100%;
-  background:rgba(245,237,216,.97);
-  border-radius:28px;
+  background:rgba(251,246,238,.97);
+  border-radius:26px;
   overflow:hidden;
-  box-shadow:0 20px 60px rgba(0,0,0,.35), 0 0 0 1px rgba(200,150,62,.2) inset;
+  box-shadow:0 20px 56px rgba(0,0,0,.38), 0 0 0 1px rgba(200,150,62,.18) inset;
 }
-
 .s1-card-top{
-  padding:28px 24px 22px;
-  background:linear-gradient(180deg, rgba(200,150,62,.08) 0%, transparent 100%);
+  padding:26px 22px 20px;
+  background:linear-gradient(180deg, rgba(200,150,62,.07) 0%, transparent 100%);
   border-bottom:1px solid var(--gold-border);
   text-align:center;
 }
 .s1-heading{
   font-family:'Playfair Display',serif;
-  font-size:26px;font-weight:900;
+  font-size:24px;font-weight:900;
   color:var(--ink);line-height:1.2;letter-spacing:-.01em;margin-bottom:8px;
 }
 .s1-heading .accent{color:var(--gold)}
-.s1-subtext{
-  font-size:13px;color:var(--muted);line-height:1.65;
-}
+.s1-subtext{font-size:13px;color:var(--muted);line-height:1.65}
 
-.s1-card-bottom{padding:22px 24px 26px;display:flex;flex-direction:column;gap:12px}
+.s1-card-bottom{padding:20px 22px 24px;display:flex;flex-direction:column;gap:11px}
 
-/* Bouton principal Google */
+/* Bouton Google */
 .btn-google{
-  display:flex;align-items:center;justify-content:center;gap:10px;
-  width:100%;padding:17px 20px;
-  background:linear-gradient(135deg, var(--gold) 0%, var(--gold2) 60%, var(--gold3) 100%);
-  color:var(--ink);border:none;border-radius:16px;
+  display:flex;align-items:center;justify-content:center;gap:9px;
+  width:100%;padding:16px 18px;
+  background:linear-gradient(135deg,var(--gold) 0%,var(--gold2) 60%,var(--gold3) 100%);
+  color:var(--ink);border:none;border-radius:15px;
   font-family:'Inter',sans-serif;font-size:15px;font-weight:700;
   cursor:pointer;text-decoration:none;text-align:center;
-  box-shadow:0 6px 24px rgba(200,150,62,.45), 0 2px 8px rgba(0,0,0,.15);
-  transition:all .2s ease;
+  box-shadow:0 6px 22px rgba(200,150,62,.48), 0 2px 6px rgba(0,0,0,.14);
+  transition:transform .15s ease,box-shadow .15s ease;
   position:relative;overflow:hidden;
   letter-spacing:.01em;
 }
-.btn-google::after{
-  content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;
-  background:linear-gradient(90deg,transparent,rgba(255,255,255,.25),transparent);
-  transition:left .55s ease;
-}
-.btn-google:hover::after{left:100%}
 .btn-google:active{transform:scale(.97)}
-.btn-google-icon{font-size:18px;flex-shrink:0}
 
 /* Note optionnelle */
 .s1-optional{
   display:flex;align-items:flex-start;gap:8px;
-  background:rgba(200,150,62,.06);
-  border:1px solid rgba(200,150,62,.18);
-  border-radius:12px;padding:11px 14px;
+  background:rgba(200,150,62,.05);
+  border:1px solid rgba(200,150,62,.15);
+  border-radius:11px;padding:10px 13px;
 }
-.s1-optional-icon{font-size:14px;flex-shrink:0;margin-top:1px}
+.s1-optional-icon{font-size:13px;flex-shrink:0;margin-top:1px}
 .s1-optional-text{font-size:12px;color:var(--muted);line-height:1.55}
 
-/* Skip link */
+/* Skip */
 .s1-skip{
-  text-align:center;font-size:12px;color:rgba(245,237,216,.55);
-  margin-top:16px;cursor:pointer;text-decoration:underline;
-  text-underline-offset:3px;
+  text-align:center;font-size:12px;
+  color:rgba(245,237,216,.48);
+  margin-top:14px;cursor:pointer;
+  text-decoration:underline;text-underline-offset:3px;
   transition:color .2s;
 }
-.s1-skip:hover{color:rgba(245,237,216,.85)}
+.s1-skip:hover{color:rgba(245,237,216,.82)}
 
 /* Message déverrouillé */
 .s1-unlock{
   display:none;align-items:center;justify-content:center;gap:8px;
-  padding:11px 18px;
-  background:rgba(61,122,24,.15);
-  border:1px solid rgba(100,180,40,.35);
-  border-radius:12px;
+  padding:10px 16px;
+  background:rgba(61,122,24,.14);
+  border:1px solid rgba(100,180,40,.32);
+  border-radius:11px;
   font-size:13px;color:#7ecb40;font-weight:600;
 }
 .s1-unlock.show{display:flex;animation:fadeUp .4s ease}
@@ -231,87 +219,98 @@ body::after{
 /* ══════════════════════════════════
    SCREEN 2 — CARTE À GRATTER
 ══════════════════════════════════ */
-.s2-wrap{width:100%;max-width:400px;display:flex;flex-direction:column;align-items:center}
+.s2-wrap{
+  width:100%;max-width:400px;
+  display:flex;flex-direction:column;align-items:center;
+}
 
-.s2-header{text-align:center;margin-bottom:24px}
+.s2-header{text-align:center;margin-bottom:22px}
 .s2-eyebrow{
   display:inline-flex;align-items:center;gap:6px;
   font-size:10px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;
-  color:rgba(245,237,216,.7);margin-bottom:10px;
+  color:rgba(245,237,216,.65);margin-bottom:9px;
 }
-.s2-eyebrow::before,.s2-eyebrow::after{content:'✦';font-size:7px;opacity:.7}
+.s2-eyebrow::before,.s2-eyebrow::after{content:'✦';font-size:7px;opacity:.65}
 .s2-title{
   font-family:'Playfair Display',serif;
-  font-size:28px;font-weight:700;font-style:italic;
-  color:var(--cream);line-height:1.2;letter-spacing:-.01em;margin-bottom:6px;
+  font-size:27px;font-weight:700;font-style:italic;
+  color:var(--cream);line-height:1.2;letter-spacing:-.01em;margin-bottom:5px;
 }
-.s2-sub{font-size:13px;color:rgba(245,237,216,.6);line-height:1.55}
+.s2-sub{font-size:13px;color:rgba(245,237,216,.55);line-height:1.5}
 
 /* Conteneur carte à gratter */
 .scratch-container{
   position:relative;
-  width:calc(100% - 0px);
-  max-width:340px;
-  margin:0 auto 20px;
+  width:100%;max-width:340px;
+  margin:0 auto 18px;
 }
 
-/* Carte cadeau (fond crème, toujours visible en dessous) */
+/* Carte fond crème */
 .scratch-card-bg{
   width:100%;
   background:var(--cream3);
   border-radius:20px;
   border:1.5px solid var(--gold-border);
-  box-shadow:0 16px 48px rgba(0,0,0,.3), 0 0 0 4px rgba(200,150,62,.06) inset;
+  box-shadow:0 14px 44px rgba(0,0,0,.32), 0 0 0 4px rgba(200,150,62,.05) inset;
   overflow:hidden;
   position:relative;
 }
 
-/* Zone de récompense cachée */
+/* Zone récompense cachée */
 .scratch-prize-reveal{
-  padding:36px 20px 32px;
-  display:flex;flex-direction:column;align-items:center;gap:10px;
+  padding:34px 20px 30px;
+  display:flex;flex-direction:column;align-items:center;gap:9px;
   text-align:center;
-  opacity:0;transition:opacity .5s ease;
+  /* invisible par défaut mais dans le flux pour donner la hauteur à la carte */
+  visibility:hidden;
+  opacity:0;
+  transition:opacity .45s ease;
 }
-.scratch-prize-reveal.visible{opacity:1}
-.scratch-prize-emoji{font-size:72px;display:block;line-height:1;margin-bottom:6px;animation:prizePop .6s cubic-bezier(.36,.07,.19,.97) forwards}
-@keyframes prizePop{0%{transform:scale(0) rotate(-15deg);opacity:0}60%{transform:scale(1.18) rotate(4deg)}80%{transform:scale(.95)}100%{transform:scale(1) rotate(0);opacity:1}}
+.scratch-prize-reveal.visible{visibility:visible;opacity:1}
+
+.scratch-prize-emoji{
+  font-size:70px;display:block;line-height:1;margin-bottom:4px;
+}
+.scratch-prize-reveal.visible .scratch-prize-emoji{
+  animation:prizePop .55s cubic-bezier(.36,.07,.19,.97) forwards;
+}
+@keyframes prizePop{
+  0%{transform:scale(0) rotate(-14deg);opacity:0}
+  60%{transform:scale(1.16) rotate(4deg)}
+  100%{transform:scale(1) rotate(0);opacity:1}
+}
 .scratch-prize-tag{
-  display:inline-flex;align-items:center;gap:6px;
-  background:rgba(200,150,62,.12);
-  border:1px solid rgba(200,150,62,.3);
-  border-radius:999px;
-  padding:5px 16px;
-  font-size:11px;font-weight:700;color:var(--gold);
+  display:inline-flex;align-items:center;gap:5px;
+  background:rgba(200,150,62,.1);
+  border:1px solid rgba(200,150,62,.28);
+  border-radius:999px;padding:4px 14px;
+  font-size:10px;font-weight:700;color:var(--gold);
   letter-spacing:.08em;text-transform:uppercase;
 }
 .scratch-prize-name{
   font-family:'Playfair Display',serif;
-  font-size:22px;font-weight:700;color:var(--ink);letter-spacing:-.01em;
+  font-size:21px;font-weight:700;color:var(--ink);
 }
-.scratch-prize-congrats{font-size:13px;color:var(--muted);line-height:1.5}
-.scratch-prize-divider{
-  width:40px;height:1px;background:var(--gold-border);margin:4px 0;
-}
+.scratch-prize-divider{width:36px;height:1px;background:var(--gold-border);margin:2px 0}
+.scratch-prize-congrats{font-size:12px;color:var(--muted);line-height:1.5}
 
-/* Ornements carte */
+/* Ornements */
 .scratch-card-ornament-top{
   display:flex;align-items:center;justify-content:space-between;
-  padding:14px 18px 0;
+  padding:13px 16px 0;
 }
-.ornament-badge{
-  font-size:9px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;
-  color:var(--gold);opacity:.8;
-}
-.ornament-stars{font-size:11px;letter-spacing:2px;color:var(--gold);opacity:.6}
+.ornament-badge{font-size:9px;font-weight:700;letter-spacing:.13em;text-transform:uppercase;color:var(--gold);opacity:.75}
+.ornament-stars{font-size:10px;letter-spacing:2px;color:var(--gold);opacity:.55}
 
-/* Canvas scratch par-dessus */
+/* Canvas par-dessus */
 .scratch-canvas-wrap{
   position:absolute;top:0;left:0;right:0;bottom:0;
   border-radius:20px;overflow:hidden;
-  pointer-events:all;
   z-index:10;
+  /* transition fade-out lors de la révélation */
+  transition:opacity .65s ease;
 }
+.scratch-canvas-wrap.hidden{opacity:0;pointer-events:none}
 #scratchCanvas{
   display:block;width:100%;height:100%;
   cursor:crosshair;
@@ -319,55 +318,44 @@ body::after{
   touch-action:none;
 }
 
-/* Progress scratch */
-.scratch-progress-wrap{
-  display:flex;align-items:center;gap:10px;
-  margin-bottom:6px;width:100%;max-width:340px;
+/* Hint discret */
+.scratch-hint-text{
+  font-size:12px;color:rgba(245,237,216,.5);
+  margin-bottom:6px;
+  letter-spacing:.04em;
+  animation:blink 2s ease-in-out infinite;
 }
-.scratch-progress-bar{
-  flex:1;height:4px;
-  background:rgba(245,237,216,.2);
-  border-radius:999px;overflow:hidden;
-}
-.scratch-progress-fill{
-  height:100%;width:0%;
-  background:linear-gradient(90deg, var(--gold), var(--gold3));
-  border-radius:999px;
-  transition:width .2s ease;
-}
-.scratch-hint{
-  font-size:11px;color:rgba(245,237,216,.55);
-  white-space:nowrap;flex-shrink:0;
-}
+@keyframes blink{0%,100%{opacity:.4}50%{opacity:.85}}
+.scratch-hint-text.hidden{display:none}
 
-/* Bouton CTA après scratch */
-.btn-claim{
-  display:none;
-  width:100%;max-width:340px;
-  padding:17px;
-  background:linear-gradient(135deg, var(--gold), var(--gold2));
-  color:var(--ink);border:none;border-radius:16px;
-  font-family:'Inter',sans-serif;font-size:15px;font-weight:700;
-  cursor:pointer;letter-spacing:.01em;
-  box-shadow:0 6px 24px rgba(200,150,62,.4);
-  animation:slideUp .5s ease forwards;
-}
-.btn-claim.show{display:block}
-@keyframes slideUp{from{transform:translateY(14px);opacity:0}to{transform:none;opacity:1}}
-.btn-claim:active{transform:scale(.97)}
-
-/* Fallback bouton */
+/* Fallback */
 .btn-fallback{
   display:none;
-  margin-top:10px;
-  background:none;border:1.5px solid rgba(245,237,216,.3);
-  border-radius:12px;padding:12px 20px;
-  font-size:13px;color:rgba(245,237,216,.7);
+  margin-bottom:8px;
+  background:none;
+  border:1.5px solid rgba(245,237,216,.28);
+  border-radius:11px;padding:11px 20px;
+  font-size:13px;color:rgba(245,237,216,.65);
   cursor:pointer;font-family:'Inter',sans-serif;
   transition:all .2s;
 }
-.btn-fallback:hover{border-color:rgba(245,237,216,.6);color:var(--cream)}
 .btn-fallback.show{display:block}
+
+/* CTA après révélation */
+.btn-claim{
+  display:none;
+  width:100%;max-width:340px;
+  padding:16px;
+  background:linear-gradient(135deg,var(--gold),var(--gold2));
+  color:var(--ink);border:none;border-radius:15px;
+  font-family:'Inter',sans-serif;font-size:15px;font-weight:700;
+  cursor:pointer;letter-spacing:.01em;
+  box-shadow:0 6px 22px rgba(200,150,62,.42);
+  animation:slideUp .5s ease forwards;
+}
+.btn-claim.show{display:block}
+@keyframes slideUp{from{transform:translateY(12px);opacity:0}to{transform:none;opacity:1}}
+.btn-claim:active{transform:scale(.97)}
 
 /* ══════════════════════════════════
    SCREEN 3 — FORMULAIRE
@@ -375,104 +363,97 @@ body::after{
 .s3-wrap{width:100%;max-width:380px}
 .s3-card{
   background:var(--cream3);
-  border-radius:28px;overflow:hidden;
-  box-shadow:0 20px 60px rgba(0,0,0,.35);
-  border:1px solid rgba(200,150,62,.15);
+  border-radius:26px;overflow:hidden;
+  box-shadow:0 20px 56px rgba(0,0,0,.35);
+  border:1px solid rgba(200,150,62,.14);
 }
 .s3-hero{
-  padding:32px 24px 24px;
-  background:linear-gradient(180deg, rgba(200,150,62,.09) 0%, transparent 100%);
+  padding:30px 22px 22px;
+  background:linear-gradient(180deg,rgba(200,150,62,.08) 0%,transparent 100%);
   border-bottom:1px solid var(--gold-border);
-  text-align:center;display:flex;flex-direction:column;align-items:center;gap:10px;
+  text-align:center;display:flex;flex-direction:column;align-items:center;gap:9px;
 }
-.s3-emoji-big{font-size:64px;display:block;animation:bounceIn .6s cubic-bezier(.36,.07,.19,.97) forwards}
-@keyframes bounceIn{0%{transform:scale(0) rotate(-10deg);opacity:0}60%{transform:scale(1.15) rotate(4deg)}100%{transform:scale(1) rotate(0);opacity:1}}
+.s3-emoji-big{font-size:60px;display:block;animation:bounceIn .6s cubic-bezier(.36,.07,.19,.97) forwards}
+@keyframes bounceIn{0%{transform:scale(0) rotate(-10deg);opacity:0}60%{transform:scale(1.14) rotate(4deg)}100%{transform:scale(1) rotate(0);opacity:1}}
 .s3-congrats{
   font-family:'Playfair Display',serif;
-  font-size:26px;font-weight:700;color:var(--ink);letter-spacing:-.01em;
+  font-size:25px;font-weight:700;color:var(--ink);
 }
 .s3-prize-pill{
-  display:inline-block;padding:6px 18px;
+  display:inline-block;padding:5px 16px;
   background:rgba(200,150,62,.1);
   border:1px solid var(--gold-border);
   border-radius:999px;
-  font-size:13px;font-weight:700;color:var(--gold);
+  font-size:12px;font-weight:700;color:var(--gold);
 }
-
-.s3-body{padding:24px}
-.s3-section-title{
-  font-size:15px;font-weight:700;color:var(--ink);letter-spacing:-.01em;margin-bottom:4px;
-}
-.s3-section-sub{font-size:12px;color:var(--muted);margin-bottom:20px}
-
-.field{margin-bottom:13px}
-.field-label{font-size:11px;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:.08em;margin-bottom:7px;display:block}
+.s3-body{padding:22px}
+.s3-section-title{font-size:15px;font-weight:700;color:var(--ink);margin-bottom:3px}
+.s3-section-sub{font-size:12px;color:var(--muted2);margin-bottom:18px}
+.field{margin-bottom:12px}
+.field-label{font-size:11px;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;display:block}
 .field-input{
-  width:100%;padding:14px 16px;
+  width:100%;padding:13px 15px;
   background:#fff;
-  border:1.5px solid rgba(200,150,62,.2);
-  border-radius:14px;
+  border:1.5px solid rgba(200,150,62,.18);
+  border-radius:13px;
   color:var(--ink);font-family:'Inter',sans-serif;font-size:15px;font-weight:500;
   outline:none;transition:border-color .2s,box-shadow .2s;
 }
 .field-input::placeholder{color:var(--muted2)}
-.field-input:focus{border-color:rgba(200,150,62,.5);box-shadow:0 0 0 3px rgba(200,150,62,.08)}
-
+.field-input:focus{border-color:rgba(200,150,62,.48);box-shadow:0 0 0 3px rgba(200,150,62,.07)}
 .s3-submit{
-  width:100%;padding:17px;margin-top:16px;
-  background:linear-gradient(135deg, var(--gold), var(--gold2));
-  color:var(--ink);border:none;border-radius:16px;
+  width:100%;padding:16px;margin-top:14px;
+  background:linear-gradient(135deg,var(--gold),var(--gold2));
+  color:var(--ink);border:none;border-radius:15px;
   font-family:'Inter',sans-serif;font-size:15px;font-weight:700;
-  cursor:pointer;letter-spacing:.01em;
-  box-shadow:0 6px 24px rgba(200,150,62,.35);transition:all .2s;
+  cursor:pointer;box-shadow:0 6px 22px rgba(200,150,62,.32);transition:all .2s;
 }
 .s3-submit:active{transform:scale(.98)}
 .s3-submit:disabled{opacity:.5;cursor:default}
-.s3-legal{text-align:center;font-size:11px;color:var(--muted2);margin-top:13px;line-height:1.6}
+.s3-legal{text-align:center;font-size:11px;color:var(--muted2);margin-top:12px;line-height:1.6}
 
 /* ══════════════════════════════════
    SCREEN 4 — SUCCÈS
 ══════════════════════════════════ */
 .s4-wrap{text-align:center;max-width:320px}
 .s4-check{
-  width:84px;height:84px;margin:0 auto 24px;
+  width:80px;height:80px;margin:0 auto 22px;
   background:rgba(61,122,24,.12);
-  border:1.5px solid rgba(100,180,40,.3);
+  border:1.5px solid rgba(100,180,40,.28);
   border-radius:50%;display:flex;align-items:center;justify-content:center;
-  font-size:32px;
+  font-size:30px;
   animation:checkPop .6s cubic-bezier(.36,.07,.19,.97) forwards;
 }
 @keyframes checkPop{0%{transform:scale(0);opacity:0}70%{transform:scale(1.1)}100%{transform:scale(1);opacity:1}}
 .s4-title{
   font-family:'Playfair Display',serif;
-  font-size:30px;font-weight:700;
-  color:var(--cream);letter-spacing:-.02em;margin-bottom:10px;
+  font-size:29px;font-weight:700;
+  color:var(--cream);margin-bottom:9px;
 }
-.s4-desc{font-size:14px;color:rgba(245,237,216,.65);line-height:1.75;margin-bottom:22px}
+.s4-desc{font-size:13px;color:rgba(245,237,216,.62);line-height:1.75;margin-bottom:20px}
 .s4-code-block{
-  background:rgba(245,237,216,.1);
-  border:1px solid rgba(200,150,62,.25);
-  border-radius:22px;padding:22px;
-  backdrop-filter:blur(12px);
+  background:rgba(245,237,216,.09);
+  border:1px solid rgba(200,150,62,.22);
+  border-radius:20px;padding:20px;
+  backdrop-filter:blur(10px);
 }
-.s4-code-label{font-size:10px;font-weight:700;color:rgba(245,237,216,.4);letter-spacing:.15em;text-transform:uppercase;margin-bottom:10px}
-.s4-code-value{font-size:38px;font-weight:800;color:var(--gold3);letter-spacing:.18em;line-height:1;font-variant-numeric:tabular-nums}
-.s4-code-sub{font-size:11px;color:rgba(245,237,216,.45);margin-top:10px;letter-spacing:.02em}
+.s4-code-label{font-size:10px;font-weight:700;color:rgba(245,237,216,.38);letter-spacing:.15em;text-transform:uppercase;margin-bottom:9px}
+.s4-code-value{font-size:36px;font-weight:800;color:var(--gold3);letter-spacing:.18em;line-height:1;font-variant-numeric:tabular-nums}
+.s4-code-sub{font-size:11px;color:rgba(245,237,216,.42);margin-top:9px}
 
 /* ══════════════════════════════════
    SCREEN ALREADY
 ══════════════════════════════════ */
 .already-wrap{text-align:center;max-width:280px}
-.already-emoji{font-size:52px;display:block;margin-bottom:18px}
+.already-emoji{font-size:50px;display:block;margin-bottom:16px}
 .already-title{
   font-family:'Playfair Display',serif;
-  font-size:24px;font-weight:700;
-  color:var(--cream);margin-bottom:12px;
+  font-size:23px;font-weight:700;color:var(--cream);margin-bottom:11px;
 }
-.already-desc{font-size:14px;color:rgba(245,237,216,.6);line-height:1.7}
+.already-desc{font-size:14px;color:rgba(245,237,216,.58);line-height:1.7}
 
 /* ── PARTICLES ── */
-.particle{position:fixed;pointer-events:none;border-radius:50%;animation:pfly 1.4s ease-out forwards;z-index:500}
+.particle{position:fixed;pointer-events:none;border-radius:50%;animation:pfly 1.4s ease-out forwards;z-index:999}
 @keyframes pfly{0%{transform:translate(0,0) scale(1);opacity:1}100%{transform:translate(var(--tx),var(--ty)) scale(0);opacity:0}}
 </style>
 </head>
@@ -483,17 +464,11 @@ body::after{
 <div class="screen-inner">
 <div class="s1-wrap">
 
-  <!-- Logo + nom -->
-  <div class="s1-header">
-    <div class="s1-logo-ring">🥖</div>
-    <div class="s1-boulangerie-name">Falman Emmanuelle<br>et Flavien</div>
-    <div class="s1-tagline">Boulangerie Artisanale · Cruseilles</div>
-  </div>
-
-  <!-- Croissant 3D flottant -->
-  <div class="croissant-wrap">
+  <!-- Croissant flottant avec nom de la boulangerie -->
+  <div class="croissant-block">
     <div class="croissant-glow"></div>
-    <span class="croissant-3d">🥐</span>
+    <span class="croissant-emoji">🥐</span>
+    <div class="croissant-name">Falman<br>Emmanuelle &amp; Flavien</div>
   </div>
 
   <!-- Étoiles -->
@@ -517,12 +492,11 @@ body::after{
          class="btn-google"
          id="googleBtn"
          onclick="openGoogle(event)">
-        <span class="btn-google-icon">🌟</span>
-        Laisser votre avis Google
+        🌟&nbsp; Laisser votre avis Google
       </a>
       <div class="s1-unlock" id="unlockMsg">
         <div class="s1-unlock-dot"></div>
-        Parfait — grattez votre carte cadeau&nbsp;!
+        Parfait — grattez votre carte cadeau !
       </div>
       <div class="s1-optional">
         <span class="s1-optional-icon">💛</span>
@@ -531,7 +505,7 @@ body::after{
     </div>
   </div>
 
-  <div class="s1-skip" id="skipBtn" onclick="goToScratch()">Continuer sans laisser d'avis</div>
+  <div class="s1-skip" onclick="goToScratch()">Continuer sans laisser d'avis</div>
 
 </div>
 </div>
@@ -545,13 +519,11 @@ body::after{
   <div class="s2-header">
     <div class="s2-eyebrow">Votre cadeau</div>
     <div class="s2-title">Grattez pour révéler<br>votre surprise.</div>
-    <div class="s2-sub">Utilisez votre doigt sur la zone dorée</div>
+    <div class="s2-sub">Passez le doigt une fois sur la zone dorée</div>
   </div>
 
   <!-- Carte à gratter -->
   <div class="scratch-container" id="scratchContainer">
-
-    <!-- Fond crème visible (cadeau en dessous) -->
     <div class="scratch-card-bg" id="scratchCardBg">
       <div class="scratch-card-ornament-top">
         <span class="ornament-badge">✦ Carte Cadeau</span>
@@ -562,31 +534,21 @@ body::after{
         <div class="scratch-prize-tag">✦ Vous avez gagné</div>
         <div class="scratch-prize-name" id="prizeName">Croissant Artisanal</div>
         <div class="scratch-prize-divider"></div>
-        <div class="scratch-prize-congrats">Présentez ce gain en caisse lors de votre visite&nbsp;🎁</div>
+        <div class="scratch-prize-congrats">Présentez ce gain en caisse lors de votre visite 🎁</div>
       </div>
     </div>
-
     <!-- Canvas par-dessus -->
     <div class="scratch-canvas-wrap" id="canvasWrap">
       <canvas id="scratchCanvas"></canvas>
     </div>
-
   </div>
 
-  <!-- Barre de progression -->
-  <div class="scratch-progress-wrap">
-    <div class="scratch-progress-bar">
-      <div class="scratch-progress-fill" id="progressFill"></div>
-    </div>
-    <div class="scratch-hint" id="scratchHint">Grattez ✦</div>
-  </div>
+  <div class="scratch-hint-text" id="scratchHint">Touchez la carte pour révéler ✦</div>
 
-  <!-- Fallback si canvas indisponible -->
-  <button class="btn-fallback" id="fallbackBtn" onclick="revealPrize(true)">
+  <button class="btn-fallback" id="fallbackBtn" onclick="revealPrize()">
     Révéler mon cadeau →
   </button>
 
-  <!-- CTA après révélation -->
   <button class="btn-claim" id="claimBtn" onclick="goToForm()">
     Recevoir mon coupon par email 🎁
   </button>
@@ -641,27 +603,26 @@ body::after{
 <div class="already-wrap">
   <span class="already-emoji">🎫</span>
   <div class="already-title">Déjà participé !</div>
-  <div class="already-desc">Vous avez déjà récupéré votre cadeau. Un seul gain par personne. Merci pour votre confiance&nbsp;!</div>
+  <div class="already-desc">Vous avez déjà récupéré votre cadeau. Un seul gain par personne. Merci pour votre confiance !</div>
 </div>
 </div>
 </div>
 
 <script>
-/* ══════════════════════════════════════
-   CONFIG — probabilités internes uniquement,
-   jamais affichées au client
-══════════════════════════════════════ */
+/* ══════════════════════════════════
+   CONFIG
+══════════════════════════════════ */
 const PRIZES = [
   {name:"Croissant Artisanal", emoji:"🥐", prob:.5},
   {name:"Baguette Tradition",  emoji:"🥖", prob:.98},
   {name:"Pâtisserie du Jour",  emoji:"🍰", prob:1}
 ];
 const STANDALONE_URL = "https://script.google.com/macros/s/AKfycbydbdsUOR49i5BO6-eBIgvtFZN0etKi91IOvd3XlAaK8Ylo4AFqjd80w9CSeo_m9B8x/exec";
-const BAKERY_NAME = "Falman"; // filigrane carte à gratter
+const BAKERY_NAME = "Falman";
 
 let wonPrize = null;
 let googleOpened = false;
-let scratchRevealed = false;
+let revealDone = false;
 
 /* ── Navigation ── */
 function showScreen(id){
@@ -670,282 +631,284 @@ function showScreen(id){
   window.scrollTo(0,0);
 }
 
-window.addEventListener("load",()=>{
+window.addEventListener("load", ()=>{
   showScreen("screen1");
-  drawPrize(); // tirage au sort dès le chargement
+  drawPrize();
+  // init canvas après le chargement (S2 est masqué, on init quand même la taille via un observer)
+  setTimeout(initScratch, 300);
 });
 
-/* ── Screen 1 : avis Google ── */
+/* ── Tirage au sort interne ── */
+function drawPrize(){
+  const r = Math.random();
+  wonPrize = r < .5 ? PRIZES[0] : r < .98 ? PRIZES[1] : PRIZES[2];
+  document.getElementById("prizeEmoji").textContent = wonPrize.emoji;
+  document.getElementById("prizeName").textContent  = wonPrize.name;
+}
+
+/* ── S1 : bouton Google ── */
 function openGoogle(e){
-  if(googleOpened){e.preventDefault();return;}
-  googleOpened=true;
-  const btn=document.getElementById("googleBtn");
-  btn.innerHTML='<span class="btn-google-icon">✓</span>Merci — votre avis est précieux&nbsp;!';
-  btn.style.opacity=".6";
-  btn.style.pointerEvents="none";
+  if(googleOpened){ e.preventDefault(); return; }
+  googleOpened = true;
+  const btn = document.getElementById("googleBtn");
+  btn.innerHTML = '✓&nbsp; Merci — votre avis est précieux !';
+  btn.style.opacity = ".6";
+  btn.style.pointerEvents = "none";
   document.getElementById("unlockMsg").classList.add("show");
   spawnParticles();
-  setTimeout(()=>showScreen("screen2"),1400);
+  setTimeout(()=>{ showScreen("screen2"); reinitScratch(); }, 1400);
 }
 
 function goToScratch(){
   showScreen("screen2");
+  reinitScratch();
 }
 
-/* ── Tirage au sort (interne) ── */
-function drawPrize(){
-  const r=Math.random();
-  wonPrize=r<.5?PRIZES[0]:r<.98?PRIZES[1]:PRIZES[2];
-  document.getElementById("prizeEmoji").textContent=wonPrize.emoji;
-  document.getElementById("prizeName").textContent=wonPrize.name;
-}
-
-/* ══════════════════════════════════════
-   CARTE À GRATTER — Canvas HTML5
-══════════════════════════════════════ */
-let canvas, ctx, isScratching=false, scratchedPixels=0, totalPixels=0, revealDone=false;
-const REVEAL_THRESHOLD = 0.60; // 60% gratté → révélation auto
-const BRUSH_SIZE = 38;
-
-window.addEventListener("load", ()=>{
-  // Légère attente pour que le DOM soit prêt
-  setTimeout(initScratch, 200);
-});
+/* ══════════════════════════════════
+   CARTE À GRATTER
+   Logique : un seul touch/click → révélation instantanée
+   Le canvas fait l'animation de "grattage rapide"
+   puis disparaît en fade.
+══════════════════════════════════ */
+let canvas, ctx;
 
 function initScratch(){
-  canvas=document.getElementById("scratchCanvas");
-  if(!canvas||!canvas.getContext){
+  canvas = document.getElementById("scratchCanvas");
+  if(!canvas || !canvas.getContext){
     document.getElementById("fallbackBtn").classList.add("show");
-    document.getElementById("canvasWrap").style.display="none";
+    document.getElementById("canvasWrap").style.display = "none";
     return;
   }
-  ctx=canvas.getContext("2d");
+  ctx = canvas.getContext("2d");
+  sizeCanvas();
+  drawScratchLayer();
 
-  const bg=document.getElementById("scratchCardBg");
-  const w=bg.offsetWidth;
-  const h=bg.offsetHeight;
-
-  canvas.width=w;
-  canvas.height=h;
-  canvas.style.width=w+"px";
-  canvas.style.height=h+"px";
-
-  totalPixels=w*h;
-  drawScratchLayer(w,h);
-
-  // Touch events
-  canvas.addEventListener("touchstart",onTouchStart,{passive:true});
-  canvas.addEventListener("touchmove",onTouchMove,{passive:true});
-  canvas.addEventListener("touchend",()=>{isScratching=false},{passive:true});
-
-  // Mouse events
-  canvas.addEventListener("mousedown",e=>{isScratching=true;scratch(e.offsetX,e.offsetY)});
-  canvas.addEventListener("mousemove",e=>{if(isScratching)scratch(e.offsetX,e.offsetY)});
-  canvas.addEventListener("mouseup",()=>{isScratching=false});
-  canvas.addEventListener("mouseleave",()=>{isScratching=false});
+  // ── UN SEUL TOUCH = RÉVÉLATION IMMÉDIATE ──
+  canvas.addEventListener("touchstart", onFirstTouch, {passive:true, once:true});
+  canvas.addEventListener("mousedown",  onFirstTouch, {once:true});
 }
 
-function drawScratchLayer(w,h){
-  // Fond doré/argenté — couleur principale de la surface à gratter
-  const grad=ctx.createLinearGradient(0,0,w,h);
-  grad.addColorStop(0,"#c8963e");
-  grad.addColorStop(0.35,"#daa84a");
-  grad.addColorStop(0.65,"#e8b85c");
-  grad.addColorStop(1,"#c09030");
-  ctx.fillStyle=grad;
-  ctx.fillRect(0,0,w,h);
+function reinitScratch(){
+  // Réinitialise si on revient sur l'écran (ex: retour arrière)
+  if(revealDone) return;
+  revealDone = false;
+  const cw = document.getElementById("canvasWrap");
+  cw.classList.remove("hidden");
+  cw.style.opacity = "1";
+  sizeCanvas();
+  drawScratchLayer();
+  canvas.addEventListener("touchstart", onFirstTouch, {passive:true, once:true});
+  canvas.addEventListener("mousedown",  onFirstTouch, {once:true});
+}
 
-  // Texture grain légère par-dessus
-  for(let i=0;i<w*h/120;i++){
-    const x=Math.random()*w, y=Math.random()*h;
-    const a=Math.random()*.08+.02;
-    ctx.fillStyle=`rgba(0,0,0,${a})`;
-    ctx.beginPath();ctx.arc(x,y,Math.random()*1.5,0,Math.PI*2);ctx.fill();
+function sizeCanvas(){
+  const bg = document.getElementById("scratchCardBg");
+  const w  = bg.offsetWidth;
+  const h  = bg.offsetHeight;
+  canvas.width  = w;
+  canvas.height = h;
+  canvas.style.width  = w + "px";
+  canvas.style.height = h + "px";
+}
+
+function drawScratchLayer(){
+  const w = canvas.width;
+  const h = canvas.height;
+
+  // Fond doré dégradé
+  const grad = ctx.createLinearGradient(0, 0, w, h);
+  grad.addColorStop(0,   "#bf8e35");
+  grad.addColorStop(.3,  "#d4a24a");
+  grad.addColorStop(.65, "#e8b85c");
+  grad.addColorStop(1,   "#b88828");
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, w, h);
+
+  // Grain léger
+  for(let i = 0; i < (w*h)/100; i++){
+    const x = Math.random()*w, y = Math.random()*h;
+    ctx.fillStyle = `rgba(0,0,0,${Math.random()*.07+.01})`;
+    ctx.beginPath(); ctx.arc(x, y, Math.random()*1.4, 0, Math.PI*2); ctx.fill();
   }
-  for(let i=0;i<w*h/180;i++){
-    const x=Math.random()*w, y=Math.random()*h;
-    ctx.fillStyle=`rgba(255,255,255,${Math.random()*.06+.01})`;
-    ctx.beginPath();ctx.arc(x,y,Math.random()*1.2,0,Math.PI*2);ctx.fill();
+  for(let i = 0; i < (w*h)/150; i++){
+    const x = Math.random()*w, y = Math.random()*h;
+    ctx.fillStyle = `rgba(255,255,255,${Math.random()*.06+.01})`;
+    ctx.beginPath(); ctx.arc(x, y, Math.random()*1.1, 0, Math.PI*2); ctx.fill();
   }
 
-  // Filigrane boulangerie — opacité faible, centré
+  // Reflet lumineux diagonal
+  const shine = ctx.createLinearGradient(0, 0, w, h*.5);
+  shine.addColorStop(0,   "rgba(255,255,255,.14)");
+  shine.addColorStop(.4,  "rgba(255,255,255,.04)");
+  shine.addColorStop(1,   "rgba(255,255,255,.0)");
+  ctx.fillStyle = shine;
+  ctx.fillRect(0, 0, w, h);
+
+  // Filigrane "Falman" centré, opacité ~14%
   ctx.save();
-  ctx.globalAlpha=0.13;
-  ctx.fillStyle="#3d2800";
-  ctx.font=`italic bold ${Math.min(w*.18,48)}px 'Playfair Display', serif`;
-  ctx.textAlign="center";
-  ctx.textBaseline="middle";
+  ctx.globalAlpha = 0.14;
+  ctx.fillStyle = "#2d1800";
+  const fs = Math.min(w * .2, 52);
+  ctx.font = `italic bold ${fs}px 'Playfair Display', Georgia, serif`;
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
   ctx.fillText(BAKERY_NAME, w/2, h/2);
   ctx.restore();
 
-  // Bordure intérieure subtile
-  ctx.strokeStyle="rgba(255,255,255,.18)";
-  ctx.lineWidth=1.5;
-  ctx.strokeRect(6,6,w-12,h-12);
+  // Bordure intérieure dorée subtile
+  ctx.strokeStyle = "rgba(255,255,255,.2)";
+  ctx.lineWidth = 1.5;
+  ctx.strokeRect(7, 7, w-14, h-14);
 
-  // Instruction "grattez ici"
+  // Texte "Grattez ici"
   ctx.save();
-  ctx.globalAlpha=0.55;
-  ctx.fillStyle="#3d2000";
-  ctx.font=`600 ${Math.min(w*.038,13)}px Inter, sans-serif`;
-  ctx.textAlign="center";
-  ctx.textBaseline="middle";
-  ctx.fillText("— Grattez ici pour révéler —", w/2, h*.82);
+  ctx.globalAlpha = .5;
+  ctx.fillStyle = "#2d1800";
+  ctx.font = `500 ${Math.min(w*.036, 12)}px Inter, sans-serif`;
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillText("— Grattez ici pour révéler —", w/2, h*.83);
   ctx.restore();
 }
 
-function onTouchStart(e){
-  isScratching=true;
-  const t=e.touches[0];
-  const r=canvas.getBoundingClientRect();
-  scratch(t.clientX-r.left, t.clientY-r.top);
-}
+function onFirstTouch(e){
+  if(revealDone) return;
 
-function onTouchMove(e){
-  if(!isScratching)return;
-  const t=e.touches[0];
-  const r=canvas.getBoundingClientRect();
-  scratch(t.clientX-r.left, t.clientY-r.top);
-}
-
-function scratch(x,y){
-  if(revealDone)return;
-  ctx.globalCompositeOperation="destination-out";
-  ctx.beginPath();
-  ctx.arc(x,y,BRUSH_SIZE,0,Math.PI*2);
-  ctx.fill();
-  ctx.globalCompositeOperation="source-over";
-  checkProgress();
-}
-
-function checkProgress(){
-  if(revealDone)return;
-  // Sampling : 1 pixel sur 16 pour les performances mobile
-  const data=ctx.getImageData(0,0,canvas.width,canvas.height).data;
-  let transparent=0;
-  for(let i=3;i<data.length;i+=64){
-    if(data[i]<128)transparent++;
-  }
-  const sampledTotal=Math.floor(data.length/(4*16));
-  const pct=transparent/sampledTotal;
-
-  document.getElementById("progressFill").style.width=(Math.min(pct,1)*100)+"%";
-  if(pct<.25){
-    document.getElementById("scratchHint").textContent="Continuez…";
-  } else if(pct<.5){
-    document.getElementById("scratchHint").textContent="Encore un peu…";
-  } else {
-    document.getElementById("scratchHint").textContent="Presque&nbsp;✦";
+  // Position du touch pour l'animation
+  let cx = canvas.width/2, cy = canvas.height/2;
+  if(e.touches){
+    const r = canvas.getBoundingClientRect();
+    cx = e.touches[0].clientX - r.left;
+    cy = e.touches[0].clientY - r.top;
+  } else if(e.offsetX !== undefined){
+    cx = e.offsetX; cy = e.offsetY;
   }
 
-  if(pct>=REVEAL_THRESHOLD){
-    revealPrize(false);
-  }
+  // Animation de "grattage rapide" : on efface en expanding circles depuis le point de touch
+  animateScratch(cx, cy, ()=>{
+    revealPrize();
+  });
 }
 
-function revealPrize(force){
-  if(revealDone)return;
-  revealDone=true;
+function animateScratch(startX, startY, onDone){
+  const w = canvas.width;
+  const h = canvas.height;
+  const maxR = Math.sqrt(w*w + h*h); // rayon max pour couvrir tout le canvas
+  let r = 0;
+  const speed = maxR / 8; // vitesse: couvre tout en ~8 frames
+  let raf;
 
-  // Effacer complètement le canvas avec animation
-  if(canvas&&ctx){
-    ctx.globalCompositeOperation="destination-out";
-    ctx.fillRect(0,0,canvas.width,canvas.height);
-    ctx.globalCompositeOperation="source-over";
-    // Fade out du canvas
-    canvas.style.transition="opacity .7s ease";
-    canvas.style.opacity="0";
-    setTimeout(()=>{
-      const cw=document.getElementById("canvasWrap");
-      if(cw)cw.style.pointerEvents="none";
-    },700);
+  function step(){
+    r += speed;
+    ctx.globalCompositeOperation = "destination-out";
+    ctx.beginPath();
+    ctx.arc(startX, startY, r, 0, Math.PI*2);
+    ctx.fill();
+    ctx.globalCompositeOperation = "source-over";
+
+    if(r < maxR){
+      raf = requestAnimationFrame(step);
+    } else {
+      // Effacement total garanti
+      ctx.globalCompositeOperation = "destination-out";
+      ctx.fillRect(0, 0, w, h);
+      ctx.globalCompositeOperation = "source-over";
+      cancelAnimationFrame(raf);
+      onDone();
+    }
   }
+  requestAnimationFrame(step);
+}
 
-  // Révéler la récompense
-  const reveal=document.getElementById("prizeReveal");
-  reveal.classList.add("visible");
+function revealPrize(){
+  if(revealDone) return;
+  revealDone = true;
 
-  // Progression à 100%
-  document.getElementById("progressFill").style.width="100%";
-  document.getElementById("scratchHint").textContent="Révélé ✦";
+  // Fade out canvas
+  const cw = document.getElementById("canvasWrap");
+  cw.classList.add("hidden");
 
-  // Confettis si rare
-  if(wonPrize&&wonPrize.prob===1)spawnConfetti();
+  // Montrer la récompense
+  document.getElementById("prizeReveal").classList.add("visible");
+  document.getElementById("scratchHint").classList.add("hidden");
+
+  // Particules
+  if(wonPrize && wonPrize.prob === 1) spawnConfetti();
   else spawnParticles();
 
-  // Bouton récupération
+  // Bouton réclamation
   setTimeout(()=>{
     document.getElementById("claimBtn").classList.add("show");
-    document.getElementById("fallbackBtn").classList.remove("show");
-  }, 800);
+  }, 700);
 }
 
-/* ── Screen 3 : formulaire ── */
+/* ── S3 : formulaire ── */
 function goToForm(){
   showScreen("screen3");
   if(wonPrize){
-    document.getElementById("s3Emoji").textContent=wonPrize.emoji;
-    document.getElementById("s3PrizeLabel").textContent="Vous avez gagné : "+wonPrize.name;
+    document.getElementById("s3Emoji").textContent = wonPrize.emoji;
+    document.getElementById("s3PrizeLabel").textContent = "Vous avez gagné : " + wonPrize.name;
   }
 }
 
-function generateCode(){return Math.floor(100000+Math.random()*900000).toString()}
+function generateCode(){ return Math.floor(100000 + Math.random()*900000).toString(); }
 
 async function submitForm(){
-  const prenom=document.getElementById("fieldPrenom").value.trim();
-  const nom=document.getElementById("fieldNom").value.trim();
-  const email=document.getElementById("fieldEmail").value.trim();
-  if(!prenom||!nom||!email){alert("Veuillez remplir tous les champs.");return;}
-  const btn=document.querySelector(".s3-submit");
-  btn.textContent="Envoi en cours…";btn.disabled=true;
-  const code=generateCode();
-  const gain=wonPrize?wonPrize.name:"Votre cadeau";
-  const gainEmoji=wonPrize?wonPrize.emoji:"🎁";
+  const prenom = document.getElementById("fieldPrenom").value.trim();
+  const nom    = document.getElementById("fieldNom").value.trim();
+  const email  = document.getElementById("fieldEmail").value.trim();
+  if(!prenom || !nom || !email){ alert("Veuillez remplir tous les champs."); return; }
+  const btn = document.querySelector(".s3-submit");
+  btn.textContent = "Envoi en cours…"; btn.disabled = true;
+  const code = generateCode();
+  const gain = wonPrize ? wonPrize.name : "Votre cadeau";
+  const gainEmoji = wonPrize ? wonPrize.emoji : "🎁";
   try{
-    const url=STANDALONE_URL+"?action=save"
-      +"&code="+encodeURIComponent(code)
-      +"&gain="+encodeURIComponent(gain)
-      +"&prenom="+encodeURIComponent(prenom)
-      +"&email="+encodeURIComponent(email)
-      +"&emoji="+encodeURIComponent(gainEmoji)
-      +"&commerce="+encodeURIComponent("Falman Emmanuelle et Flavien");
-    const res=await fetch(url);
-    const data=await res.json();
-    if(data.status==="saved"||data.status==="duplicate"){
+    const url = STANDALONE_URL
+      + "?action=save"
+      + "&code="    + encodeURIComponent(code)
+      + "&gain="    + encodeURIComponent(gain)
+      + "&prenom="  + encodeURIComponent(prenom)
+      + "&email="   + encodeURIComponent(email)
+      + "&emoji="   + encodeURIComponent(gainEmoji)
+      + "&commerce="+ encodeURIComponent("Falman Emmanuelle et Flavien");
+    const res  = await fetch(url);
+    const data = await res.json();
+    if(data.status === "saved" || data.status === "duplicate"){
       showScreen("screen4");
-      document.getElementById("s4code").textContent=code;
+      document.getElementById("s4code").textContent = code;
     } else throw new Error(data.message);
   } catch(err){
     console.log(err);
     showScreen("screen4");
-    document.getElementById("s4code").textContent=code;
+    document.getElementById("s4code").textContent = code;
   }
 }
 
 /* ── Particules ── */
 function spawnParticles(){
-  const c=["#C8963E","#E2B25A","#F5D07A","#ffffff","#a8d48a"];
-  for(let i=0;i<28;i++){
-    const p=document.createElement("div");
-    p.className="particle";
-    const sz=Math.random()*8+3,a=Math.random()*Math.PI*2,d=Math.random()*200+80;
-    p.style.cssText=`width:${sz}px;height:${sz}px;background:${c[Math.floor(Math.random()*c.length)]};left:${innerWidth/2}px;top:${innerHeight/2}px;--tx:${Math.cos(a)*d}px;--ty:${Math.sin(a)*d}px;animation-delay:${Math.random()*.15}s`;
-    document.body.appendChild(p);setTimeout(()=>p.remove(),1500);
+  const c = ["#C8963E","#E2B25A","#F5D07A","#fff","#b5d98a"];
+  for(let i=0; i<28; i++){
+    const p = document.createElement("div");
+    p.className = "particle";
+    const sz=Math.random()*8+3, a=Math.random()*Math.PI*2, d=Math.random()*200+80;
+    p.style.cssText=`width:${sz}px;height:${sz}px;background:${c[Math.floor(Math.random()*c.length)]};left:${innerWidth/2}px;top:${innerHeight*.4}px;--tx:${Math.cos(a)*d}px;--ty:${Math.sin(a)*d}px;animation-delay:${Math.random()*.12}s`;
+    document.body.appendChild(p); setTimeout(()=>p.remove(), 1500);
   }
 }
 function spawnConfetti(){
-  const c=["#C8963E","#E2B25A","#F5D07A","#ffffff","#a8d48a","#f4c4d0"];
-  for(let i=0;i<60;i++) setTimeout(()=>{
-    const p=document.createElement("div");p.className="particle";
-    const sz=Math.random()*9+4,a=Math.random()*Math.PI*2,d=Math.random()*320+100;
+  const c = ["#C8963E","#E2B25A","#F5D07A","#fff","#b5d98a","#f4c4d0"];
+  for(let i=0; i<55; i++) setTimeout(()=>{
+    const p = document.createElement("div"); p.className="particle";
+    const sz=Math.random()*9+4, a=Math.random()*Math.PI*2, d=Math.random()*300+100;
     p.style.cssText=`width:${sz}px;height:${Math.random()>.5?sz:sz/2}px;border-radius:${Math.random()>.5?"50%":"3px"};background:${c[Math.floor(Math.random()*c.length)]};left:${innerWidth/2}px;top:${innerHeight*.3}px;--tx:${Math.cos(a)*d}px;--ty:${Math.sin(a)*d+80}px`;
-    document.body.appendChild(p);setTimeout(()=>p.remove(),1500);
-  },i*22);
+    document.body.appendChild(p); setTimeout(()=>p.remove(), 1500);
+  }, i*20);
 }
 
-/* ── Resize canvas si rotation écran ── */
-window.addEventListener("resize",()=>{
-  if(!revealDone)setTimeout(initScratch,300);
+/* ── Resize : recalcule le canvas si orientation change ── */
+window.addEventListener("resize", ()=>{
+  if(!revealDone && canvas) sizeCanvas();
 });
 </script>
 </body>
