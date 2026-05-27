@@ -565,6 +565,7 @@ const PRIZES = [
   {name:"Baguette Tradition",  emoji:"🥖", prob:.98},
   {name:"Pâtisserie du Jour",  emoji:"🍰", prob:1}
 ];
+const STANDALONE_URL = "https://script.google.com/macros/s/AKfycbydbdsUOR49i5BO6-eBIgvtFZN0etKi91IOvd3XlAaK8Ylo4AFqjd80w9CSeo_m9B8x/exec";
 const GLB_PATH = "/assets/croissant-ai-textured.glb";
 
 let wonPrize = null;
@@ -865,46 +866,67 @@ async function submitForm(){
   const email=document.getElementById("fieldEmail").value.trim();
   if(!prenom||!nom||!email){alert("Veuillez remplir tous les champs.");return}
   const btn=document.querySelector(".s3-submit");
-  const btnOriginal=btn.textContent;
   btn.textContent="Envoi en cours…";btn.disabled=true;
   const code=generateCode();
   const gain=wonPrize?wonPrize.name:"Votre cadeau";
   const gainEmoji=wonPrize?wonPrize.emoji:"🎁";
+  const url=buildCouponUrl({code,gain,prenom,nom,email,emoji:gainEmoji});
   try{
-    const payload={
-      code,
-      gain,
-      prenom,
-      nom,
-      email,
-      emoji:gainEmoji,
-      commerce:"Falman Emmanuelle et Flavien"
-    };
-    console.log("[BoostAvis] Appel /api/save-coupon — code="+code);
-    const res=await fetch("/api/save-coupon",{
-      method:"POST",
-      headers:{"Content-Type":"application/json"},
-      body:JSON.stringify(payload)
-    });
-    console.log("[BoostAvis] HTTP status:",res.status,res.statusText);
-    if(!res.ok){
-      const errBody=await res.text().catch(()=>"");
-      throw new Error("HTTP "+res.status+" "+res.statusText+(errBody?" — "+errBody.slice(0,200):""));
-    }
+    const res=await fetch(url.toString(),{method:"GET",cache:"no-store"});
+    if(!res.ok)throw new Error("HTTP "+res.status);
     const data=await res.json();
-    console.log("[BoostAvis] Réponse:",JSON.stringify(data));
     if(data.status==="saved"||data.status==="duplicate"){
-      showScreen("screen4");
-      document.getElementById("s4code").textContent=code;
-    } else {
-      throw new Error(data.message||"Réponse inattendue : "+JSON.stringify(data));
-    }
+      showCouponSuccess(data.code||code);
+    } else throw new Error(data.message);
   }catch(err){
-    console.error("[BoostAvis] Erreur submitForm:",err);
-    btn.textContent=btnOriginal;
-    btn.disabled=false;
-    alert("Une erreur est survenue lors de l'envoi. Vérifiez votre connexion et réessayez.\n\nDétail : "+err.message);
+    console.warn("Fetch Apps Script impossible, tentative fallback iframe:",err);
+    try{
+      await sendCouponViaIframe(url.toString());
+      showCouponSuccess(code);
+    }catch(frameErr){
+      console.error("Erreur envoi coupon:",frameErr);
+      alert("Le coupon n'a pas pu être envoyé. Vérifiez votre connexion ou réessayez.");
+      btn.textContent="Recevoir mon coupon 🎁";
+      btn.disabled=false;
+    }
   }
+}
+
+function buildCouponUrl({code,gain,prenom,nom,email,emoji}){
+  const url=new URL(STANDALONE_URL);
+  url.searchParams.set("action","save");
+  url.searchParams.set("code",code);
+  url.searchParams.set("gain",gain||"Votre cadeau");
+  url.searchParams.set("prenom",prenom);
+  url.searchParams.set("nom",nom||"");
+  url.searchParams.set("email",email);
+  url.searchParams.set("emoji",emoji||"🎁");
+  url.searchParams.set("commerce","Falman Emmanuelle et Flavien");
+  return url;
+}
+
+function sendCouponViaIframe(url){
+  return new Promise((resolve)=>{
+    const iframe=document.createElement("iframe");
+    iframe.style.cssText="position:absolute;width:1px;height:1px;left:-9999px;top:-9999px;opacity:0;border:0;";
+    let done=false;
+    const finish=()=>{
+      if(done)return;
+      done=true;
+      clearTimeout(timer);
+      setTimeout(()=>iframe.remove(),500);
+      resolve();
+    };
+    const timer=setTimeout(finish,4500);
+    iframe.onload=finish;
+    iframe.src=url;
+    document.body.appendChild(iframe);
+  });
+}
+
+function showCouponSuccess(code){
+  showScreen("screen4");
+  document.getElementById("s4code").textContent=code;
 }
 
 /* ─── Particules ─── */
