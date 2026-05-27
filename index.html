@@ -866,6 +866,7 @@ async function submitForm(){
   const email=document.getElementById("fieldEmail").value.trim();
   if(!prenom||!nom||!email){alert("Veuillez remplir tous les champs.");return}
   const btn=document.querySelector(".s3-submit");
+  const btnOriginal=btn.textContent;
   btn.textContent="Envoi en cours…";btn.disabled=true;
   const code=generateCode();
   const gain=wonPrize?wonPrize.name:"Votre cadeau";
@@ -876,19 +877,27 @@ async function submitForm(){
       +"&code="+encodeURIComponent(code)
       +"&gain="+encodeURIComponent(gain)
       +"&prenom="+encodeURIComponent(prenom)
+      +"&nom="+encodeURIComponent(nom)
       +"&email="+encodeURIComponent(email)
       +"&emoji="+encodeURIComponent(gainEmoji)
       +"&commerce="+encodeURIComponent("Falman Emmanuelle et Flavien");
+    console.log("[BoostAvis] Appel Apps Script — action=save, code="+code);
     const res=await fetch(url);
+    console.log("[BoostAvis] HTTP status:", res.status, res.statusText);
+    if(!res.ok) throw new Error("HTTP "+res.status+" "+res.statusText);
     const data=await res.json();
+    console.log("[BoostAvis] Réponse Apps Script:", JSON.stringify(data));
     if(data.status==="saved"||data.status==="duplicate"){
       showScreen("screen4");
       document.getElementById("s4code").textContent=code;
-    } else throw new Error(data.message);
+    } else {
+      throw new Error(data.message||"Réponse inattendue : "+JSON.stringify(data));
+    }
   }catch(err){
-    console.log(err);
-    showScreen("screen4");
-    document.getElementById("s4code").textContent=code;
+    console.error("[BoostAvis] Erreur submitForm:", err);
+    btn.textContent=btnOriginal;
+    btn.disabled=false;
+    alert("Une erreur est survenue lors de l'envoi. Vérifiez votre connexion et réessayez.\n\nDétail : "+err.message);
   }
 }
 
