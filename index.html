@@ -565,7 +565,6 @@ const PRIZES = [
   {name:"Baguette Tradition",  emoji:"🥖", prob:.98},
   {name:"Pâtisserie du Jour",  emoji:"🍰", prob:1}
 ];
-const STANDALONE_URL = "https://script.google.com/macros/s/AKfycbydbdsUOR49i5BO6-eBIgvtFZN0etKi91IOvd3XlAaK8Ylo4AFqjd80w9CSeo_m9B8x/exec";
 const GLB_PATH = "/assets/croissant-ai-textured.glb";
 
 let wonPrize = null;
@@ -872,21 +871,28 @@ async function submitForm(){
   const gain=wonPrize?wonPrize.name:"Votre cadeau";
   const gainEmoji=wonPrize?wonPrize.emoji:"🎁";
   try{
-    const url=STANDALONE_URL
-      +"?action=save"
-      +"&code="+encodeURIComponent(code)
-      +"&gain="+encodeURIComponent(gain)
-      +"&prenom="+encodeURIComponent(prenom)
-      +"&nom="+encodeURIComponent(nom)
-      +"&email="+encodeURIComponent(email)
-      +"&emoji="+encodeURIComponent(gainEmoji)
-      +"&commerce="+encodeURIComponent("Falman Emmanuelle et Flavien");
-    console.log("[BoostAvis] Appel Apps Script — action=save, code="+code);
-    const res=await fetch(url);
-    console.log("[BoostAvis] HTTP status:", res.status, res.statusText);
-    if(!res.ok) throw new Error("HTTP "+res.status+" "+res.statusText);
+    const payload={
+      code,
+      gain,
+      prenom,
+      nom,
+      email,
+      emoji:gainEmoji,
+      commerce:"Falman Emmanuelle et Flavien"
+    };
+    console.log("[BoostAvis] Appel /api/save-coupon — code="+code);
+    const res=await fetch("/api/save-coupon",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify(payload)
+    });
+    console.log("[BoostAvis] HTTP status:",res.status,res.statusText);
+    if(!res.ok){
+      const errBody=await res.text().catch(()=>"");
+      throw new Error("HTTP "+res.status+" "+res.statusText+(errBody?" — "+errBody.slice(0,200):""));
+    }
     const data=await res.json();
-    console.log("[BoostAvis] Réponse Apps Script:", JSON.stringify(data));
+    console.log("[BoostAvis] Réponse:",JSON.stringify(data));
     if(data.status==="saved"||data.status==="duplicate"){
       showScreen("screen4");
       document.getElementById("s4code").textContent=code;
@@ -894,7 +900,7 @@ async function submitForm(){
       throw new Error(data.message||"Réponse inattendue : "+JSON.stringify(data));
     }
   }catch(err){
-    console.error("[BoostAvis] Erreur submitForm:", err);
+    console.error("[BoostAvis] Erreur submitForm:",err);
     btn.textContent=btnOriginal;
     btn.disabled=false;
     alert("Une erreur est survenue lors de l'envoi. Vérifiez votre connexion et réessayez.\n\nDétail : "+err.message);
