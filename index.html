@@ -75,7 +75,8 @@ body::after{
 .s1-optional{display:flex;align-items:flex-start;gap:8px;background:rgba(200,150,62,.05);border:1px solid rgba(200,150,62,.15);border-radius:11px;padding:10px 13px}
 .s1-optional-icon{font-size:13px;flex-shrink:0;margin-top:1px}
 .s1-optional-text{font-size:12px;color:var(--muted);line-height:1.55}
-.s1-skip{text-align:center;font-size:12px;color:rgba(245,237,216,.45);margin-top:13px;cursor:pointer;text-decoration:underline;text-underline-offset:3px;transition:color .2s}
+.s1-skip{text-align:center;font-size:12px;color:rgba(245,237,216,.45);margin-top:13px;cursor:pointer;text-decoration:underline;text-underline-offset:3px;opacity:0;visibility:hidden;pointer-events:none;transform:translateY(6px);transition:opacity .35s ease,visibility .35s ease,transform .35s ease,color .2s ease}
+.s1-skip.show{opacity:1;visibility:visible;pointer-events:auto;transform:translateY(0)}
 .s1-skip:hover{color:rgba(245,237,216,.8)}
 .s1-unlock{display:none;align-items:center;justify-content:center;gap:8px;padding:10px 16px;background:rgba(61,122,24,.14);border:1px solid rgba(100,180,40,.32);border-radius:11px;font-size:13px;color:#7ecb40;font-weight:600}
 .s1-unlock.show{display:flex;animation:fadeUp .4s ease}
@@ -422,7 +423,7 @@ body::after{
       </div>
     </div>
   </div>
-  <div class="s1-skip" onclick="goToBooster()">Continuer sans laisser d'avis</div>
+  <div class="s1-skip" id="skipReviewBtn" onclick="goToBooster()">Continuer sans laisser d'avis</div>
 </div>
 </div>
 </div>
@@ -581,6 +582,7 @@ window.addEventListener("load",()=>{
   showScreen("screen1");
   drawPrize();
   initThree();
+  scheduleSkipReviewButton();
 });
 
 /* ─── Tirage ─── */
@@ -592,9 +594,27 @@ function drawPrize(){
 }
 
 /* ─── S1 ─── */
+let skipReviewTimer = null;
+function scheduleSkipReviewButton(){
+  const skip = document.getElementById("skipReviewBtn");
+  if(!skip) return;
+  skip.classList.remove("show");
+  clearTimeout(skipReviewTimer);
+  skipReviewTimer = setTimeout(()=>{
+    const s1Active = document.getElementById("screen1")?.classList.contains("active");
+    if(!googleOpened && s1Active) skip.classList.add("show");
+  }, 15000);
+}
+function hideSkipReviewButton(){
+  clearTimeout(skipReviewTimer);
+  const skip = document.getElementById("skipReviewBtn");
+  if(skip) skip.classList.remove("show");
+}
+
 function openGoogle(e){
   if(googleOpened){e.preventDefault();return;}
   googleOpened=true;
+  hideSkipReviewButton();
   const btn=document.getElementById("googleBtn");
   btn.innerHTML='✓&nbsp; Merci — votre avis est précieux !';
   btn.style.opacity=".6";btn.style.pointerEvents="none";
@@ -602,7 +622,7 @@ function openGoogle(e){
   spawnParticles();
   setTimeout(()=>showScreen("screen2"),1400);
 }
-function goToBooster(){ showScreen("screen2"); }
+function goToBooster(){ hideSkipReviewButton(); showScreen("screen2"); }
 
 /* ═══════════════════════════════════════════
    THREE.JS — VIEWER 3D (inchangé)
