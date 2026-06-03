@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#3a7a1e">
+<meta name="color-scheme" content="light">
+<title>Ma Fidélité — Falman</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* ════════════════════════════════════════════════════════════════
+   CARD.HTML — page client OUVERTE PAR LA CARTE NFC (?id=card_id)
+   • Routeur : carte non activée → parcours avis · activée → fidélité
+   • Données EN DIRECT depuis Apps Script (action fid_client)
+   • Achat de tickets giveaway avec les points (action fid_buyticket)
+   ════════════════════════════════════════════════════════════════ */
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --cream:#F5EDD8;--cream3:#FBF6EE;
+  --gold:#C8963E;--gold2:#E2B25A;--gold3:#F5D07A;--gold-border:rgba(200,150,62,.35);
+  --ink:#1a1a14;--muted:#6b6045;--muted2:#9a8c6e;
+}
+html{background:#4e8c20;min-height:100%}
+body{font-family:'Inter',sans-serif;-webkit-font-smoothing:antialiased;min-height:100vh;overflow-x:hidden;background:#4e8c20}
+body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:radial-gradient(ellipse 90% 60% at 50% 42%,rgba(150,210,70,.55),transparent 60%),radial-gradient(ellipse 70% 50% at 50% 0%,rgba(20,70,5,.45),transparent 55%),radial-gradient(ellipse 90% 45% at 50% 100%,rgba(30,85,8,.40),transparent 60%)}
+body::after{content:'';position:fixed;inset:0;z-index:1;pointer-events:none;opacity:.5;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='280' height='280'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='280' height='280' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");background-size:170px 170px}
+
+.wrap{position:relative;z-index:2;max-width:410px;margin:0 auto;padding:36px 18px 44px;display:flex;flex-direction:column;align-items:center}
+.eyebrow{display:inline-flex;align-items:center;gap:7px;font-size:10px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:rgba(245,237,216,.62);margin-bottom:8px}
+.eyebrow::before,.eyebrow::after{content:'✦';font-size:8px;opacity:.7}
+.bakery{font-family:'Playfair Display',serif;font-size:23px;font-weight:700;font-style:italic;color:var(--cream);text-align:center;line-height:1.2;text-shadow:0 2px 16px rgba(0,0,0,.35);margin-bottom:24px}
+
+/* carte identité (crème) */
+.idcard{width:100%;background:linear-gradient(180deg,#FBF6EE,#F5EDD8);border-radius:24px;overflow:hidden;box-shadow:0 20px 50px rgba(0,0,0,.3),0 0 0 1px rgba(200,150,62,.18) inset;margin-bottom:14px}
+.idc-top{display:flex;align-items:center;gap:13px;padding:20px 20px 16px;border-bottom:1px solid var(--gold-border);background:linear-gradient(180deg,rgba(200,150,62,.08),transparent)}
+.idc-av{width:50px;height:50px;border-radius:50%;background:linear-gradient(135deg,var(--gold),var(--gold2) 55%,var(--gold3));display:grid;place-items:center;font-family:'Playfair Display',serif;font-size:21px;font-weight:700;color:#fff;flex-shrink:0;box-shadow:0 6px 16px rgba(200,150,62,.4)}
+.idc-meta{flex:1;min-width:0}
+.idc-hi{font-size:12px;color:var(--muted2);font-weight:500}
+.idc-name{font-family:'Playfair Display',serif;font-size:19px;font-weight:700;color:var(--ink);line-height:1.15}
+.idc-solde{display:flex;align-items:baseline;justify-content:space-between;padding:16px 20px}
+.idc-solde .v{font-family:'Playfair Display',serif;font-size:40px;font-weight:900;color:var(--gold);line-height:1}
+.idc-solde .l{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--muted2)}
+
+/* bloc niveau (frosted) */
+.lvl{width:100%;background:rgba(245,237,216,.10);border:1px solid rgba(200,150,62,.28);border-radius:20px;padding:16px 18px;backdrop-filter:blur(10px);margin-bottom:14px}
+.lvl-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:11px}
+.lvl-name{font-family:'Playfair Display',serif;font-size:17px;font-weight:700;color:var(--cream);display:inline-flex;align-items:center;gap:8px}
+.lvl-pin{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#3b2a05;background:linear-gradient(135deg,var(--gold),var(--gold3));border-radius:99px;padding:3px 9px}
+.lvl-pts{font-size:12px;font-weight:700;color:var(--gold3)}
+.bar{height:9px;border-radius:99px;background:rgba(245,237,216,.12);overflow:hidden;border:1px solid rgba(200,150,62,.15)}
+.bar i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,var(--gold),var(--gold2),var(--gold3));transition:width .7s cubic-bezier(.16,1,.3,1)}
+.lvl-msg{font-size:11.5px;color:rgba(245,237,216,.7);margin-top:9px;text-align:center}
+.lvl-msg b{color:var(--gold3)}
+
+/* carte tampons (crème) */
+.stampcard{width:100%;background:linear-gradient(180deg,#FBF6EE,#F5EDD8);border-radius:22px;padding:18px 20px 20px;box-shadow:0 18px 44px rgba(0,0,0,.28),0 0 0 1px rgba(200,150,62,.16) inset;margin-bottom:14px}
+.sc-h{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px}
+.sc-h .t{font-family:'Playfair Display',serif;font-size:15px;font-weight:700;color:var(--ink)}
+.sc-h .c{font-family:'Playfair Display',serif;font-size:22px;font-weight:900;color:var(--gold)}
+.sc-h .c span{font-size:14px;color:var(--muted2)}
+.sc-sub{font-size:11px;color:var(--muted2);margin-bottom:13px}
+.stamps{display:grid;grid-template-columns:repeat(5,1fr);gap:9px}
+.st{aspect-ratio:1;border-radius:50%;display:grid;place-items:center;font-size:13px;font-weight:700;background:rgba(200,150,62,.07);border:1.5px dashed rgba(200,150,62,.4);color:var(--muted2)}
+.st.full{background:linear-gradient(135deg,var(--gold),var(--gold2),var(--gold3));border-style:solid;border-color:transparent;box-shadow:0 3px 9px rgba(200,150,62,.4)}
+.st.full::after{content:'🥐';font-size:15px;filter:saturate(0) brightness(2.4)}
+.st.rw2{border:2px solid var(--gold);background:rgba(200,150,62,.1)}
+.st.rw2::after{content:'🎁';font-size:16px}
+.sc-msg{font-size:12px;color:var(--muted);text-align:center;margin-top:13px}
+.sc-msg b{color:var(--gold);font-weight:800}
+
+/* bloc tickets (frosted) */
+.tick{width:100%;background:rgba(245,237,216,.10);border:1px solid rgba(200,150,62,.28);border-radius:20px;padding:18px;backdrop-filter:blur(10px);margin-bottom:14px;text-align:center}
+.tick-h{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.16em;color:rgba(245,237,216,.55);margin-bottom:10px}
+.tick-row{display:flex;justify-content:center;gap:26px;margin-bottom:14px}
+.tick-row .b{text-align:center}
+.tick-row .b .v{font-family:'Playfair Display',serif;font-size:30px;font-weight:900;color:var(--gold3);line-height:1}
+.tick-row .b .l{font-size:10px;color:rgba(245,237,216,.6);margin-top:4px}
+.tick-btn{width:100%;padding:15px;border:none;border-radius:14px;background:linear-gradient(135deg,var(--gold),var(--gold2));color:var(--ink);font-family:'Inter',sans-serif;font-size:15px;font-weight:700;cursor:pointer;box-shadow:0 6px 18px rgba(200,150,62,.4);transition:transform .12s,filter .15s;display:flex;align-items:center;justify-content:center;gap:8px}
+.tick-btn:active{transform:scale(.98)}
+.tick-btn:disabled{opacity:.45;cursor:default;box-shadow:none}
+.tick-note{font-size:11px;color:rgba(245,237,216,.55);margin-top:9px}
+
+/* états plein écran */
+.screenmsg{position:relative;z-index:2;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:40px 26px;max-width:420px;margin:0 auto}
+.sm-ic{width:80px;height:80px;border-radius:50%;display:grid;place-items:center;font-size:34px;margin-bottom:20px}
+.sm-ic.warn{background:rgba(245,237,216,.12);border:1.5px solid rgba(245,237,216,.3);color:var(--cream)}
+.sm-ic.bad{background:rgba(255,120,120,.14);border:1.5px solid rgba(255,120,120,.4);color:#ffd9d9}
+.sm-title{font-family:'Playfair Display',serif;font-size:25px;font-weight:700;color:var(--cream);margin-bottom:10px}
+.sm-txt{font-size:14px;color:rgba(245,237,216,.7);line-height:1.6;margin-bottom:24px}
+.sm-btn{display:inline-block;padding:15px 26px;border:none;border-radius:14px;background:linear-gradient(135deg,var(--gold),var(--gold2));color:var(--ink);font-family:'Inter',sans-serif;font-size:15px;font-weight:700;cursor:pointer;text-decoration:none;box-shadow:0 6px 18px rgba(200,150,62,.4)}
+.spin{width:30px;height:30px;border:3px solid rgba(245,237,216,.25);border-top-color:var(--cream);border-radius:50%;animation:rot .8s linear infinite}
+@keyframes rot{to{transform:rotate(360deg)}}
+.hidden{display:none!important}
+
+/* toast */
+.toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,16px);background:#1d3a12;border:1px solid rgba(245,208,122,.4);color:var(--cream);padding:14px 22px;border-radius:14px;font-size:14px;font-weight:600;box-shadow:0 12px 34px rgba(0,0,0,.45);z-index:99;opacity:0;pointer-events:none;transition:opacity .25s,transform .25s;text-align:center;max-width:320px}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+.foot{margin-top:8px;text-align:center;font-size:11px;color:rgba(245,237,216,.4);line-height:1.6}
+.foot b{color:rgba(200,150,62,.75);font-family:'Playfair Display',serif;font-style:italic}
+@media(prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+</style>
+</head>
+<body>
+
+<!-- CHARGEMENT -->
+<div class="screenmsg" id="loading"><div class="spin"></div><div class="sm-txt" style="margin-top:18px">Chargement de votre fidélité…</div></div>
+
+<!-- ÉTAT : NOUVELLE CARTE (pas encore activée) → parcours avis -->
+<div class="screenmsg hidden" id="stateNew">
+  <div class="sm-ic warn">🥐</div>
+  <div class="sm-title">Bienvenue !</div>
+  <div class="sm-txt">Activez votre carte de fidélité en laissant votre avis — vous gagnez aussi une gourmandise offerte.</div>
+  <a class="sm-btn" id="avisLink" href="#">Commencer →</a>
+</div>
+
+<!-- ÉTAT : CARTE INCONNUE -->
+<div class="screenmsg hidden" id="stateUnknown">
+  <div class="sm-ic bad">✕</div>
+  <div class="sm-title">Carte non reconnue</div>
+  <div class="sm-txt">Cette carte n'est pas enregistrée. Demandez en boutique de l'associer à votre compte.</div>
+</div>
+
+<!-- ÉTAT : ERREUR -->
+<div class="screenmsg hidden" id="stateError">
+  <div class="sm-ic bad">⚠️</div>
+  <div class="sm-title">Connexion impossible</div>
+  <div class="sm-txt">Impossible de charger votre fidélité. Vérifiez votre connexion.</div>
+  <button class="sm-btn" onclick="location.reload()">Réessayer</button>
+</div>
+
+<!-- ÉTAT : FIDÉLITÉ (carte active) -->
+<div class="wrap hidden" id="stateActive">
+  <div class="eyebrow">Ma Fidélité</div>
+  <div class="bakery" id="bakeryName">Falman Emmanuelle et Flavien</div>
+
+  <div class="idcard">
+    <div class="idc-top">
+      <div class="idc-av" id="cAv">–</div>
+      <div class="idc-meta"><div class="idc-hi">Bonjour</div><div class="idc-name" id="cName">—</div></div>
+    </div>
+    <div class="idc-solde"><span class="l">Solde de points</span><span class="v" id="cSolde">0</span></div>
+  </div>
+
+  <div class="lvl">
+    <div class="lvl-top">
+      <span class="lvl-name" id="cNiveau">Découverte <span class="lvl-pin" id="cPin">Niveau</span></span>
+      <span class="lvl-pts" id="cStatut">0 pts statut</span>
+    </div>
+    <div class="bar"><i id="cLvlBar" style="width:0%"></i></div>
+    <div class="lvl-msg" id="cLvlMsg">—</div>
+  </div>
+
+  <div class="stampcard">
+    <div class="sc-h"><span class="t">Carte de passages</span><span class="c"><span id="cTampons">0</span><span> / 10</span></span></div>
+    <div class="sc-sub">1 tampon par passage · 10 = une gourmandise offerte</div>
+    <div class="stamps" id="stampGrid"></div>
+    <div class="sc-msg" id="cStampMsg">—</div>
+  </div>
+
+  <div class="tick">
+    <div class="tick-h">Tirage du mois</div>
+    <div class="tick-row">
+      <div class="b"><div class="v" id="cTickets">0</div><div class="l">Tickets ce mois</div></div>
+      <div class="b"><div class="v" id="cAchet">0</div><div class="l">Achetables</div></div>
+    </div>
+    <button class="tick-btn" id="buyBtn" onclick="buyTicket()">🎟️ Acheter un ticket — <span id="coutT">100</span> pts</button>
+    <div class="tick-note" id="tickNote">Chaque ticket = une chance au tirage au sort du mois.</div>
+  </div>
+
+  <div class="foot">Merci pour votre fidélité 🙏<br><b id="footName">Falman Emmanuelle et Flavien</b></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+'use strict';
+/* ── CONFIG ──
+   Appelle le MÊME Apps Script (actions fid_*). On vise le déploiement qui a déjà
+   les actions fidélité (le déploiement vendeur, confirmé OK via le kiosque).
+   Si tu redéploies le déploiement client avec les fid_*, tu peux mettre son URL ici. */
+const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbx0N4dLSGtyUMgA_lA8N9O-B3rleX7zHgTFAXZyiV7hEf5ioXAcVI245hHdi4CMKuCn/exec';
+const AVIS_URL   = 'https://boulangerieavisclient.vercel.app/'; // parcours avis (index.html)
+const NIVEAUX = [{nom:'Découverte',min:0},{nom:'Fidèle',min:150},{nom:'VIP',min:600}];
+
+const params = new URLSearchParams(location.search);
+const cardId = (params.get('id')||'').trim();
+const $ = id => document.getElementById(id);
+let coutTicket = 100, soldeCourant = 0;
+
+/* XHR (pas fetch — fiabilité Apps Script / Safari) */
+function api(action, extra){
+  return new Promise((resolve,reject)=>{
+    let url = SHEETS_URL + '?action=' + encodeURIComponent(action);
+    if(extra) for(const k in extra) url += '&' + k + '=' + encodeURIComponent(extra[k]);
+    const x = new XMLHttpRequest();
+    x.open('GET', url, true); x.timeout = 15000;
+    x.onload = ()=>{ try{ resolve(JSON.parse(x.responseText)); }catch(e){ reject(e); } };
+    x.onerror = ()=>reject(new Error('net')); x.ontimeout = ()=>reject(new Error('timeout'));
+    x.send();
+  });
+}
+function show(id){ ['loading','stateNew','stateUnknown','stateError','stateActive'].forEach(s=>$(s).classList.toggle('hidden', s!==id)); }
+function toast(msg){ const t=$('toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove('show'),2600); }
+
+function render(c){
+  soldeCourant = c.points_solde;
+  coutTicket = c.cout_ticket || 100;
+  $('cAv').textContent = (c.prenom||'?').trim().charAt(0).toUpperCase();
+  $('cName').textContent = ((c.prenom||'')+' '+(c.nom||'')).trim() || 'Client';
+  $('cSolde').textContent = c.points_solde;
+  // niveau + progression
+  const niv = c.niveau || 'Découverte';
+  $('cPin').textContent = niv;
+  $('cNiveau').childNodes[0].nodeValue = 'Niveau ';
+  $('cStatut').textContent = c.points_statut + ' pts statut';
+  let cur = NIVEAUX.find(n=>n.nom===niv) || NIVEAUX[0];
+  let nxt = NIVEAUX[NIVEAUX.indexOf(cur)+1];
+  if(nxt){
+    const span = nxt.min - cur.min, done = Math.min(span, c.points_statut - cur.min);
+    $('cLvlBar').style.width = Math.max(4, Math.round(done/span*100)) + '%';
+    $('cLvlMsg').innerHTML = 'Plus que <b>'+(nxt.min - c.points_statut)+' pts statut</b> pour le niveau '+nxt.nom;
+  } else {
+    $('cLvlBar').style.width = '100%';
+    $('cLvlMsg').innerHTML = '🏆 Niveau maximum atteint — merci de votre fidélité !';
+  }
+  // tampons
+  $('cTampons').textContent = c.tampons;
+  const grid = $('stampGrid'); grid.innerHTML='';
+  for(let i=1;i<=10;i++){
+    const d=document.createElement('div');
+    d.className='st'+(i===10?' rw2':'')+(i<=c.tampons?' full':'');
+    if(i>c.tampons && i<10) d.textContent=i; if(i===10 && c.tampons<10) d.textContent='';
+    grid.appendChild(d);
+  }
+  const reste = 10 - c.tampons;
+  $('cStampMsg').innerHTML = c.tampons>=10 ? '🎉 <b>Gourmandise débloquée !</b>'
+    : 'Plus que <b>'+reste+' passage'+(reste>1?'s':'')+'</b> avant votre gourmandise';
+  // tickets
+  $('cTickets').textContent = c.tickets_mois;
+  $('cAchet').textContent = (c.tickets_achetables!=null)?c.tickets_achetables:Math.floor(c.points_solde/coutTicket);
+  $('coutT').textContent = coutTicket;
+  const can = c.points_solde >= coutTicket;
+  $('buyBtn').disabled = !can;
+  $('tickNote').textContent = can ? 'Chaque ticket = une chance au tirage du mois.'
+    : 'Il vous manque '+(coutTicket - c.points_solde)+' points pour un ticket.';
+}
+
+window.buyTicket = function(){
+  if(soldeCourant < coutTicket) return;
+  $('buyBtn').disabled = true;
+  api('fid_buyticket',{card_id:cardId, qty:1, source:'client'}).then(d=>{
+    if(d.status==='ok'){ toast('🎟️ Ticket acheté ! Bonne chance au tirage.'); render(d.client); }
+    else if(d.status==='insufficient'){ toast('Il vous manque '+d.manque+' points.'); $('buyBtn').disabled=false; }
+    else { toast('Action impossible pour le moment.'); $('buyBtn').disabled=false; }
+  }).catch(()=>{ toast('Connexion impossible.'); $('buyBtn').disabled=false; });
+};
+
+/* ── ROUTAGE au chargement ── */
+if(!cardId){ show('stateUnknown'); }
+else {
+  $('avisLink').href = AVIS_URL + '?id=' + encodeURIComponent(cardId);
+  api('fid_client',{card_id:cardId}).then(d=>{
+    if(d.status==='active'){ render(d.client); show('stateActive'); }
+    else if(d.status==='new'){ show('stateNew'); }
+    else { show('stateUnknown'); }
+  }).catch(()=>show('stateError'));
+}
+})();
+</script>
+</body>
+</html>
