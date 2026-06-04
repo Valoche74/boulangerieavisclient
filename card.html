@@ -95,6 +95,7 @@ body{font-family:var(--font-ui);-webkit-font-smoothing:antialiased;color:var(--i
 .rw .btn.go{background:linear-gradient(135deg,var(--gold),var(--gold2));color:#3a2705;box-shadow:0 5px 14px rgba(200,150,62,.36)}
 .rw .btn.go:active{transform:scale(.96)}
 .rw .btn.lock{background:var(--cream2);color:var(--muted2);cursor:default;font-size:11.5px;font-weight:700}
+.rw .btn:disabled{opacity:.5;cursor:default}
 .rw.locked .ph{filter:grayscale(.3) opacity(.85)}
 
 /* bonus */
@@ -359,7 +360,7 @@ function render(c){
       +'<div class="ph" style="background-image:url(\''+r.img+'\')"></div>'
       +'<div class="nm">'+esc(r.libelle)+'</div>'
       +'<div class="cost">'+r.cout+' pts</div>'
-      +(ok ? '<button class="btn go" onclick="redeem(\''+r.item+'\')">Échanger</button>'
+      +(ok ? '<button class="btn go" onclick="redeem(\''+r.item+'\', this)">Échanger</button>'
            : '<button class="btn lock">Plus que '+(r.cout-c.points_solde)+' pts</button>')
       +'</div>';
   }).join('');
@@ -373,14 +374,16 @@ function render(c){
   $('cardNo').textContent = cardId;
 }
 
-window.redeem = function(item){
+window.redeem = function(item, btn){
   const r = CATALOGUE.find(x=>x.item===item); if(!r) return;
   if(solde < r.cout){ toast('Il te manque '+(r.cout-solde)+' points.'); return; }
+  if(btn){ btn.disabled=true; btn.textContent='…'; }
+  const restore=()=>{ if(btn){ btn.disabled=false; btn.textContent='Échanger'; } };
   api('fid_redeem',{card_id:cardId, item:item}).then(d=>{
     if(d.status==='ok'){ render(d.client); loadRewards(); showConfirm({badge:'✓ Cadeau confirmé', img:r.img, title:'Bravo 🎉', lib:d.libelle, code:d.code, note:"Un email de confirmation t'a été envoyé. Montre ce code en caisse 🥐"}); }
-    else if(d.status==='insufficient'){ toast('Il te manque '+d.manque+' points.'); }
-    else { toast('Action impossible pour le moment.'); }
-  }).catch(()=>toast('Connexion impossible.'));
+    else if(d.status==='insufficient'){ toast('Il te manque '+d.manque+' points.'); restore(); }
+    else { toast('Action impossible pour le moment.'); restore(); }
+  }).catch(()=>{ toast('Connexion impossible.'); restore(); });
 };
 
 window.buyTicket = function(){
