@@ -283,15 +283,20 @@ let solde = 0;
 if($('lkIg')) $('lkIg').href = INSTA_URL;
 if($('lkFb')) $('lkFb').href = FB_URL;
 
-function api(action, extra){
+function api(action, extra, retry){
   return new Promise((resolve,reject)=>{
     let url = SHEETS_URL + '?action=' + encodeURIComponent(action);
     if(extra) for(const k in extra) url += '&' + k + '=' + encodeURIComponent(extra[k]);
-    const x = new XMLHttpRequest();
-    x.open('GET', url, true); x.timeout = 15000;
-    x.onload = ()=>{ try{ resolve(JSON.parse(x.responseText)); }catch(e){ reject(e); } };
-    x.onerror = ()=>reject(new Error('net')); x.ontimeout = ()=>reject(new Error('timeout'));
-    x.send();
+    const attempt = (left)=>{
+      const x = new XMLHttpRequest();
+      x.open('GET', url, true); x.timeout = 20000;
+      const fail = (err)=>{ if(left>0) setTimeout(()=>attempt(left-1), 700); else reject(err); };
+      x.onload = ()=>{ try{ resolve(JSON.parse(x.responseText)); }catch(e){ fail(e); } };
+      x.onerror = ()=>fail(new Error('net'));
+      x.ontimeout = ()=>fail(new Error('timeout'));
+      x.send();
+    };
+    attempt(retry?1:0);   // retry=true → 1 réessai (uniquement sur les lectures, jamais les écritures)
   });
 }
 function show(id){ ['loading','stateNew','stateUnknown','stateError','stateActive'].forEach(s=>$(s).classList.toggle('on', s===id)); }
@@ -396,25 +401,27 @@ function creditPassage(){
   }).catch(()=>{});
 }
 
-function loadRewards(){
-  api('fid_rewards',{card_id:cardId}).then(d=>{
-    if(d.status!=='ok' || !d.rewards || !d.rewards.length){ $('giftsWrap').style.display='none'; return; }
-    $('giftsWrap').style.display='';
-    $('gifts').innerHTML = d.rewards.map(g=>{
-      const done = g.statut==='done';
-      return '<div class="gift"><div class="ic">🎁</div>'
-        +'<div class="meta"><div class="n">'+esc(g.libelle)+'</div><div class="d">'+esc(g.date)+(g.code?(' · code '+esc(g.code)):'')+'</div></div>'
-        +'<div class="st '+(done?'done':'todo')+'">'+(done?'✓ Récupéré':'À récupérer')+'</div></div>';
-    }).join('');
-  }).catch(()=>{});
+function renderRewards(list){
+  if(!list || !list.length){ $('giftsWrap').style.display='none'; return; }
+  $('giftsWrap').style.display='';
+  $('gifts').innerHTML = list.map(g=>{
+    const done = g.statut==='done';
+    return '<div class="gift"><div class="ic">🎁</div>'
+      +'<div class="meta"><div class="n">'+esc(g.libelle)+'</div><div class="d">'+esc(g.date)+(g.code?(' · code '+esc(g.code)):'')+'</div></div>'
+      +'<div class="st '+(done?'done':'todo')+'">'+(done?'✓ Récupéré':'À récupérer')+'</div></div>';
+  }).join('');
 }
+function loadRewards(){ api('fid_rewards',{card_id:cardId}, true).then(d=>{ if(d.status==='ok') renderRewards(d.rewards); }).catch(()=>{}); }
 
 /* ROUTAGE */
 if(!cardId){ show('stateUnknown'); }
 else{
   $('avisLink').href = AVIS_URL + '?id=' + encodeURIComponent(cardId);
-  api('fid_client',{card_id:cardId}).then(d=>{
-    if(d.status==='active'){ render(d.client); show('stateActive'); creditPassage(); loadRewards(); }
+  api('fid_open',{card_id:cardId, source:'scan'}, true).then(d=>{
+    if(d.status==='active'){
+      render(d.client); show('stateActive'); renderRewards(d.rewards);
+      if(d.passage) toast('🎉 +'+d.passage.points_delta+' points pour ton passage !');
+    }
     else if(d.status==='new'){ show('stateNew'); }
     else { show('stateUnknown'); }
   }).catch(()=>show('stateError'));
