@@ -128,7 +128,25 @@ body{font-family:var(--font-ui);-webkit-font-smoothing:antialiased;color:var(--i
 
 .toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,16px);background:var(--ink);color:#fff;padding:14px 20px;border-radius:14px;font-size:13.5px;font-weight:600;box-shadow:0 12px 34px rgba(0,0,0,.3);z-index:99;opacity:0;pointer-events:none;transition:opacity .25s,transform .25s;max-width:340px;text-align:center}
 .toast.show{opacity:1;transform:translate(-50%,0)}
-@media(prefers-reduced-motion:reduce){.fl{animation:none}}
+
+/* modal cadeau confirmé + confettis */
+.cm-overlay{position:fixed;inset:0;z-index:200;display:none;align-items:center;justify-content:center;padding:26px;background:rgba(42,36,24,.55);backdrop-filter:blur(4px);opacity:0;transition:opacity .25s}
+.cm-overlay.show{display:flex;opacity:1}
+.cm-card{background:var(--card);border-radius:26px;padding:30px 24px 24px;max-width:330px;width:100%;text-align:center;box-shadow:0 30px 70px rgba(0,0,0,.35);border:1px solid var(--gold-line);transform:scale(.6) translateY(20px);opacity:0}
+.cm-overlay.show .cm-card{animation:cmPop .55s cubic-bezier(.34,1.56,.64,1) forwards}
+@keyframes cmPop{to{transform:scale(1) translateY(0);opacity:1}}
+.cm-badge{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--green);background:var(--green-soft);border-radius:99px;padding:6px 14px;display:inline-block;margin-bottom:14px}
+.cm-ph{width:120px;height:120px;border-radius:50%;margin:0 auto 16px;background:var(--cream2);background-size:cover;background-position:center;border:3px solid var(--gold-line);box-shadow:0 8px 22px rgba(200,150,62,.3)}
+.cm-title{font-family:var(--font-display);font-size:24px;font-weight:700;color:var(--ink);margin-bottom:4px}
+.cm-lib{font-size:14px;color:var(--muted);margin-bottom:18px}
+.cm-codebox{background:var(--cream);border:1px dashed var(--gold-line);border-radius:16px;padding:14px}
+.cm-codelbl{font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--muted2);margin-bottom:6px}
+.cm-code{font-family:var(--font-ui);font-size:38px;font-weight:800;letter-spacing:.1em;color:var(--gold);line-height:1}
+.cm-note{font-size:12px;color:var(--muted);margin:12px 0 18px;line-height:1.5}
+.cm-btn{width:100%;padding:14px;border:none;border-radius:14px;background:linear-gradient(135deg,var(--gold),var(--gold2));color:#3a2705;font-family:var(--font-ui);font-size:15px;font-weight:700;cursor:pointer}
+.confetti{position:fixed;top:-14px;z-index:210;pointer-events:none;will-change:transform,opacity}
+@keyframes confFall{to{transform:translateY(110vh) rotate(720deg);opacity:.85}}
+@media(prefers-reduced-motion:reduce){.fl{animation:none}.cm-overlay.show .cm-card{animation:none;transform:none;opacity:1}}
 </style>
 </head>
 <body>
@@ -211,6 +229,19 @@ body{font-family:var(--font-ui);-webkit-font-smoothing:antialiased;color:var(--i
 
 <div class="toast" id="toast"></div>
 
+<!-- MODAL CADEAU CONFIRMÉ -->
+<div class="cm-overlay" id="cmOverlay" onclick="if(event.target===this)closeRewardModal()">
+  <div class="cm-card">
+    <div class="cm-badge">✓ Cadeau confirmé</div>
+    <div class="cm-ph" id="cmPh"></div>
+    <div class="cm-title">Bravo 🎉</div>
+    <div class="cm-lib" id="cmLib">—</div>
+    <div class="cm-codebox"><div class="cm-codelbl">Code à présenter en caisse</div><div class="cm-code" id="cmCode">000000</div></div>
+    <div class="cm-note">Un email de confirmation t'a été envoyé avec ce code. Montre-le au vendeur 🥐</div>
+    <button class="cm-btn" onclick="closeRewardModal()">Super, merci !</button>
+  </div>
+</div>
+
 <script>
 (function(){
 'use strict';
@@ -247,6 +278,25 @@ function show(id){ ['loading','stateNew','stateUnknown','stateError','stateActiv
 function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 let tT=null;
 function toast(msg){ const t=$('toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(tT); tT=setTimeout(()=>t.classList.remove('show'),3200); }
+
+function spawnConfetti(){
+  if(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const colors=['#C8963E','#E2B25A','#F5D07A','#3F7D2E','#ffffff','#d98b5f'];
+  for(let i=0;i<90;i++){
+    const p=document.createElement('div'); p.className='confetti';
+    const size=6+Math.random()*8, dur=2.2+Math.random()*1.8, delay=Math.random()*.4;
+    p.style.cssText='left:'+(Math.random()*100)+'vw;width:'+size+'px;height:'+(size*1.4)+'px;background:'+colors[Math.floor(Math.random()*colors.length)]+';border-radius:'+(Math.random()>.5?'2px':'50%')+';animation:confFall '+dur+'s linear '+delay+'s forwards';
+    document.body.appendChild(p); setTimeout(()=>p.remove(),(dur+delay)*1000+300);
+  }
+}
+function showRewardModal(libelle, code, img){
+  $('cmLib').textContent = libelle;
+  $('cmCode').textContent = code;
+  $('cmPh').style.backgroundImage = img ? ("url('"+img+"')") : '';
+  $('cmOverlay').classList.add('show');
+  spawnConfetti();
+}
+window.closeRewardModal = function(){ $('cmOverlay').classList.remove('show'); };
 
 function render(c){
   solde = c.points_solde;
@@ -296,7 +346,7 @@ window.redeem = function(item){
   const r = CATALOGUE.find(x=>x.item===item); if(!r) return;
   if(solde < r.cout){ toast('Il te manque '+(r.cout-solde)+' points.'); return; }
   api('fid_redeem',{card_id:cardId, item:item}).then(d=>{
-    if(d.status==='ok'){ render(d.client); loadRewards(); toast('🎁 '+d.libelle+' débloqué ! Montre le code '+d.code+' en caisse.'); }
+    if(d.status==='ok'){ render(d.client); loadRewards(); showRewardModal(d.libelle, d.code, r.img); }
     else if(d.status==='insufficient'){ toast('Il te manque '+d.manque+' points.'); }
     else { toast('Action impossible pour le moment.'); }
   }).catch(()=>toast('Connexion impossible.'));
