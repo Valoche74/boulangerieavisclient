@@ -436,7 +436,7 @@ body::after{
   <div class="s2-header">
     <div class="s2-eyebrow">Votre cadeau</div>
     <div class="s2-title">Ouvrez votre cadeau.</div>
-    <div class="s2-sub">Glissez le doigt sur le sceau pour ouvrir</div>
+    <div class="s2-sub">Touchez le sachet pour l'ouvrir 🎁</div>
   </div>
 
   <div class="booster-scene" id="boosterScene">
@@ -493,7 +493,7 @@ body::after{
     </div>
   </div>
 
-  <div class="booster-hint" id="boosterHint">Glissez le sceau vers la droite ✦</div>
+  <div class="booster-hint" id="boosterHint">Touchez le sachet pour l'ouvrir ✦</div>
 
   <button class="btn-fallback" id="fallbackBtn" onclick="revealBooster()">Ouvrir mon cadeau →</button>
   <button class="btn-claim" id="claimBtn" onclick="goToForm()">Recevoir mon code 🎁</button>
@@ -706,6 +706,7 @@ const OPEN_THRESHOLD = 0.80;
 let bDragging = false;
 let bStartX   = 0;
 let bProgress = 0; // 0 → 1
+let bMoved    = false; // a-t-on bougé significativement ? sinon = simple tap
 
 const tab   = ()=> document.getElementById("boosterTab");
 const flapL = ()=> document.getElementById("flapL");
@@ -723,12 +724,17 @@ document.addEventListener("DOMContentLoaded",()=>{
   t.addEventListener("pointermove",  onBMove,  {passive:true});
   t.addEventListener("pointerup",    onBUp,    {passive:true});
   t.addEventListener("pointercancel",onBUp,    {passive:true});
+
+  // Clic / tap n'importe où sur le sachet → ouverture (en plus du swipe)
+  const scene = document.getElementById("boosterScene");
+  if(scene) scene.addEventListener("click", ()=>{ if(!boosterOpened) revealBooster(); });
 });
 
 function onBDown(e){
   if(boosterOpened) return;
   e.preventDefault(); // empêche le scroll
   bDragging = true;
+  bMoved    = false;
   bStartX   = e.clientX;
   tab().setPointerCapture(e.pointerId);
   tab().style.transition = "none";
@@ -739,6 +745,7 @@ function onBDown(e){
 function onBMove(e){
   if(!bDragging || boosterOpened) return;
   const dx = e.clientX - bStartX;
+  if(Math.abs(dx) > 8) bMoved = true;
   bProgress = Math.max(0, Math.min(1, dx / DRAG_DISTANCE));
   applyProgress(bProgress);
 }
@@ -748,11 +755,11 @@ function onBUp(){
   bDragging = false;
 
   if(bProgress >= OPEN_THRESHOLD){
-    // Ouverture complète
-    revealBooster();
+    revealBooster();              // glissé jusqu'au bout
+  } else if(!bMoved){
+    revealBooster();              // simple tap / clic → s'ouvre tout seul
   } else {
-    // Snap back
-    snapBack();
+    snapBack();                  // glissé trop court → revient
   }
 }
 
