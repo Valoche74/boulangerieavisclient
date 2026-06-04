@@ -573,6 +573,10 @@ let wonPrize = null;
 let googleOpened = false;
 let boosterOpened = false;
 
+/* card_id de la carte NFC : présent si on arrive depuis card.html (?id=FAL-XXXX).
+   S'il est là, la fin du parcours avis créera le profil fidélité (bascule avis → fidélité). */
+const fidCardId = (new URLSearchParams(location.search).get("id") || "").trim();
+
 /* ─── Nav ─── */
 function showScreen(id){
   document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
@@ -901,6 +905,7 @@ async function submitForm(){
       if(data.status==="saved"||data.status==="duplicate"){
         showScreen("screen4");
         document.getElementById("s4code").textContent=code;
+        activateFidelite(prenom, nom, email);   // si carte NFC : crée le profil fidélité (bascule avis → fidélité)
       } else {
         btn.textContent=btnOriginal;btn.disabled=false;
         alert("Erreur Apps Script : "+(data.message||JSON.stringify(data)));
@@ -925,6 +930,22 @@ async function submitForm(){
   };
 
   xhr.send();
+}
+
+/* ─── Bascule avis → fidélité : crée le profil de la carte NFC (fire-and-forget) ─── */
+function activateFidelite(prenom, nom, email){
+  if(!fidCardId) return;   // pas venu d'une carte NFC → parcours avis classique, rien à activer
+  const url = SHEETS_URL
+    + "?action=fid_activate"
+    + "&card_id=" + encodeURIComponent(fidCardId)
+    + "&prenom="  + encodeURIComponent(prenom||"")
+    + "&nom="     + encodeURIComponent(nom||"")
+    + "&email="   + encodeURIComponent(email||"");
+  const ax = new XMLHttpRequest();
+  ax.open("GET", url, true); ax.timeout = 15000;
+  ax.onload  = ()=>console.log("[BoostAvis] fid_activate:", ax.responseText.slice(0,160));
+  ax.onerror = ()=>console.warn("[BoostAvis] fid_activate échec réseau");
+  ax.send();
 }
 
 /* ─── Particules ─── */

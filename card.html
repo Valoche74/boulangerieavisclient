@@ -55,22 +55,6 @@ body::after{content:'';position:fixed;inset:0;z-index:1;pointer-events:none;opac
 .lvl-msg{font-size:11.5px;color:rgba(245,237,216,.7);margin-top:9px;text-align:center}
 .lvl-msg b{color:var(--gold3)}
 
-/* carte tampons (crème) */
-.stampcard{width:100%;background:linear-gradient(180deg,#FBF6EE,#F5EDD8);border-radius:22px;padding:18px 20px 20px;box-shadow:0 18px 44px rgba(0,0,0,.28),0 0 0 1px rgba(200,150,62,.16) inset;margin-bottom:14px}
-.sc-h{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px}
-.sc-h .t{font-family:'Playfair Display',serif;font-size:15px;font-weight:700;color:var(--ink)}
-.sc-h .c{font-family:'Playfair Display',serif;font-size:22px;font-weight:900;color:var(--gold)}
-.sc-h .c span{font-size:14px;color:var(--muted2)}
-.sc-sub{font-size:11px;color:var(--muted2);margin-bottom:13px}
-.stamps{display:grid;grid-template-columns:repeat(5,1fr);gap:9px}
-.st{aspect-ratio:1;border-radius:50%;display:grid;place-items:center;font-size:13px;font-weight:700;background:rgba(200,150,62,.07);border:1.5px dashed rgba(200,150,62,.4);color:var(--muted2)}
-.st.full{background:linear-gradient(135deg,var(--gold),var(--gold2),var(--gold3));border-style:solid;border-color:transparent;box-shadow:0 3px 9px rgba(200,150,62,.4)}
-.st.full::after{content:'🥐';font-size:15px;filter:saturate(0) brightness(2.4)}
-.st.rw2{border:2px solid var(--gold);background:rgba(200,150,62,.1)}
-.st.rw2::after{content:'🎁';font-size:16px}
-.sc-msg{font-size:12px;color:var(--muted);text-align:center;margin-top:13px}
-.sc-msg b{color:var(--gold);font-weight:800}
-
 /* bloc tickets (frosted) */
 .tick{width:100%;background:rgba(245,237,216,.10);border:1px solid rgba(200,150,62,.28);border-radius:20px;padding:18px;backdrop-filter:blur(10px);margin-bottom:14px;text-align:center}
 .tick-h{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.16em;color:rgba(245,237,216,.55);margin-bottom:10px}
@@ -153,13 +137,6 @@ body::after{content:'';position:fixed;inset:0;z-index:1;pointer-events:none;opac
     <div class="lvl-msg" id="cLvlMsg">—</div>
   </div>
 
-  <div class="stampcard">
-    <div class="sc-h"><span class="t">Carte de passages</span><span class="c"><span id="cTampons">0</span><span> / 10</span></span></div>
-    <div class="sc-sub">1 tampon par passage · 10 = une gourmandise offerte</div>
-    <div class="stamps" id="stampGrid"></div>
-    <div class="sc-msg" id="cStampMsg">—</div>
-  </div>
-
   <div class="tick">
     <div class="tick-h">Tirage du mois</div>
     <div class="tick-row">
@@ -227,18 +204,6 @@ function render(c){
     $('cLvlBar').style.width = '100%';
     $('cLvlMsg').innerHTML = '🏆 Niveau maximum atteint — merci de votre fidélité !';
   }
-  // tampons
-  $('cTampons').textContent = c.tampons;
-  const grid = $('stampGrid'); grid.innerHTML='';
-  for(let i=1;i<=10;i++){
-    const d=document.createElement('div');
-    d.className='st'+(i===10?' rw2':'')+(i<=c.tampons?' full':'');
-    if(i>c.tampons && i<10) d.textContent=i; if(i===10 && c.tampons<10) d.textContent='';
-    grid.appendChild(d);
-  }
-  const reste = 10 - c.tampons;
-  $('cStampMsg').innerHTML = c.tampons>=10 ? '🎉 <b>Gourmandise débloquée !</b>'
-    : 'Plus que <b>'+reste+' passage'+(reste>1?'s':'')+'</b> avant votre gourmandise';
   // tickets
   $('cTickets').textContent = c.tickets_mois;
   $('cAchet').textContent = (c.tickets_achetables!=null)?c.tickets_achetables:Math.floor(c.points_solde/coutTicket);
@@ -259,12 +224,20 @@ window.buyTicket = function(){
   }).catch(()=>{ toast('Connexion impossible.'); $('buyBtn').disabled=false; });
 };
 
+/* ── Crédit d'un passage (scan) : +points, anti-spam géré côté serveur ── */
+function creditPassage(){
+  api('fid_passage',{card_id:cardId, source:'scan'}).then(d=>{
+    if(d.status==='ok'){ render(d.client); toast('🎉 +'+d.points_delta+' points pour votre passage !'); }
+    else if(d.status==='cooldown' && d.client){ render(d.client); }   // déjà crédité récemment → pas de nouveau toast
+  }).catch(()=>{});
+}
+
 /* ── ROUTAGE au chargement ── */
 if(!cardId){ show('stateUnknown'); }
 else {
   $('avisLink').href = AVIS_URL + '?id=' + encodeURIComponent(cardId);
   api('fid_client',{card_id:cardId}).then(d=>{
-    if(d.status==='active'){ render(d.client); show('stateActive'); }
+    if(d.status==='active'){ render(d.client); show('stateActive'); creditPassage(); }
     else if(d.status==='new'){ show('stateNew'); }
     else { show('stateUnknown'); }
   }).catch(()=>show('stateError'));
