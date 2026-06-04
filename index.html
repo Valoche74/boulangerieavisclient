@@ -518,6 +518,7 @@ body::after{
       <div class="field"><label class="field-label">Prénom</label><input class="field-input" type="text" id="fieldPrenom" placeholder="Jean" autocomplete="given-name"></div>
       <div class="field"><label class="field-label">Nom</label><input class="field-input" type="text" id="fieldNom" placeholder="Dupont" autocomplete="family-name"></div>
       <div class="field"><label class="field-label">Email</label><input class="field-input" type="email" id="fieldEmail" placeholder="jean@exemple.fr" autocomplete="email"></div>
+      <div class="field"><label class="field-label">Date de naissance <span style="text-transform:none;letter-spacing:0;font-weight:400;color:var(--muted2)">— pour votre cadeau 🎂 (facultatif)</span></label><input class="field-input" type="date" id="fieldNaissance" autocomplete="bday"></div>
       <button class="s3-submit" onclick="submitForm()">Recevoir mon coupon 🎁</button>
       <div class="s3-legal">🔒 Données sécurisées · Non revendues · RGPD</div>
     </div>
@@ -876,7 +877,8 @@ async function submitForm(){
   const prenom=document.getElementById("fieldPrenom").value.trim();
   const nom=document.getElementById("fieldNom").value.trim();
   const email=document.getElementById("fieldEmail").value.trim();
-  if(!prenom||!nom||!email){alert("Veuillez remplir tous les champs.");return}
+  const naissance=document.getElementById("fieldNaissance").value;  // AAAA-MM-JJ ou '' (facultatif)
+  if(!prenom||!nom||!email){alert("Veuillez remplir prénom, nom et email.");return}
   const btn=document.querySelector(".s3-submit");
   const btnOriginal=btn.textContent;
   btn.textContent="Envoi en cours…";btn.disabled=true;
@@ -912,7 +914,7 @@ async function submitForm(){
       if(data.status==="saved"||data.status==="duplicate"){
         showScreen("screen4");
         document.getElementById("s4code").textContent=code;
-        activateFidelite(prenom, nom, email, gain, code);   // carte NFC : crée le profil + cadeau de bienvenue au répertoire
+        activateFidelite(prenom, nom, email, gain, code, naissance);   // carte NFC : profil + cadeau bienvenue + date de naissance
       } else {
         btn.textContent=btnOriginal;btn.disabled=false;
         alert("Erreur Apps Script : "+(data.message||JSON.stringify(data)));
@@ -940,7 +942,7 @@ async function submitForm(){
 }
 
 /* ─── Bascule avis → fidélité : crée le profil de la carte NFC (fire-and-forget) ─── */
-function activateFidelite(prenom, nom, email, gain, code){
+function activateFidelite(prenom, nom, email, gain, code, naissance){
   if(!fidCardId) return;   // pas venu d'une carte NFC → parcours avis classique, rien à activer
   const url = SHEETS_URL
     + "?action=fid_activate"
@@ -949,7 +951,8 @@ function activateFidelite(prenom, nom, email, gain, code){
     + "&nom="     + encodeURIComponent(nom||"")
     + "&email="   + encodeURIComponent(email||"")
     + "&gain="    + encodeURIComponent(gain||"")
-    + "&code="    + encodeURIComponent(code||"");
+    + "&code="    + encodeURIComponent(code||"")
+    + "&anniversaire=" + encodeURIComponent(naissance||"");
   const ax = new XMLHttpRequest();
   ax.open("GET", url, true); ax.timeout = 15000;
   ax.onload  = ()=>console.log("[BoostAvis] fid_activate:", ax.responseText.slice(0,160));

@@ -136,7 +136,7 @@ body{font-family:var(--font-ui);-webkit-font-smoothing:antialiased;color:var(--i
 .cm-overlay.show .cm-card{animation:cmPop .55s cubic-bezier(.34,1.56,.64,1) forwards}
 @keyframes cmPop{to{transform:scale(1) translateY(0);opacity:1}}
 .cm-badge{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--green);background:var(--green-soft);border-radius:99px;padding:6px 14px;display:inline-block;margin-bottom:14px}
-.cm-ph{width:120px;height:120px;border-radius:50%;margin:0 auto 16px;background:var(--cream2);background-size:cover;background-position:center;border:3px solid var(--gold-line);box-shadow:0 8px 22px rgba(200,150,62,.3)}
+.cm-ph{width:120px;height:120px;border-radius:50%;margin:0 auto 16px;background:var(--cream2);background-size:cover;background-position:center;display:grid;place-items:center;font-size:58px;border:3px solid var(--gold-line);box-shadow:0 8px 22px rgba(200,150,62,.3)}
 .cm-title{font-family:var(--font-display);font-size:24px;font-weight:700;color:var(--ink);margin-bottom:4px}
 .cm-lib{font-size:14px;color:var(--muted);margin-bottom:18px}
 .cm-codebox{background:var(--cream);border:1px dashed var(--gold-line);border-radius:16px;padding:14px}
@@ -144,6 +144,14 @@ body{font-family:var(--font-ui);-webkit-font-smoothing:antialiased;color:var(--i
 .cm-code{font-family:var(--font-ui);font-size:38px;font-weight:800;letter-spacing:.1em;color:var(--gold);line-height:1}
 .cm-note{font-size:12px;color:var(--muted);margin:12px 0 18px;line-height:1.5}
 .cm-btn{width:100%;padding:14px;border:none;border-radius:14px;background:linear-gradient(135deg,var(--gold),var(--gold2));color:#3a2705;font-family:var(--font-ui);font-size:15px;font-weight:700;cursor:pointer}
+/* réseaux sociaux */
+.social{background:var(--card);border-radius:20px;padding:15px 18px;box-shadow:var(--shadow);border:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:12px}
+.social-txt{font-size:12.5px;color:var(--ink);line-height:1.45}.social-txt b{color:var(--gold);font-weight:700}
+.social-links{display:flex;gap:10px;flex-shrink:0}
+.slink{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;text-decoration:none;box-shadow:0 4px 12px rgba(0,0,0,.16);transition:transform .12s}
+.slink:active{transform:scale(.93)}
+.slink.ig{background:linear-gradient(45deg,#f09433,#e6683c 28%,#dc2743 50%,#cc2366 72%,#bc1888)}
+.slink.fb{background:#1877F2}
 .confetti{position:fixed;top:-14px;z-index:210;pointer-events:none;will-change:transform,opacity}
 @keyframes confFall{to{transform:translateY(110vh) rotate(720deg);opacity:.85}}
 @media(prefers-reduced-motion:reduce){.fl{animation:none}.cm-overlay.show .cm-card{animation:none;transform:none;opacity:1}}
@@ -212,7 +220,15 @@ body{font-family:var(--font-ui);-webkit-font-smoothing:antialiased;color:var(--i
     <div class="big" id="cTickets">Tu as 0 ticket</div>
     <div class="sub" id="tickSub">—</div>
     <button class="tick-buy" id="buyBtn" onclick="buyTicket()">🎟️ Acheter un ticket · 100 pts</button>
-    <div class="tick-note">+1 ticket offert si tu nous suis (demande en caisse)</div>
+    <div class="tick-note">Plus tu as de tickets, plus tu as de chances 🍀</div>
+  </div>
+
+  <div class="social">
+    <div class="social-txt">Suis-nous ! Chaque mois, <b>un abonné</b> est tiré au sort 🎁</div>
+    <div class="social-links">
+      <a class="slink ig" id="lkIg" href="#" target="_blank" rel="noopener" aria-label="Instagram"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#fff" stroke-width="2"><rect x="2.5" y="2.5" width="19" height="19" rx="5.5"/><circle cx="12" cy="12" r="4.3"/><circle cx="17.6" cy="6.4" r="1.3" fill="#fff" stroke="none"/></svg></a>
+      <a class="slink fb" id="lkFb" href="#" target="_blank" rel="noopener" aria-label="Facebook"><svg viewBox="0 0 24 24" width="22" height="22" fill="#fff"><path d="M13.5 21v-8h2.7l.4-3.1h-3.1V7.9c0-.9.25-1.5 1.55-1.5H17V3.6c-.3-.04-1.3-.13-2.46-.13-2.43 0-4.1 1.48-4.1 4.21v2.35H7.7V13h2.74v8h3.06z"/></svg></a>
+    </div>
   </div>
 
   <div id="giftsWrap" style="display:none">
@@ -232,12 +248,12 @@ body{font-family:var(--font-ui);-webkit-font-smoothing:antialiased;color:var(--i
 <!-- MODAL CADEAU CONFIRMÉ -->
 <div class="cm-overlay" id="cmOverlay" onclick="if(event.target===this)closeRewardModal()">
   <div class="cm-card">
-    <div class="cm-badge">✓ Cadeau confirmé</div>
+    <div class="cm-badge" id="cmBadge">✓ Cadeau confirmé</div>
     <div class="cm-ph" id="cmPh"></div>
-    <div class="cm-title">Bravo 🎉</div>
+    <div class="cm-title" id="cmTitle">Bravo 🎉</div>
     <div class="cm-lib" id="cmLib">—</div>
-    <div class="cm-codebox"><div class="cm-codelbl">Code à présenter en caisse</div><div class="cm-code" id="cmCode">000000</div></div>
-    <div class="cm-note">Un email de confirmation t'a été envoyé avec ce code. Montre-le au vendeur 🥐</div>
+    <div class="cm-codebox" id="cmCodebox"><div class="cm-codelbl">Code à présenter en caisse</div><div class="cm-code" id="cmCode">000000</div></div>
+    <div class="cm-note" id="cmNote">—</div>
     <button class="cm-btn" onclick="closeRewardModal()">Super, merci !</button>
   </div>
 </div>
@@ -247,6 +263,8 @@ body{font-family:var(--font-ui);-webkit-font-smoothing:antialiased;color:var(--i
 'use strict';
 const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbx0N4dLSGtyUMgA_lA8N9O-B3rleX7zHgTFAXZyiV7hEf5ioXAcVI245hHdi4CMKuCn/exec';
 const AVIS_URL   = 'https://boulangerieavisclient.vercel.app/';
+const INSTA_URL  = 'https://www.instagram.com/';   /* TODO: remplacer par le compte Instagram de Falman */
+const FB_URL     = 'https://www.facebook.com/';     /* TODO: remplacer par le compte Facebook de Falman */
 const NIVEAUX = [{nom:'Découverte',min:0},{nom:'Fidèle',min:150},{nom:'VIP',min:600}];
 // Catalogue (mêmes clés/coûts que FID_CATALOGUE côté serveur)
 const CATALOGUE = [
@@ -262,6 +280,8 @@ const params = new URLSearchParams(location.search);
 const cardId = (params.get('id')||'').trim();
 const $ = id => document.getElementById(id);
 let solde = 0;
+if($('lkIg')) $('lkIg').href = INSTA_URL;
+if($('lkFb')) $('lkFb').href = FB_URL;
 
 function api(action, extra){
   return new Promise((resolve,reject)=>{
@@ -289,10 +309,16 @@ function spawnConfetti(){
     document.body.appendChild(p); setTimeout(()=>p.remove(),(dur+delay)*1000+300);
   }
 }
-function showRewardModal(libelle, code, img){
-  $('cmLib').textContent = libelle;
-  $('cmCode').textContent = code;
-  $('cmPh').style.backgroundImage = img ? ("url('"+img+"')") : '';
+function showConfirm(o){
+  $('cmBadge').textContent = o.badge || '✓ Confirmé';
+  const ph = $('cmPh');
+  if(o.img){ ph.style.backgroundImage = "url('"+o.img+"')"; ph.textContent = ''; }
+  else { ph.style.backgroundImage = ''; ph.textContent = o.emoji || '🎁'; }
+  $('cmTitle').textContent = o.title || 'Bravo 🎉';
+  $('cmLib').textContent = o.lib || '';
+  if(o.code){ $('cmCodebox').style.display = ''; $('cmCode').textContent = o.code; }
+  else { $('cmCodebox').style.display = 'none'; }
+  $('cmNote').textContent = o.note || '';
   $('cmOverlay').classList.add('show');
   spawnConfetti();
 }
@@ -346,7 +372,7 @@ window.redeem = function(item){
   const r = CATALOGUE.find(x=>x.item===item); if(!r) return;
   if(solde < r.cout){ toast('Il te manque '+(r.cout-solde)+' points.'); return; }
   api('fid_redeem',{card_id:cardId, item:item}).then(d=>{
-    if(d.status==='ok'){ render(d.client); loadRewards(); showRewardModal(d.libelle, d.code, r.img); }
+    if(d.status==='ok'){ render(d.client); loadRewards(); showConfirm({badge:'✓ Cadeau confirmé', img:r.img, title:'Bravo 🎉', lib:d.libelle, code:d.code, note:"Un email de confirmation t'a été envoyé. Montre ce code en caisse 🥐"}); }
     else if(d.status==='insufficient'){ toast('Il te manque '+d.manque+' points.'); }
     else { toast('Action impossible pour le moment.'); }
   }).catch(()=>toast('Connexion impossible.'));
@@ -357,7 +383,7 @@ window.buyTicket = function(){
   if(solde < cout){ toast('Il te manque '+(cout-solde)+' points.'); return; }
   $('buyBtn').disabled = true;
   api('fid_buyticket',{card_id:cardId, qty:1, source:'client'}).then(d=>{
-    if(d.status==='ok'){ render(d.client); toast('🎟️ Ticket acheté ! Bonne chance au tirage.'); }
+    if(d.status==='ok'){ render(d.client); showConfirm({badge:'🎟️ Ticket validé', emoji:'🎟️', title:'Bonne chance 🍀', lib:'Tu as '+d.client.tickets_mois+' ticket(s) ce mois', note:"Un email de confirmation t'a été envoyé. Tirage en fin de mois !"}); }
     else if(d.status==='insufficient'){ render(d.client); toast('Il te manque '+d.manque+' points.'); }
     else { toast('Action impossible.'); render(d.client||{}); }
   }).catch(()=>{ toast('Connexion impossible.'); });
