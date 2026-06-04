@@ -84,6 +84,9 @@ body::after{content:'';position:fixed;inset:0;z-index:1;pointer-events:none;opac
 .toast.show{opacity:1;transform:translate(-50%,0)}
 .foot{margin-top:8px;text-align:center;font-size:11px;color:rgba(245,237,216,.4);line-height:1.6}
 .foot b{color:rgba(200,150,62,.75);font-family:'Playfair Display',serif;font-style:italic}
+/* numéro de carte (discret) — fallback si le NFC ne marche pas : le vendeur le saisit au kiosque */
+.cardno{margin-top:12px;text-align:center;font-size:10px;letter-spacing:.1em;color:rgba(245,237,216,.30);font-family:'Inter',sans-serif}
+.cardno b{color:rgba(245,237,216,.5);font-weight:600;letter-spacing:.14em}
 @media(prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
 </style>
 </head>
@@ -148,6 +151,7 @@ body::after{content:'';position:fixed;inset:0;z-index:1;pointer-events:none;opac
   </div>
 
   <div class="foot">Merci pour votre fidélité 🙏<br><b id="footName">Falman Emmanuelle et Flavien</b></div>
+  <div class="cardno" id="cardNo"></div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -212,6 +216,7 @@ function render(c){
   $('buyBtn').disabled = !can;
   $('tickNote').textContent = can ? 'Chaque ticket = une chance au tirage du mois.'
     : 'Il vous manque '+(coutTicket - c.points_solde)+' points pour un ticket.';
+  $('cardNo').innerHTML = 'N° de carte&nbsp;·&nbsp;<b>'+cardId+'</b>';
 }
 
 window.buyTicket = function(){
