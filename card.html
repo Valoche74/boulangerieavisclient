@@ -211,7 +211,7 @@ body{font-family:var(--font-ui);-webkit-font-smoothing:antialiased;color:var(--i
 
   <div class="sec-h"><span class="t">Gagner plus de points</span></div>
   <div class="bonus">
-    <div class="bn"><div class="ic trust">★</div><div class="t">Avis Trustpilot</div><div class="s">+30 pts</div></div>
+    <a class="bn" id="lkTrust" href="#" target="_blank" rel="noopener" style="text-decoration:none"><div class="ic trust">★</div><div class="t">Avis Trustpilot</div><div class="s">+30 pts</div></a>
     <div class="bn green"><div class="ic">🎂</div><div class="t">Anniversaire</div><div class="s">Cadeau le jour J</div></div>
     <div class="bn"><div class="ic">📱</div><div class="t">Giveaway du mois</div><div class="s">Suis-nous !</div></div>
   </div>
@@ -266,6 +266,7 @@ const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbx0N4dLSGtyUMgA_lA8N
 const AVIS_URL   = 'https://boulangerieavisclient.vercel.app/';
 const INSTA_URL  = 'https://www.instagram.com/dupainetdesidees/';  /* PLACEHOLDER boulangerie — à remplacer par le compte Falman */
 const FB_URL     = 'https://www.facebook.com/poilane/';            /* PLACEHOLDER boulangerie — à remplacer par le compte Falman */
+const TRUST_URL  = 'https://fr.trustpilot.com/';                   /* PLACEHOLDER — à remplacer par la page Trustpilot du commerce */
 const NIVEAUX = [{nom:'Découverte',min:0},{nom:'Fidèle',min:150},{nom:'VIP',min:600}];
 // Catalogue (mêmes clés/coûts que FID_CATALOGUE côté serveur)
 const CATALOGUE = [
@@ -283,6 +284,7 @@ const $ = id => document.getElementById(id);
 let solde = 0;
 if($('lkIg')) $('lkIg').href = INSTA_URL;
 if($('lkFb')) $('lkFb').href = FB_URL;
+if($('lkTrust')) $('lkTrust').href = TRUST_URL;
 
 function api(action, extra, retry){
   return new Promise((resolve,reject)=>{
