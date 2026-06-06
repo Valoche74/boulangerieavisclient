@@ -177,6 +177,18 @@ body{font-family:var(--font-ui);-webkit-font-smoothing:antialiased;color:var(--i
 .agb-price{text-align:right;flex-shrink:0}
 .agb-price .pr{font-size:18px;font-weight:800;color:var(--green)}
 .agb-price .or{font-size:11px;color:var(--muted2);text-decoration:line-through}
+/* toggle alertes email (opt-in) */
+.optrow{display:flex;align-items:center;gap:13px;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:15px 16px;box-shadow:var(--shadow)}
+.optrow .oi{font-size:24px;flex-shrink:0}
+.optrow .ot{flex:1;min-width:0}
+.optrow .ot .n{font-size:14.5px;font-weight:700;color:var(--ink)}
+.optrow .ot .d{font-size:11.5px;color:var(--muted);margin-top:2px;line-height:1.4}
+.switch{position:relative;width:54px;height:31px;flex-shrink:0;cursor:pointer}
+.switch input{opacity:0;width:0;height:0;position:absolute}
+.switch .sl{position:absolute;inset:0;background:var(--cream2);border:1px solid var(--gold-line);border-radius:99px;transition:.2s}
+.switch .sl::before{content:'';position:absolute;width:25px;height:25px;left:2px;top:2px;background:#fff;border-radius:50%;box-shadow:0 2px 6px rgba(0,0,0,.22);transition:.2s}
+.switch input:checked + .sl{background:linear-gradient(135deg,var(--gold),var(--gold2));border-color:transparent}
+.switch input:checked + .sl::before{transform:translateX(23px)}
 @media(prefers-reduced-motion:reduce){.fl{animation:none}.cm-overlay.show .cm-card{animation:none;transform:none;opacity:1}}
 </style>
 </head>
@@ -261,6 +273,12 @@ body{font-family:var(--font-ui);-webkit-font-smoothing:antialiased;color:var(--i
   <div id="giftsWrap" style="display:none">
     <div class="sec-h"><span class="t">Mes cadeaux</span></div>
     <div class="gifts" id="gifts"></div>
+  </div>
+
+  <div class="optrow">
+    <div class="oi">🔔</div>
+    <div class="ot"><div class="n">Alertes anti-gaspi</div><div class="d">Reçois un email quand un panier invendu est dispo</div></div>
+    <label class="switch"><input type="checkbox" id="optMail" onchange="setOptin(this.checked)"><span class="sl"></span></label>
   </div>
 
   <div class="foot">
@@ -411,6 +429,8 @@ function render(c){
   $('buyBtn').disabled = c.points_solde < cout;
   $('buyBtn').textContent = '🎟️ Acheter un ticket · '+cout+' pts';
   $('cardNo').textContent = cardId;
+  const oi = String(c.email_opt_in||'').toLowerCase();
+  if($('optMail')) $('optMail').checked = !(oi==='off'||oi==='non'||oi==='no'||oi==='0'||oi==='false');
 }
 
 window.redeem = function(item, btn){
@@ -423,6 +443,13 @@ window.redeem = function(item, btn){
     else if(d.status==='insufficient'){ toast('Il te manque '+d.manque+' points.'); restore(); }
     else { toast('Action impossible pour le moment.'); restore(); }
   }).catch(()=>{ toast('Connexion impossible.'); restore(); });
+};
+
+window.setOptin = function(on){
+  api('fid_optin',{card_id:cardId, value:on?'on':'off'}).then(d=>{
+    if(d.status==='ok') toast(on?'🔔 Alertes activées':'Alertes désactivées');
+    else { toast('Action impossible.'); const el=$('optMail'); if(el) el.checked=!on; }
+  }).catch(()=>{ toast('Connexion impossible.'); const el=$('optMail'); if(el) el.checked=!on; });
 };
 
 window.buyTicket = function(){
