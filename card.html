@@ -171,7 +171,7 @@ body{font-family:var(--font-ui);-webkit-font-smoothing:antialiased;color:var(--i
 .agb-h .tag{margin-left:auto;font-family:var(--font-ui);font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;color:#2a6b1f;background:rgba(63,125,46,.16);border:1px solid rgba(63,125,46,.3);border-radius:99px;padding:3px 9px}
 .agb-sub{font-size:12px;color:var(--muted);margin:3px 0 4px}
 .agb-item{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:11px 13px;margin-top:8px}
-.agb-emoji{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;font-size:22px;background:var(--cream2);flex-shrink:0}
+.agb-emoji{width:46px;height:46px;border-radius:12px;display:grid;place-items:center;font-size:22px;background:var(--cream2);background-size:cover;background-position:center;flex-shrink:0}
 .agb-meta{flex:1;min-width:0}.agb-meta .n{font-size:14px;font-weight:700;color:var(--ink)}.agb-meta .d{font-size:11.5px;color:var(--muted);margin-top:2px}
 .agb-qty{font-weight:800;color:#2a6b1f}
 .agb-price{text-align:right;flex-shrink:0}
@@ -485,13 +485,14 @@ function loadRewards(){ api('fid_rewards',{card_id:cardId}, true).then(d=>{ if(d
 /* 🥖 Paniers anti-gaspi du jour (alerte) */
 function eurC(n){ return (Number(n)||0).toFixed(2).replace('.',',')+' €'; }
 function agEmoji(lib){ lib=(lib||'').toLowerCase(); if(lib.indexOf('vienn')>=0)return '🥐'; if(lib.indexOf('pain')>=0)return '🥖'; if(lib.indexOf('sandw')>=0)return '🥪'; if(lib.indexOf('atis')>=0)return '🍰'; return '🎁'; }
+function agImg(lib){ lib=(lib||'').toLowerCase(); if(lib.indexOf('vienn')>=0)return 'viennoiserie.png'; if(lib.indexOf('pain')>=0)return 'baguette.png'; if(lib.indexOf('sandw')>=0)return 'sandwich.png'; if(lib.indexOf('atis')>=0)return 'patisserie.png'; return 'gateau.png'; }
 function renderPaniers(list){
   const el = $('agBanner');
   if(!list || !list.length){ el.style.display='none'; el.innerHTML=''; return; }
   el.style.display='';
   el.innerHTML = '<div class="agb-h">🥖 Paniers anti-gaspi<span class="tag">Aujourd\'hui</span></div>'
     + '<div class="agb-sub">À récupérer en boutique avant la fermeture — premier arrivé, premier servi&nbsp;!</div>'
-    + list.map(p => '<div class="agb-item"><div class="agb-emoji">'+agEmoji(p.libelle)+'</div>'
+    + list.map(p => '<div class="agb-item"><div class="agb-emoji" style="background-image:url(assets/'+agImg(p.libelle)+')"></div>'
         + '<div class="agb-meta"><div class="n">'+esc(p.libelle)+'</div><div class="d">'+(p.retrait_avant?('Retrait avant '+esc(p.retrait_avant)+' · '):'')+'<span class="agb-qty">'+p.qty+' dispo</span></div></div>'
         + '<div class="agb-price"><div class="pr">'+eurC(p.prix_reduit)+'</div>'+(p.prix_origine?('<div class="or">'+eurC(p.prix_origine)+'</div>'):'')+'</div></div>').join('');
 }
