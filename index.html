@@ -559,6 +559,7 @@ body::after{
 (function(){
   var T={fleuriste:['#C8568E','#E084B0','#F4B6D2'],pizzeria:['#C8442E','#E2664E','#F2A07E'],vape:['#6D5AE0','#8A7AF0','#B6ABFF'],restaurant:['#9A3F4C','#B85A68','#D78F99'],primeur:['#E0892E','#F0A94E','#F8C87C']};
   var N={fleuriste:'Au Jardin de Rose',pizzeria:'Bella Napoli',vape:'VapoStore',restaurant:'Le Bistrot',primeur:'Le Panier Frais'};
+  var E={fleuriste:'🌷',pizzeria:'🍕',vape:'💨',restaurant:'🍽️',primeur:'🥕'};
   var t=(new URLSearchParams(location.search).get('type')||'').toLowerCase();
   if(!T[t]) return;
   function hx(h,a){h=h.replace('#','');var n=parseInt(h,16);return 'rgba('+((n>>16)&255)+','+((n>>8)&255)+','+(n&255)+','+a+')';}
@@ -567,6 +568,10 @@ body::after{
   document.addEventListener('DOMContentLoaded',function(){
     document.querySelectorAll('.booster-bakery-name,.flap-brand').forEach(function(e){e.textContent=N[t];});
     var vn=document.querySelector('.viewer-name'); if(vn) vn.textContent=N[t];
+    var cv=document.getElementById('threeCanvas'); if(cv) cv.style.setProperty('display','none','important');
+    var vl=document.getElementById('viewerLoading'); if(vl) vl.classList.add('gone');
+    var fb=document.getElementById('croissantFallback'); if(fb){ fb.textContent=E[t]; fb.classList.add('show'); }
+    var ce=document.getElementById('cardEmoji'); if(ce) ce.textContent=E[t];
     document.title=N[t];
   });
 })();
@@ -578,11 +583,19 @@ body::after{
 /* ═══════════════════════════════════════════
    CONFIG
 ═══════════════════════════════════════════ */
-const PRIZES = [
+let PRIZES = [
   {name:"Croissant Artisanal", emoji:"🥐", prob:.5},
   {name:"Baguette Tradition",  emoji:"🥖", prob:.98},
   {name:"Pâtisserie du Jour",  emoji:"🍰", prob:1}
 ];
+/* Lots thémés par commerce (?type=) — boulangerie inchangée */
+(function(){ var PT={
+  fleuriste:[{name:"Fleur du jour",emoji:"🌷",prob:.5},{name:"Petit bouquet",emoji:"💐",prob:.98},{name:"Plante surprise",emoji:"🪴",prob:1}],
+  pizzeria:[{name:"Part de pizza",emoji:"🍕",prob:.5},{name:"Boisson offerte",emoji:"🥤",prob:.98},{name:"Dessert maison",emoji:"🍰",prob:1}],
+  vape:[{name:"E-liquide offert",emoji:"🧪",prob:.5},{name:"Résistance offerte",emoji:"🔩",prob:.98},{name:"Accessoire surprise",emoji:"🎁",prob:1}],
+  restaurant:[{name:"Café gourmand",emoji:"☕",prob:.5},{name:"Apéritif offert",emoji:"🍷",prob:.98},{name:"Dessert maison",emoji:"🍰",prob:1}],
+  primeur:[{name:"Fruits de saison",emoji:"🍎",prob:.5},{name:"Botte de légumes",emoji:"🥕",prob:.98},{name:"Jus pressé",emoji:"🧃",prob:1}]
+}; var _t=(new URLSearchParams(location.search).get('type')||'').toLowerCase(); if(PT[_t]) PRIZES=PT[_t]; })();
 // "Sheets dashboard" — stockage Sheets + déclenchement email
 const SHEETS_URL = "https://script.google.com/macros/s/AKfycbx0N4dLSGtyUMgA_lA8N9O-B3rleX7zHgTFAXZyiV7hEf5ioXAcVI245hHdi4CMKuCn/exec";
 const DEMO = new URLSearchParams(location.search).get('demo')==='1';   // démo showroom : pas d'appel backend
