@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0A0E1A">
+<title>BoostAvis — Démos commerces</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{--bg:#0A0E1A;--card:#141a2b;--line:rgba(255,255,255,.09);--text:#EAF0FB;--dim:#93A0B8;--mut:#5E6B85}
+html,body{height:100%}
+body{font-family:'Sora',system-ui,sans-serif;-webkit-font-smoothing:antialiased;color:var(--text);min-height:100%;
+  background:radial-gradient(120% 80% at 50% -10%,rgba(45,125,255,.18),transparent 55%),radial-gradient(80% 60% at 90% 100%,rgba(140,90,255,.14),transparent 55%),var(--bg)}
+.wrap{max-width:1100px;margin:0 auto;padding:42px 22px 64px}
+.head{text-align:center;margin-bottom:38px}
+.head .badge{display:inline-block;font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#9FC0FF;background:rgba(45,125,255,.12);border:1px solid rgba(45,125,255,.3);border-radius:99px;padding:6px 14px;margin-bottom:16px}
+.head h1{font-size:38px;font-weight:800;line-height:1.1;margin-bottom:10px}
+.head p{font-size:16px;color:var(--dim);max-width:560px;margin:0 auto;line-height:1.6}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+@media(max-width:860px){.grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:560px){.grid{grid-template-columns:1fr}.head h1{font-size:30px}}
+.cc{position:relative;overflow:hidden;border-radius:22px;border:1px solid var(--line);background:var(--card);padding:26px 22px;cursor:pointer;
+  transition:transform .18s cubic-bezier(.16,1,.3,1),box-shadow .18s,border-color .18s}
+.cc:hover{transform:translateY(-5px);border-color:rgba(255,255,255,.2);box-shadow:0 18px 44px rgba(0,0,0,.5)}
+.cc::after{content:'';position:absolute;inset:0 0 auto 0;height:5px;background:linear-gradient(90deg,var(--c1),var(--c2))}
+.cc .ico{width:74px;height:74px;border-radius:20px;display:grid;place-items:center;font-size:38px;margin-bottom:18px;
+  background:linear-gradient(140deg,var(--c1),var(--c2));box-shadow:0 10px 26px rgba(0,0,0,.4)}
+.cc .ty{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--mut)}
+.cc .nm{font-size:22px;font-weight:800;margin:5px 0 14px;line-height:1.15}
+.cc .go{display:inline-flex;align-items:center;gap:7px;font-size:13.5px;font-weight:700;color:var(--dim)}
+.cc .go svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round;transition:transform .18s}
+.cc:hover .go{color:var(--text)}.cc:hover .go svg{transform:translateX(4px)}
+.foot{text-align:center;color:var(--mut);font-size:13px;margin-top:40px;line-height:1.7}
+
+/* MODAL */
+.ov{position:fixed;inset:0;z-index:50;display:none;align-items:center;justify-content:center;padding:22px;
+  background:rgba(4,7,15,.72);backdrop-filter:blur(8px);opacity:0;transition:opacity .2s}
+.ov.on{display:flex;opacity:1}
+.md{width:100%;max-width:440px;background:var(--card);border:1px solid var(--line);border-radius:26px;overflow:hidden;
+  transform:translateY(14px) scale(.98);transition:transform .22s cubic-bezier(.16,1,.3,1)}
+.ov.on .md{transform:none}
+.md-top{padding:30px 26px 22px;text-align:center;position:relative;background:linear-gradient(140deg,var(--c1),var(--c2))}
+.md-top .ico{width:64px;height:64px;border-radius:18px;display:grid;place-items:center;font-size:34px;margin:0 auto 12px;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.25)}
+.md-top .nm{font-size:23px;font-weight:800;color:#fff}
+.md-top .ty{font-size:13px;color:rgba(255,255,255,.85);font-weight:600;margin-top:3px}
+.md-body{padding:20px 22px 24px}
+.md-body .lbl{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--mut);text-align:center;margin-bottom:16px}
+.opt{display:flex;align-items:center;gap:15px;width:100%;text-decoration:none;color:var(--text);
+  background:#1b2236;border:1px solid var(--line);border-radius:16px;padding:16px 18px;margin-bottom:11px;transition:background .15s,border-color .15s,transform .1s}
+.opt:hover{background:#212a42;border-color:rgba(255,255,255,.2)}
+.opt:active{transform:scale(.99)}
+.opt .e{width:46px;height:46px;border-radius:13px;display:grid;place-items:center;font-size:23px;background:rgba(45,125,255,.16);flex-shrink:0}
+.opt .tx{flex:1;min-width:0}
+.opt .tx b{font-size:16px;font-weight:700;display:block}
+.opt .tx span{font-size:12.5px;color:var(--dim)}
+.opt .ar{color:var(--mut)}.opt .ar svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+.md-close{display:block;width:100%;margin-top:6px;padding:14px;border:none;border-radius:14px;background:transparent;color:var(--dim);font-family:inherit;font-size:14px;font-weight:600;cursor:pointer}
+.md-close:hover{color:var(--text)}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="head">
+    <div class="badge">✦ BoostAvis · Démos</div>
+    <h1>Choisissez un commerce</h1>
+    <p>Aperçu des 3 surfaces pour chaque type de commerce : parcours avis client, carte de fidélité et kiosque caisse.</p>
+  </div>
+  <div class="grid" id="grid"></div>
+  <div class="foot">Démos interactives — données fictives.<br>BoostAvis — visibilité locale &amp; fidélité.</div>
+</div>
+
+<div class="ov" id="ov" onclick="if(event.target===this)closeMd()">
+  <div class="md" id="md">
+    <div class="md-top" id="mdTop"><div class="ico" id="mdIco">🛍️</div><div class="nm" id="mdNm">—</div><div class="ty" id="mdTy">—</div></div>
+    <div class="md-body">
+      <div class="lbl">Que veux-tu voir ?</div>
+      <a class="opt" id="optAvis" target="_blank" rel="noopener"><div class="e">🎁</div><div class="tx"><b>Parcours avis</b><span>Le client laisse un avis &amp; reçoit un cadeau</span></div><div class="ar"><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div></a>
+      <a class="opt" id="optFid" target="_blank" rel="noopener"><div class="e">⭐</div><div class="tx"><b>Site fidélité</b><span>Points, cadeaux, tiers, anti-gaspi</span></div><div class="ar"><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div></a>
+      <a class="opt" id="optKiosk" target="_blank" rel="noopener"><div class="e">🖥️</div><div class="tx"><b>Kiosque caisse</b><span>Côté commerçant : points, validation, anti-gaspi</span></div><div class="ar"><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div></a>
+      <button class="md-close" onclick="closeMd()">Fermer</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+'use strict';
+var FID='https://boulangerieavisclient.vercel.app/card.html';
+var AVIS='https://boulangerieavisclient.vercel.app/index.html';
+var KIOSK='https://boulangerie-vendeur.vercel.app/kiosque.html';
+var COMMERCES=[
+  {key:'boulangerie',name:'Falman',type:'Boulangerie',emoji:'🥐',c1:'#E2B25A',c2:'#9c6a1e'},
+  {key:'fleuriste',name:'Au Jardin de Rose',type:'Fleuriste',emoji:'🌷',c1:'#E084B0',c2:'#9a3f6c'},
+  {key:'pizzeria',name:'Bella Napoli',type:'Pizzeria',emoji:'🍕',c1:'#E2664E',c2:'#9c2f1e'},
+  {key:'vape',name:'VapoStore',type:'Cigarette électronique',emoji:'💨',c1:'#8A7AF0',c2:'#4a39b0'},
+  {key:'restaurant',name:'Le Bistrot',type:'Restaurant',emoji:'🍽️',c1:'#B85A68',c2:'#6e2e38'},
+  {key:'primeur',name:'Le Panier Frais',type:'Primeur',emoji:'🥕',c1:'#F0A94E',c2:'#a8631a'}
+];
+var $=function(id){return document.getElementById(id);};
+var grid=$('grid');
+COMMERCES.forEach(function(c,i){
+  var el=document.createElement('div');
+  el.className='cc'; el.style.setProperty('--c1',c.c1); el.style.setProperty('--c2',c.c2);
+  el.innerHTML='<div class="ico">'+c.emoji+'</div><div class="ty">'+c.type+'</div><div class="nm">'+c.name+'</div>'
+    +'<div class="go">Voir les démos <svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div>';
+  el.onclick=function(){openMd(c);};
+  grid.appendChild(el);
+});
+function openMd(c){
+  $('mdTop').style.setProperty('--c1',c.c1); $('mdTop').style.setProperty('--c2',c.c2);
+  $('mdIco').textContent=c.emoji; $('mdNm').textContent=c.name; $('mdTy').textContent=c.type;
+  $('optAvis').href = AVIS+'?type='+c.key+'&demo=1';
+  $('optFid').href  = FID +'?type='+c.key+'&demo=1';
+  $('optKiosk').href= KIOSK+'?type='+c.key+'&commerce='+encodeURIComponent(c.name);
+  $('ov').classList.add('on');
+}
+window.closeMd=function(){ $('ov').classList.remove('on'); };
+document.addEventListener('keydown',function(e){ if(e.key==='Escape') closeMd(); });
+})();
+</script>
+</body>
+</html>

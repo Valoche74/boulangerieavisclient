@@ -88,6 +88,7 @@ body{font-family:var(--font-ui);-webkit-font-smoothing:antialiased;color:var(--i
 .cat::-webkit-scrollbar{display:none}
 .rw{flex:0 0 152px;scroll-snap-align:start;background:var(--card);border-radius:20px;padding:15px 13px 13px;box-shadow:var(--shadow);border:1px solid var(--line);display:flex;flex-direction:column;align-items:center;text-align:center}
 .rw .ph{width:92px;height:92px;border-radius:50%;margin-bottom:10px;background:var(--cream2);background-size:cover;background-position:center;border:2px solid var(--gold-line);box-shadow:inset 0 2px 8px rgba(200,150,62,.12)}
+.rw .ph-emoji{display:grid;place-items:center;font-size:46px;background:var(--gold-soft)}
 .rw .nm{font-size:14px;font-weight:600;color:var(--ink);line-height:1.2;min-height:34px;display:flex;align-items:center}
 .rw .cost{font-size:13px;font-weight:700;color:var(--gold);margin:7px 0 11px;display:inline-flex;align-items:center;gap:5px}
 .rw .cost::before{content:'';width:7px;height:7px;border-radius:50%;background:var(--gold)}
@@ -194,7 +195,7 @@ body{font-family:var(--font-ui);-webkit-font-smoothing:antialiased;color:var(--i
 </head>
 <body>
 
-<div class="floaties" aria-hidden="true">
+<div class="floaties" id="floaties" aria-hidden="true">
   <span class="fl fl1">🥐</span><span class="fl fl2">🥖</span><span class="fl fl3">🧁</span>
   <span class="fl fl4">🥨</span><span class="fl fl5">🍞</span><span class="fl fl6">🥐</span>
 </div>
@@ -225,7 +226,7 @@ body{font-family:var(--font-ui);-webkit-font-smoothing:antialiased;color:var(--i
 <!-- FIDÉLITÉ -->
 <div class="screen" id="stateActive"><div class="wrap">
   <div class="head">
-    <div><div class="eyebrow">✦ Ma fidélité</div><div class="bakery">Falman</div><div class="greet">Bonjour <span id="cName">—</span> 👋</div></div>
+    <div><div class="eyebrow">✦ Ma fidélité</div><div class="bakery" id="cBakery">Falman</div><div class="greet">Bonjour <span id="cName">—</span> 👋</div></div>
     <div class="avatar" id="cAv">–</div>
   </div>
 
@@ -283,7 +284,7 @@ body{font-family:var(--font-ui);-webkit-font-smoothing:antialiased;color:var(--i
 
   <div class="foot">
     <div class="ty">Merci pour ta fidélité 🙏</div>
-    <div class="bk">Falman — Emmanuelle &amp; Flavien</div>
+    <div class="bk" id="cFoot">Falman — Emmanuelle &amp; Flavien</div>
     <div class="cardno">N° de carte · <b id="cardNo">—</b></div>
   </div>
 </div></div>
@@ -312,16 +313,82 @@ const INSTA_URL  = 'https://www.instagram.com/dupainetdesidees/';  /* PLACEHOLDE
 const FB_URL     = 'https://www.facebook.com/poilane/';            /* PLACEHOLDER boulangerie — à remplacer par le compte Falman */
 const TRUST_URL  = 'https://fr.trustpilot.com/';                   /* PLACEHOLDER — à remplacer par la page Trustpilot du commerce */
 const NIVEAUX = [{nom:'Découverte',min:0},{nom:'Fidèle',min:150},{nom:'VIP',min:600}];
-// Catalogue (mêmes clés/coûts que FID_CATALOGUE côté serveur)
-const CATALOGUE = [
-  {item:'cafe',         libelle:'Boisson chaude',     cout:250,  img:'assets/cafe.png'},
-  {item:'viennoiserie', libelle:'Viennoiserie',       cout:300,  img:'assets/viennoiserie.png'},
-  {item:'baguette',     libelle:'Baguette tradition', cout:350,  img:'assets/baguette.png'},
-  {item:'jus',          libelle:'Boisson fraîche',    cout:400,  img:'assets/jus.png'},
-  {item:'patisserie',   libelle:'Pâtisserie',         cout:500,  img:'assets/patisserie.png'},
-  {item:'sandwich',     libelle:'Formule sandwich',   cout:650,  img:'assets/sandwich.png'},
-  {item:'gateau',       libelle:'Gros lot — gâteau',  cout:1500, img:'assets/gateau.png'}
-];
+
+// ════ PRESETS MULTI-COMMERCE — 1 base, N verticales. Sélection via ?type= (défaut boulangerie) ════
+// Boulangerie = inchangée (catalogue photos + thème :root). Autres = emoji + thème injecté.
+const PRESETS = {
+  boulangerie:{ name:'Falman', foot:'Falman — Emmanuelle & Flavien', eyebrow:'✦ Ma fidélité',
+    fl:['🥐','🥖','🧁','🥨','🍞','🥐'], theme:null,
+    catalogue:[
+      {item:'cafe',libelle:'Boisson chaude',cout:250,img:'assets/cafe.png'},
+      {item:'viennoiserie',libelle:'Viennoiserie',cout:300,img:'assets/viennoiserie.png'},
+      {item:'baguette',libelle:'Baguette tradition',cout:350,img:'assets/baguette.png'},
+      {item:'jus',libelle:'Boisson fraîche',cout:400,img:'assets/jus.png'},
+      {item:'patisserie',libelle:'Pâtisserie',cout:500,img:'assets/patisserie.png'},
+      {item:'sandwich',libelle:'Formule sandwich',cout:650,img:'assets/sandwich.png'},
+      {item:'gateau',libelle:'Gros lot — gâteau',cout:1500,img:'assets/gateau.png'}
+    ]},
+  fleuriste:{ name:'Au Jardin de Rose', foot:'Au Jardin de Rose — Fleuriste', eyebrow:'✦ Ma fidélité',
+    fl:['🌷','🌹','🌻','💐','🌸','🪷'],
+    theme:{cream:'#FBF5F8',cream2:'#F2E2EC',gold:'#C8568E',gold2:'#E084B0',gold3:'#F4B6D2',green:'#5E8C57',ink:'#3A2531'},
+    catalogue:[
+      {item:'f1',libelle:'Fleur à l’unité',cout:250,emoji:'🌷'},
+      {item:'f2',libelle:'Petit bouquet',cout:400,emoji:'💐'},
+      {item:'f3',libelle:'Roses ×3',cout:550,emoji:'🌹'},
+      {item:'f4',libelle:'Plante verte',cout:750,emoji:'🪴'},
+      {item:'f5',libelle:'Grand bouquet',cout:1000,emoji:'💐'},
+      {item:'f6',libelle:'Composition florale',cout:1500,emoji:'🎀'}
+    ]},
+  pizzeria:{ name:'Bella Napoli', foot:'Bella Napoli — Pizzeria', eyebrow:'✦ Ma fidélité',
+    fl:['🍕','🍅','🧀','🌶️','🫒','🍕'],
+    theme:{cream:'#FBF6EE',cream2:'#F3E6D4',gold:'#C8442E',gold2:'#E2664E',gold3:'#F2A07E',green:'#4E7C3F',ink:'#33231C'},
+    catalogue:[
+      {item:'p1',libelle:'Boisson',cout:250,emoji:'🥤'},
+      {item:'p2',libelle:'Pain à l’ail',cout:300,emoji:'🧄'},
+      {item:'p3',libelle:'Part de pizza',cout:400,emoji:'🍕'},
+      {item:'p4',libelle:'Dessert maison',cout:450,emoji:'🍰'},
+      {item:'p5',libelle:'Pizza Margherita',cout:800,emoji:'🍕'},
+      {item:'p6',libelle:'Pizza au choix',cout:1100,emoji:'🍕'}
+    ]},
+  vape:{ name:'VapoStore', foot:'VapoStore — Cigarette électronique', eyebrow:'✦ Ma fidélité',
+    fl:['💨','🫐','🍓','🥭','⚡','💜'],
+    theme:{cream:'#F3F5FB',cream2:'#E4E7F3',gold:'#6D5AE0',gold2:'#8A7AF0',gold3:'#B6ABFF',green:'#2BB3A3',ink:'#26283A'},
+    catalogue:[
+      {item:'v1',libelle:'Résistance',cout:250,emoji:'🔩'},
+      {item:'v2',libelle:'E-liquide 10 ml',cout:450,emoji:'🧪'},
+      {item:'v3',libelle:'E-liquide fruité',cout:550,emoji:'🍓'},
+      {item:'v4',libelle:'Pack résistances',cout:750,emoji:'🔋'},
+      {item:'v5',libelle:'Fiole 50 ml',cout:1000,emoji:'💨'},
+      {item:'v6',libelle:'Pod / kit complet',cout:1500,emoji:'🎁'}
+    ]},
+  restaurant:{ name:'Le Bistrot', foot:'Le Bistrot — Restaurant', eyebrow:'✦ Ma fidélité',
+    fl:['🍽️','🍷','🥩','🍝','🧆','🍤'],
+    theme:{cream:'#FBF6F1',cream2:'#F0E2D8',gold:'#9A3F4C',gold2:'#B85A68',gold3:'#D78F99',green:'#6E7A3C',ink:'#321F22'},
+    catalogue:[
+      {item:'r1',libelle:'Boisson',cout:250,emoji:'🥤'},
+      {item:'r2',libelle:'Café gourmand',cout:400,emoji:'☕'},
+      {item:'r3',libelle:'Verre de vin',cout:450,emoji:'🍷'},
+      {item:'r4',libelle:'Entrée',cout:550,emoji:'🥗'},
+      {item:'r5',libelle:'Plat du jour',cout:850,emoji:'🍽️'},
+      {item:'r6',libelle:'Menu complet',cout:1500,emoji:'🍽️'}
+    ]},
+  primeur:{ name:'Le Panier Frais', foot:'Le Panier Frais — Primeur', eyebrow:'✦ Ma fidélité',
+    fl:['🍎','🥕','🍓','🥦','🍊','🍇'],
+    theme:{cream:'#F5FBF2',cream2:'#E2F0DC',gold:'#E0892E',gold2:'#F0A94E',gold3:'#F8C87C',green:'#4FA03F',ink:'#26301F'},
+    catalogue:[
+      {item:'pr1',libelle:'Fruit à l’unité',cout:200,emoji:'🍎'},
+      {item:'pr2',libelle:'Botte de légumes',cout:350,emoji:'🥕'},
+      {item:'pr3',libelle:'Barquette de fraises',cout:450,emoji:'🍓'},
+      {item:'pr4',libelle:'Jus pressé',cout:400,emoji:'🧃'},
+      {item:'pr5',libelle:'Panier de saison',cout:750,emoji:'🧺'},
+      {item:'pr6',libelle:'Grand panier',cout:1200,emoji:'🧺'}
+    ]}
+};
+const _q = new URLSearchParams(location.search);
+const COMMERCE_TYPE = (_q.get('type')||'boulangerie').toLowerCase();
+const P = PRESETS[COMMERCE_TYPE] || PRESETS.boulangerie;
+const DEMO = _q.get('demo') === '1';
+const CATALOGUE = P.catalogue;
 const params = new URLSearchParams(location.search);
 const cardId = (params.get('id')||'').trim();
 const $ = id => document.getElementById(id);
@@ -329,6 +396,26 @@ let solde = 0;
 if($('lkIg')) $('lkIg').href = INSTA_URL;
 if($('lkFb')) $('lkFb').href = FB_URL;
 if($('lkTrust')) $('lkTrust').href = TRUST_URL;
+
+// hex → rgba (pour dériver les teintes douces du thème)
+function hexA(hex,a){ hex=String(hex).replace('#',''); if(hex.length===3) hex=hex.split('').map(c=>c+c).join(''); const n=parseInt(hex,16); return 'rgba('+((n>>16)&255)+','+((n>>8)&255)+','+(n&255)+','+a+')'; }
+// Applique un preset (thème + textes + emojis flottants)
+function applyPreset(p){
+  const t = p.theme;
+  if(t){
+    const r = document.documentElement.style, M = {cream:'--cream',cream2:'--cream2',card:'--card',ink:'--ink',muted:'--muted',muted2:'--muted2',gold:'--gold',gold2:'--gold2',gold3:'--gold3',green:'--green'};
+    for(const k in t){ if(M[k]) r.setProperty(M[k], t[k]); }
+    if(t.gold){ r.setProperty('--gold-soft',hexA(t.gold,.10)); r.setProperty('--gold-line',hexA(t.gold,.28)); }
+    if(t.green){ r.setProperty('--green-soft',hexA(t.green,.12)); }
+    document.querySelector('meta[name="theme-color"]') && document.querySelector('meta[name="theme-color"]').setAttribute('content', t.cream||'#FBF7EF');
+  }
+  const bk=$('cBakery'); if(bk) bk.textContent = p.name;
+  const ft=$('cFoot'); if(ft) ft.textContent = p.foot;
+  const eb=document.querySelector('.eyebrow'); if(eb) eb.textContent = DEMO ? '✦ Démo fidélité' : (p.eyebrow||'✦ Ma fidélité');
+  const fzone=$('floaties'); if(fzone && p.fl) fzone.innerHTML = p.fl.map((e,i)=>'<span class="fl fl'+(i+1)+'">'+e+'</span>').join('');
+  document.title = 'Ma Fidélité — ' + p.name;
+}
+applyPreset(P);
 
 function api(action, extra, retry){
   return new Promise((resolve,reject)=>{
@@ -414,7 +501,7 @@ function render(c){
   $('cat').innerHTML = CATALOGUE.map(r=>{
     const ok = c.points_solde >= r.cout;
     return '<div class="rw'+(ok?'':' locked')+'">'
-      +'<div class="ph" style="background-image:url(\''+r.img+'\')"></div>'
+      +(r.img ? '<div class="ph" style="background-image:url(\''+r.img+'\')"></div>' : '<div class="ph ph-emoji">'+(r.emoji||'🎁')+'</div>')
       +'<div class="nm">'+esc(r.libelle)+'</div>'
       +'<div class="cost">'+r.cout+' pts</div>'
       +(ok ? '<button class="btn go" onclick="redeem(\''+r.item+'\', this)">Échanger</button>'
@@ -492,13 +579,18 @@ function renderPaniers(list){
   el.style.display='';
   el.innerHTML = '<div class="agb-h">🥖 Paniers anti-gaspi<span class="tag">Aujourd\'hui</span></div>'
     + '<div class="agb-sub">À récupérer en boutique avant la fermeture — premier arrivé, premier servi&nbsp;!</div>'
-    + list.map(p => '<div class="agb-item"><div class="agb-emoji" style="background-image:url(assets/'+agImg(p.libelle)+')"></div>'
+    + list.map(p => '<div class="agb-item">'+(p.emoji ? '<div class="agb-emoji" style="font-size:24px;display:grid;place-items:center">'+p.emoji+'</div>' : '<div class="agb-emoji" style="background-image:url(assets/'+agImg(p.libelle)+')"></div>')
         + '<div class="agb-meta"><div class="n">'+esc(p.libelle)+'</div><div class="d">'+(p.retrait_avant?('Retrait avant '+esc(p.retrait_avant)+' · '):'')+'<span class="agb-qty">'+p.qty+' dispo</span></div></div>'
         + '<div class="agb-price"><div class="pr">'+eurC(p.prix_reduit)+'</div>'+(p.prix_origine?('<div class="or">'+eurC(p.prix_origine)+'</div>'):'')+'</div></div>').join('');
 }
 
 /* ROUTAGE */
-if(!cardId){ show('stateUnknown'); }
+if(DEMO){
+  const m={prenom:'Camille',nom:'',points_solde:520,points_statut:340,points_mois:60,niveau:'Fidèle',tickets_mois:2,tier:'Argent',tier_key:'argent',tier_gift:(CATALOGUE[1]?CATALOGUE[1].libelle:''),tier_next:'Or',tier_reste_eur:60,cout_ticket:100,tickets_achetables:5,prochain_ticket:40,email_opt_in:'on'};
+  render(m); show('stateActive');
+  renderPaniers([{libelle:'Panier surprise du jour',qty:3,prix_reduit:4.9,prix_origine:12,retrait_avant:'18h00',emoji:(P.fl&&P.fl[0])||'🎁'}]);
+}
+else if(!cardId){ show('stateUnknown'); }
 else{
   $('avisLink').href = AVIS_URL + '?id=' + encodeURIComponent(cardId);
   api('fid_open',{card_id:cardId, source:'scan'}, true).then(d=>{

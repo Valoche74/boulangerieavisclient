@@ -554,6 +554,23 @@ body::after{
 </div>
 </div>
 
+<!-- Theming multi-commerce (?type=) — boulangerie inchangée si absent -->
+<script>
+(function(){
+  var T={fleuriste:['#C8568E','#E084B0','#F4B6D2'],pizzeria:['#C8442E','#E2664E','#F2A07E'],vape:['#6D5AE0','#8A7AF0','#B6ABFF'],restaurant:['#9A3F4C','#B85A68','#D78F99'],primeur:['#E0892E','#F0A94E','#F8C87C']};
+  var N={fleuriste:'Au Jardin de Rose',pizzeria:'Bella Napoli',vape:'VapoStore',restaurant:'Le Bistrot',primeur:'Le Panier Frais'};
+  var t=(new URLSearchParams(location.search).get('type')||'').toLowerCase();
+  if(!T[t]) return;
+  function hx(h,a){h=h.replace('#','');var n=parseInt(h,16);return 'rgba('+((n>>16)&255)+','+((n>>8)&255)+','+(n&255)+','+a+')';}
+  var r=document.documentElement.style;
+  r.setProperty('--gold',T[t][0]); r.setProperty('--gold2',T[t][1]); r.setProperty('--gold3',T[t][2]); r.setProperty('--gold-border',hx(T[t][0],.35));
+  document.addEventListener('DOMContentLoaded',function(){
+    document.querySelectorAll('.booster-bakery-name,.flap-brand').forEach(function(e){e.textContent=N[t];});
+    var vn=document.querySelector('.viewer-name'); if(vn) vn.textContent=N[t];
+    document.title=N[t];
+  });
+})();
+</script>
 <!-- Three.js -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 
@@ -568,6 +585,7 @@ const PRIZES = [
 ];
 // "Sheets dashboard" — stockage Sheets + déclenchement email
 const SHEETS_URL = "https://script.google.com/macros/s/AKfycbx0N4dLSGtyUMgA_lA8N9O-B3rleX7zHgTFAXZyiV7hEf5ioXAcVI245hHdi4CMKuCn/exec";
+const DEMO = new URLSearchParams(location.search).get('demo')==='1';   // démo showroom : pas d'appel backend
 const GLB_PATH   = "/assets/croissant-ai-textured.glb";
 
 let wonPrize = null;
@@ -885,6 +903,8 @@ async function submitForm(){
   const code=generateCode();
   const gain=wonPrize?wonPrize.name:"Votre cadeau";
   const gainEmoji=wonPrize?wonPrize.emoji:"🎁";
+
+  if(DEMO){ showScreen("screen4"); document.getElementById("s4code").textContent=code; return; }   // démo : succès factice, aucun envoi
 
   const url = SHEETS_URL
     +"?action=save"
