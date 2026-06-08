@@ -89,6 +89,9 @@ body{font-family:var(--font-ui);-webkit-font-smoothing:antialiased;color:var(--i
 .rw{flex:0 0 152px;scroll-snap-align:start;background:var(--card);border-radius:20px;padding:15px 13px 13px;box-shadow:var(--shadow);border:1px solid var(--line);display:flex;flex-direction:column;align-items:center;text-align:center}
 .rw .ph{width:92px;height:92px;border-radius:50%;margin-bottom:10px;background:var(--cream2);background-size:cover;background-position:center;border:2px solid var(--gold-line);box-shadow:inset 0 2px 8px rgba(200,150,62,.12)}
 .rw .ph-emoji{display:grid;place-items:center;font-size:46px;background:var(--gold-soft)}
+.rw .ph-img{width:100%;height:100%;object-fit:cover;border-radius:50%;mix-blend-mode:multiply}
+.tick-prize{font-size:13px;color:var(--ink);background:var(--gold-soft);border:1px solid var(--gold-line);border-radius:12px;padding:9px 12px;margin:8px 0 2px;line-height:1.4}
+.tick-prize b{color:var(--gold)}
 .rw .nm{font-size:14px;font-weight:600;color:var(--ink);line-height:1.2;min-height:34px;display:flex;align-items:center}
 .rw .cost{font-size:13px;font-weight:700;color:var(--gold);margin:7px 0 11px;display:inline-flex;align-items:center;gap:5px}
 .rw .cost::before{content:'';width:7px;height:7px;border-radius:50%;background:var(--gold)}
@@ -257,6 +260,7 @@ body{font-family:var(--font-ui);-webkit-font-smoothing:antialiased;color:var(--i
 
   <div class="tick">
     <div class="h">Tirage du mois</div>
+    <div class="tick-prize" id="tickPrize"></div>
     <div class="big" id="cTickets">Tu as 0 ticket</div>
     <div class="sub" id="tickSub">—</div>
     <button class="tick-buy" id="buyBtn" onclick="buyTicket()">🎟️ Acheter un ticket · 100 pts</button>
@@ -384,6 +388,7 @@ const COMMERCE_TYPE = (_q.get('type')||'boulangerie').toLowerCase();
 const P = PRESETS[COMMERCE_TYPE] || PRESETS.boulangerie;
 const DEMO = _q.get('demo') === '1';
 const CATALOGUE = P.catalogue;
+const GIVE = {boulangerie:'un grand panier garni 🧺',fleuriste:'un grand bouquet 💐',pizzeria:'un menu duo 🍕',vape:'un kit premium 🎁',restaurant:'un dîner pour 2 🍽️',primeur:'un grand panier de saison 🧺'};
 const params = new URLSearchParams(location.search);
 const cardId = (params.get('id')||'').trim();
 const $ = id => document.getElementById(id);
@@ -408,6 +413,7 @@ function applyPreset(p){
   const ft=$('cFoot'); if(ft) ft.textContent = p.foot;
   const eb=document.querySelector('.eyebrow'); if(eb) eb.textContent = DEMO ? '✦ Démo fidélité' : (p.eyebrow||'✦ Ma fidélité');
   const fzone=$('floaties'); if(fzone && p.fl) fzone.innerHTML = p.fl.map((e,i)=>'<span class="fl fl'+(i+1)+'">'+e+'</span>').join('');
+  var tp=$('tickPrize'); if(tp){ var g=GIVE[COMMERCE_TYPE]; tp.innerHTML = g ? ('🎁 À gagner ce mois : <b>'+g+'</b>') : ''; }
   document.title = 'Ma Fidélité — ' + p.name;
 }
 applyPreset(P);
@@ -496,7 +502,7 @@ function render(c){
   $('cat').innerHTML = CATALOGUE.map(r=>{
     const ok = c.points_solde >= r.cout;
     return '<div class="rw'+(ok?'':' locked')+'">'
-      +(r.img ? '<div class="ph" style="background-image:url(\''+r.img+'\')"></div>' : '<div class="ph ph-emoji">'+(r.emoji||'🎁')+'</div>')
+      +(r.img ? '<div class="ph"><img class="ph-img" src="'+r.img+'" alt="" loading="lazy"></div>' : '<div class="ph ph-emoji">'+(r.emoji||'🎁')+'</div>')
       +'<div class="nm">'+esc(r.libelle)+'</div>'
       +'<div class="cost">'+r.cout+' pts</div>'
       +(ok ? '<button class="btn go" onclick="redeem(\''+r.item+'\', this)">Échanger</button>'
