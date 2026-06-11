@@ -596,8 +596,13 @@ let PRIZES = [
   restaurant:[{name:"Café gourmand",emoji:"☕",prob:.5},{name:"Apéritif offert",emoji:"🍷",prob:.98},{name:"Dessert maison",emoji:"🍰",prob:1}],
   primeur:[{name:"Fruits de saison",emoji:"🍎",prob:.5},{name:"Botte de légumes",emoji:"🥕",prob:.98},{name:"Jus pressé",emoji:"🧃",prob:1}]
 }; var _t=(new URLSearchParams(location.search).get('type')||'').toLowerCase(); if(PT[_t]) PRIZES=PT[_t]; })();
-// "Sheets dashboard" — stockage Sheets + déclenchement email
-const SHEETS_URL = "https://script.google.com/macros/s/AKfycbx0N4dLSGtyUMgA_lA8N9O-B3rleX7zHgTFAXZyiV7hEf5ioXAcVI245hHdi4CMKuCn/exec";
+// "Sheets dashboard" — stockage Sheets + déclenchement email. Un backend PAR commerce → route par ?type=
+const SHEETS_URLS = {
+  boulangerie:"https://script.google.com/macros/s/AKfycbx0N4dLSGtyUMgA_lA8N9O-B3rleX7zHgTFAXZyiV7hEf5ioXAcVI245hHdi4CMKuCn/exec",
+  fleuriste:"https://script.google.com/macros/s/AKfycbygyQrhmSBzSEFA3LJ65pbbpP1oXZIO44LXG0EnZFYZT0xsx1lIJcoyt5Lmy-8q3NXV/exec",
+  pizzeria:"", vape:"", restaurant:"", primeur:""
+};
+const SHEETS_URL = SHEETS_URLS[(new URLSearchParams(location.search).get('type')||'boulangerie').toLowerCase()] || SHEETS_URLS.boulangerie;
 const DEMO = new URLSearchParams(location.search).get('demo')==='1';   // démo showroom : pas d'appel backend
 const GLB_PATH   = "/assets/croissant-ai-textured.glb";
 
