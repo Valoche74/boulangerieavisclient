@@ -90,6 +90,8 @@ body{font-family:var(--font-ui);-webkit-font-smoothing:antialiased;color:var(--i
 .rw .ph{width:92px;height:92px;border-radius:50%;margin-bottom:10px;background:var(--cream2);background-size:cover;background-position:center;border:2px solid var(--gold-line);box-shadow:inset 0 2px 8px rgba(200,150,62,.12)}
 .rw .ph-emoji{display:grid;place-items:center;font-size:46px;background:var(--gold-soft)}
 .rw .ph-img{width:100%;height:100%;object-fit:contain;border-radius:50%;padding:8px}
+/* commerces thémés : photos legacy encore avec fond -> on garde l'ancien rendu (cover + multiply) */
+.themed-photos .rw .ph-img{object-fit:cover;padding:0;mix-blend-mode:multiply}
 .tick-prize{font-size:13px;color:var(--ink);background:var(--gold-soft);border:1px solid var(--gold-line);border-radius:12px;padding:9px 12px;margin:8px 0 2px;line-height:1.4}
 .tick-prize b{color:var(--gold)}
 .rw .nm{font-size:14px;font-weight:600;color:var(--ink);line-height:1.2;min-height:34px;display:flex;align-items:center}
@@ -409,6 +411,7 @@ function hexA(hex,a){ hex=String(hex).replace('#',''); if(hex.length===3) hex=he
 function applyPreset(p){
   const t = p.theme;
   if(t){
+    document.documentElement.classList.add('themed-photos');   // photos legacy (fond) -> rendu cover+multiply
     const r = document.documentElement.style, M = {cream:'--cream',cream2:'--cream2',card:'--card',ink:'--ink',muted:'--muted',muted2:'--muted2',gold:'--gold',gold2:'--gold2',gold3:'--gold3',green:'--green'};
     for(const k in t){ if(M[k]) r.setProperty(M[k], t[k]); }
     if(t.gold){ r.setProperty('--gold-soft',hexA(t.gold,.10)); r.setProperty('--gold-line',hexA(t.gold,.28)); }
