@@ -255,7 +255,7 @@ body{font-family:var(--font-ui);-webkit-font-smoothing:antialiased;color:var(--i
 
   <div class="sec-h"><span class="t">Gagner plus de points</span></div>
   <div class="bonus">
-    <a class="bn" id="lkTrust" href="#" target="_blank" rel="noopener" style="text-decoration:none"><div class="ic trust">★</div><div class="t">Avis Trustpilot</div><div class="s">+30 pts</div></a>
+    <a class="bn" id="lkTrust" href="#" target="_blank" rel="noopener" style="text-decoration:none" onclick="claimAction('trustpilot')"><div class="ic trust">★</div><div class="t">Avis Trustpilot</div><div class="s">+30 pts</div></a>
     <div class="bn green"><div class="ic">🎂</div><div class="t">Anniversaire</div><div class="s" id="annivGift">Cadeau le jour J</div></div>
     <div class="bn"><div class="ic">📱</div><div class="t">Giveaway du mois</div><div class="s">Suis-nous !</div></div>
   </div>
@@ -270,10 +270,10 @@ body{font-family:var(--font-ui);-webkit-font-smoothing:antialiased;color:var(--i
   </div>
 
   <div class="social">
-    <div class="social-txt">Suis-nous ! Chaque mois, <b>un abonné</b> est tiré au sort 🎁</div>
+    <div class="social-txt">Suis-nous : <b>+20 pts</b> par réseau ! Et chaque mois, <b>un abonné</b> est tiré au sort 🎁</div>
     <div class="social-links">
-      <a class="slink ig" id="lkIg" href="#" target="_blank" rel="noopener" aria-label="Instagram"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#fff" stroke-width="2"><rect x="2.5" y="2.5" width="19" height="19" rx="5.5"/><circle cx="12" cy="12" r="4.3"/><circle cx="17.6" cy="6.4" r="1.3" fill="#fff" stroke="none"/></svg></a>
-      <a class="slink fb" id="lkFb" href="#" target="_blank" rel="noopener" aria-label="Facebook"><svg viewBox="0 0 24 24" width="22" height="22" fill="#fff"><path d="M13.5 21v-8h2.7l.4-3.1h-3.1V7.9c0-.9.25-1.5 1.55-1.5H17V3.6c-.3-.04-1.3-.13-2.46-.13-2.43 0-4.1 1.48-4.1 4.21v2.35H7.7V13h2.74v8h3.06z"/></svg></a>
+      <a class="slink ig" id="lkIg" href="#" target="_blank" rel="noopener" aria-label="Instagram" onclick="claimAction('insta')"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#fff" stroke-width="2"><rect x="2.5" y="2.5" width="19" height="19" rx="5.5"/><circle cx="12" cy="12" r="4.3"/><circle cx="17.6" cy="6.4" r="1.3" fill="#fff" stroke="none"/></svg></a>
+      <a class="slink fb" id="lkFb" href="#" target="_blank" rel="noopener" aria-label="Facebook" onclick="claimAction('facebook')"><svg viewBox="0 0 24 24" width="22" height="22" fill="#fff"><path d="M13.5 21v-8h2.7l.4-3.1h-3.1V7.9c0-.9.25-1.5 1.55-1.5H17V3.6c-.3-.04-1.3-.13-2.46-.13-2.43 0-4.1 1.48-4.1 4.21v2.35H7.7V13h2.74v8h3.06z"/></svg></a>
     </div>
   </div>
 
@@ -544,9 +544,26 @@ window.redeem = function(item, btn){
 
 window.setOptin = function(on){
   api('fid_optin',{card_id:cardId, value:on?'on':'off'}).then(d=>{
-    if(d.status==='ok') toast(on?'🔔 Alertes activées':'Alertes désactivées');
+    if(d.status==='ok'){
+      if(d.bonus>0){ solde+=d.bonus; if($('cSolde')) $('cSolde').textContent=solde; toast('🔔 Alertes activées · +'+d.bonus+' pts 🎉'); }
+      else toast(on?'🔔 Alertes activées':'Alertes désactivées');
+    }
     else { toast('Action impossible.'); const el=$('optMail'); if(el) el.checked=!on; }
   }).catch(()=>{ toast('Connexion impossible.'); const el=$('optMail'); if(el) el.checked=!on; });
+};
+
+/* 🏅 Actions récompensées (1×/carte) — le clic ouvre le lien ET déclare l'action */
+let actionsState = {};
+function applyActions(st){
+  actionsState = st || {};
+  if(actionsState.trustpilot){ const t=$('lkTrust'); if(t){ const s=t.querySelector('.s'); if(s) s.textContent='✓ points gagnés'; } }
+}
+window.claimAction = function(key){
+  if(!cardId || actionsState[key]) return;   // pas de carte ou déjà récompensé
+  api('fid_action',{card_id:cardId, key:key}).then(d=>{
+    if(d.status==='ok'){ actionsState[key]=true; solde+=d.points_delta; if($('cSolde')) $('cSolde').textContent=solde; toast('🎉 +'+d.points_delta+' points, merci !'); applyActions(actionsState); }
+    else if(d.status==='already'){ actionsState[key]=true; applyActions(actionsState); }
+  }).catch(()=>{});
 };
 
 window.buyTicket = function(){
@@ -605,7 +622,7 @@ else{
   $('avisLink').href = AVIS_URL + '?id=' + encodeURIComponent(cardId);
   api('fid_open',{card_id:cardId, source:'scan'}, true).then(d=>{
     if(d.status==='active'){
-      render(d.client); show('stateActive'); renderRewards(d.rewards); renderPaniers(d.paniers);
+      render(d.client); show('stateActive'); renderRewards(d.rewards); renderPaniers(d.paniers); applyActions(d.actions);
       if(d.anniv){
         showConfirm({badge:'🎂 Joyeux anniversaire !', emoji:'🎂', title:'Joyeux anniversaire '+((d.client.prenom||'').trim())+' !',
           lib:'Cadeau offert : '+d.anniv.libelle, code:d.anniv.code, note:'Montre ce code en caisse pour récupérer ton cadeau d\'anniversaire 🎂'});
