@@ -87,11 +87,11 @@ body{font-family:var(--font-ui);-webkit-font-smoothing:antialiased;color:var(--i
 .cat{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;padding:4px 18px 8px;margin:0 -18px;-webkit-overflow-scrolling:touch;scrollbar-width:none;overscroll-behavior-x:contain}
 .cat::-webkit-scrollbar{display:none}
 .rw{flex:0 0 152px;scroll-snap-align:start;background:var(--card);border-radius:20px;padding:15px 13px 13px;box-shadow:var(--shadow);border:1px solid var(--line);display:flex;flex-direction:column;align-items:center;text-align:center}
-.rw .ph{width:92px;height:92px;border-radius:50%;margin-bottom:10px;background:var(--cream2);background-size:cover;background-position:center;border:2px solid var(--gold-line);box-shadow:inset 0 2px 8px rgba(200,150,62,.12)}
+.rw .ph{width:104px;height:92px;border-radius:18px;margin-bottom:10px;background:var(--cream2);background-size:cover;background-position:center;box-shadow:inset 0 2px 8px rgba(200,150,62,.10)}
 .rw .ph-emoji{display:grid;place-items:center;font-size:46px;background:var(--gold-soft)}
-.rw .ph-img{width:100%;height:100%;object-fit:contain;border-radius:50%;padding:8px}
+.rw .ph-img{width:100%;height:100%;object-fit:contain;border-radius:18px;padding:4px}
 /* commerces thémés : photos legacy encore avec fond -> on garde l'ancien rendu (cover + multiply) */
-.themed-photos .rw .ph-img{object-fit:cover;padding:0;mix-blend-mode:multiply}
+.themed-photos .rw .ph-img{object-fit:cover;padding:0;mix-blend-mode:multiply;border-radius:18px}
 .tick-prize{font-size:13px;color:var(--ink);background:var(--gold-soft);border:1px solid var(--gold-line);border-radius:12px;padding:9px 12px;margin:8px 0 2px;line-height:1.4}
 .tick-prize b{color:var(--gold)}
 .rw .nm{font-size:14px;font-weight:600;color:var(--ink);line-height:1.2;min-height:34px;display:flex;align-items:center}
