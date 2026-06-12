@@ -356,6 +356,9 @@ body::after{
 .field-input{width:100%;padding:13px 15px;background:#fff;border:1.5px solid rgba(200,150,62,.18);border-radius:13px;color:var(--ink);font-family:'Inter',sans-serif;font-size:15px;font-weight:500;outline:none;transition:border-color .2s,box-shadow .2s}
 .field-input::placeholder{color:var(--muted2)}
 .field-input:focus{border-color:rgba(200,150,62,.48);box-shadow:0 0 0 3px rgba(200,150,62,.07)}
+.s3-consent{display:flex;align-items:flex-start;gap:10px;margin-top:12px;padding:11px 12px;background:rgba(200,150,62,.07);border:1px solid rgba(200,150,62,.22);border-radius:12px;cursor:pointer;font-size:12.5px;line-height:1.5;color:var(--muted);text-align:left}
+.s3-consent input{width:20px;height:20px;margin:1px 0 0;flex-shrink:0;accent-color:var(--gold)}
+.s3-consent b{color:var(--ink)}
 .s3-submit{width:100%;padding:15px;margin-top:12px;background:linear-gradient(135deg,var(--gold),var(--gold2));color:var(--ink);border:none;border-radius:15px;font-family:'Inter',sans-serif;font-size:15px;font-weight:700;cursor:pointer;box-shadow:0 6px 22px rgba(200,150,62,.32);transition:all .2s}
 .s3-submit:active{transform:scale(.98)}
 .s3-submit:disabled{opacity:.5;cursor:default}
@@ -519,6 +522,11 @@ body::after{
       <div class="field"><label class="field-label">Nom</label><input class="field-input" type="text" id="fieldNom" placeholder="Dupont" autocomplete="family-name"></div>
       <div class="field"><label class="field-label">Email</label><input class="field-input" type="email" id="fieldEmail" placeholder="jean@exemple.fr" autocomplete="email"></div>
       <div class="field"><label class="field-label">Date de naissance <span style="text-transform:none;letter-spacing:0;font-weight:400;color:var(--muted2)">— pour votre cadeau 🎂 (facultatif)</span></label><input class="field-input" type="date" id="fieldNaissance" autocomplete="bday"></div>
+      <!-- Consentement RGPD (opt-in explicite, non pré-coché). Ne conditionne PAS le coupon (email transactionnel). -->
+      <label class="s3-consent" for="fieldOptin">
+        <input type="checkbox" id="fieldOptin">
+        <span>J'accepte de recevoir par email les <b>offres</b> et <b>alertes anti-gaspi</b> de la boutique <span style="color:var(--muted2)">(désactivable à tout moment sur ma carte fidélité)</span></span>
+      </label>
       <button class="s3-submit" onclick="submitForm()">Recevoir mon coupon 🎁</button>
       <div class="s3-legal">🔒 Données sécurisées · Non revendues · RGPD</div>
     </div>
@@ -952,7 +960,8 @@ async function submitForm(){
       if(data.status==="saved"||data.status==="duplicate"){
         showScreen("screen4");
         document.getElementById("s4code").textContent=code;
-        activateFidelite(prenom, nom, email, gain, code, naissance);   // carte NFC : profil + cadeau bienvenue + date de naissance
+        const optin = document.getElementById("fieldOptin") && document.getElementById("fieldOptin").checked ? "on" : "off";   // consentement RGPD explicite
+        activateFidelite(prenom, nom, email, gain, code, naissance, optin);   // carte NFC : profil + cadeau bienvenue + date de naissance + opt-in
       } else {
         btn.textContent=btnOriginal;btn.disabled=false;
         alert("Erreur Apps Script : "+(data.message||JSON.stringify(data)));
@@ -980,7 +989,7 @@ async function submitForm(){
 }
 
 /* ─── Bascule avis → fidélité : crée le profil de la carte NFC (fire-and-forget) ─── */
-function activateFidelite(prenom, nom, email, gain, code, naissance){
+function activateFidelite(prenom, nom, email, gain, code, naissance, optin){
   if(!fidCardId) return;   // pas venu d'une carte NFC → parcours avis classique, rien à activer
   const url = SHEETS_URL
     + "?action=fid_activate"
@@ -990,7 +999,8 @@ function activateFidelite(prenom, nom, email, gain, code, naissance){
     + "&email="   + encodeURIComponent(email||"")
     + "&gain="    + encodeURIComponent(gain||"")
     + "&code="    + encodeURIComponent(code||"")
-    + "&anniversaire=" + encodeURIComponent(naissance||"");
+    + "&anniversaire=" + encodeURIComponent(naissance||"")
+    + "&email_opt_in=" + encodeURIComponent(optin||"off");
   const ax = new XMLHttpRequest();
   ax.open("GET", url, true); ax.timeout = 15000;
   ax.onload  = ()=>console.log("[BoostAvis] fid_activate:", ax.responseText.slice(0,160));
