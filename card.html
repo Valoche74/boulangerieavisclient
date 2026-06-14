@@ -596,6 +596,22 @@ function renderRewards(list){
 }
 function loadRewards(){ api('fid_rewards',{card_id:cardId}, true).then(d=>{ if(d.status==='ok') renderRewards(d.rewards); }).catch(()=>{}); }
 
+/* 🎟️ Activation d'une offre promo reçue par email (?promo=CAMP) → cadeau en attente + animation redeem */
+function claimPromo(camp){
+  api('fid_promo_claim',{card_id:cardId, promo:camp}).then(d=>{
+    if(d.status==='ok'){
+      loadRewards();
+      showConfirm({badge:'🎁 Offre activée !', emoji:'🎉', title:'Offre activée !', lib:d.libelle, code:d.code,
+        note:'Montre ce code en caisse pour profiter de ton offre. Il est aussi dans « Mes cadeaux ».'});
+    } else if(d.status==='already'){
+      loadRewards();
+      showConfirm({badge:'✅ Déjà activée', emoji:'🎁', title:'Offre déjà activée', lib:d.libelle, code:d.code,
+        note:'Cette offre est déjà dans « Mes cadeaux ». Montre le code en caisse.'});
+    } else { toast('Offre indisponible.'); }
+    try{ var q=new URLSearchParams(location.search); q.delete('promo'); history.replaceState(null,'',location.pathname+(q.toString()?('?'+q.toString()):'')); }catch(e){}   // retire ?promo= (garde id/type)
+  }).catch(()=>toast('Connexion impossible.'));
+}
+
 /* 🥖 Paniers anti-gaspi du jour (alerte) */
 function eurC(n){ return (Number(n)||0).toFixed(2).replace('.',',')+' €'; }
 function agEmoji(lib){ lib=(lib||'').toLowerCase(); if(lib.indexOf('vienn')>=0)return '🥐'; if(lib.indexOf('pain')>=0)return '🥖'; if(lib.indexOf('sandw')>=0)return '🥪'; if(lib.indexOf('atis')>=0)return '🍰'; return '🎁'; }
@@ -623,7 +639,9 @@ else{
   api('fid_open',{card_id:cardId, source:'scan'}, true).then(d=>{
     if(d.status==='active'){
       render(d.client); show('stateActive'); renderRewards(d.rewards); renderPaniers(d.paniers); applyActions(d.actions);
-      if(d.anniv){
+      var _promo=(params.get('promo')||'').trim();
+      if(_promo){ claimPromo(_promo); }           // activation d'une offre reçue par email (prioritaire)
+      else if(d.anniv){
         showConfirm({badge:'🎂 Joyeux anniversaire !', emoji:'🎂', title:'Joyeux anniversaire '+((d.client.prenom||'').trim())+' !',
           lib:'Cadeau offert : '+d.anniv.libelle, code:d.anniv.code, note:'Montre ce code en caisse pour récupérer ton cadeau d\'anniversaire 🎂'});
       } else if(d.passage){ toast('🎉 +'+d.passage.points_delta+' points pour ton passage !'); }
