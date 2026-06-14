@@ -104,6 +104,17 @@ body{font-family:var(--font-ui);-webkit-font-smoothing:antialiased;color:var(--i
 .rw .btn:disabled{opacity:.5;cursor:default}
 .rw.locked .ph{filter:grayscale(.3) opacity(.85)}
 
+/* encart opt-in +30 pts (haut de page) */
+.optin-hero{display:flex;align-items:center;gap:13px;width:100%;margin:0 0 14px;padding:14px 16px;border:0;border-radius:18px;text-align:left;cursor:pointer;font-family:inherit;
+  background:linear-gradient(135deg,var(--gold),var(--gold2));color:#1a1206;box-shadow:0 12px 28px var(--gold-soft);transition:transform .12s,filter .15s}
+.optin-hero:active{transform:scale(.985)}
+.optin-hero .oh-ic{font-size:30px;line-height:1;flex-shrink:0}
+.optin-hero .oh-txt{flex:1;min-width:0}
+.optin-hero .oh-t{font-size:15px;font-weight:800;line-height:1.2}
+.optin-hero .oh-d{font-size:12.5px;line-height:1.4;margin-top:3px;opacity:.82}
+.optin-hero .oh-go{flex-shrink:0;align-self:center;background:#1a1206;color:#fff;font-weight:800;font-size:12.5px;padding:10px 14px;border-radius:999px;white-space:nowrap}
+@media(max-width:380px){.optin-hero .oh-go{display:none}}
+
 /* bonus */
 .bonus{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:4px}
 .bn{background:var(--card);border-radius:18px;padding:15px 8px;box-shadow:var(--shadow);border:1px solid var(--line);text-align:center}
@@ -241,6 +252,16 @@ body{font-family:var(--font-ui);-webkit-font-smoothing:antialiased;color:var(--i
     <div class="hero-sub" id="cHeroSub">—</div>
     <div class="tier-line" id="tierLine" style="display:none"></div>
   </div>
+
+  <!-- Encart conversion : active les emails = +30 pts (masqué si déjà activé) -->
+  <button class="optin-hero" id="optinHero" style="display:none" onclick="optinFromHero(this)">
+    <div class="oh-ic">🎁</div>
+    <div class="oh-txt">
+      <div class="oh-t">Active les emails · <b>+30 points offerts</b></div>
+      <div class="oh-d">Reçois en avant-première les <b>produits gratuits</b>, offres flash et <b>alertes anti-gaspi</b>.</div>
+    </div>
+    <span class="oh-go">Activer →</span>
+  </button>
 
   <div class="prog">
     <div class="prog-top"><span class="l" id="progL">—</span><span class="r" id="progR"></span></div>
@@ -528,7 +549,11 @@ function render(c){
   $('cardNo').textContent = cardId;
   const oi = String(c.email_opt_in||'').toLowerCase();
   if($('optMail')) $('optMail').checked = !(oi==='off'||oi==='non'||oi==='no'||oi==='0'||oi==='false');
+  refreshOptinHero(oi);
 }
+// Encart +30 pts : visible tant que l'opt-in n'est pas explicitement 'on' (= bonus pas encore pris)
+function refreshOptinHero(oi){ const h=$('optinHero'); if(h) h.style.display = (String(oi).toLowerCase()==='on') ? 'none' : 'flex'; }
+window.optinFromHero = function(){ const h=$('optinHero'); if(h) h.style.display='none'; setOptin(true); };
 
 window.redeem = function(item, btn){
   const r = CATALOGUE.find(x=>x.item===item); if(!r) return;
@@ -545,8 +570,9 @@ window.redeem = function(item, btn){
 window.setOptin = function(on){
   api('fid_optin',{card_id:cardId, value:on?'on':'off'}).then(d=>{
     if(d.status==='ok'){
-      if(d.bonus>0){ solde+=d.bonus; if($('cSolde')) $('cSolde').textContent=solde; toast('🔔 Alertes activées · +'+d.bonus+' pts 🎉'); }
+      if(d.bonus>0){ solde+=d.bonus; if($('cSolde')) $('cSolde').textContent=solde; showConfirm({badge:'🎉 +'+d.bonus+' points !', emoji:'🔔', title:'Alertes activées !', lib:'+'+d.bonus+' points offerts', note:'Tu seras prévenu des produits gratuits, offres flash et paniers anti-gaspi 🥐'}); }
       else toast(on?'🔔 Alertes activées':'Alertes désactivées');
+      const el=$('optMail'); if(el) el.checked=on; refreshOptinHero(on?'on':'off');
     }
     else { toast('Action impossible.'); const el=$('optMail'); if(el) el.checked=!on; }
   }).catch(()=>{ toast('Connexion impossible.'); const el=$('optMail'); if(el) el.checked=!on; });
