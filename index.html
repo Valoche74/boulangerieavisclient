@@ -85,252 +85,110 @@ body::after{
 @keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 
 /* ══════════════════════════════════
-   S2 — BOOSTER / SACHET CADEAU
+   S2 — ROUE DE LA CHANCE
 ══════════════════════════════════ */
 .s2-wrap{width:100%;max-width:400px;display:flex;flex-direction:column;align-items:center}
-.s2-header{text-align:center;margin-bottom:22px}
-.s2-eyebrow{display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:rgba(245,237,216,.6);margin-bottom:8px}
-.s2-eyebrow::before,.s2-eyebrow::after{content:'✦';font-size:7px;opacity:.6}
-.s2-title{font-family:'Playfair Display',serif;font-size:26px;font-weight:700;font-style:italic;color:var(--cream);line-height:1.2;margin-bottom:5px}
-.s2-sub{font-size:13px;color:rgba(245,237,216,.52);line-height:1.5}
 
-/* ── Sachet ── */
-.booster-scene{
-  perspective:800px;
-  width:280px;height:380px;
-  position:relative;
-  margin:0 auto 16px;
-  user-select:none;
-}
+.s2-header{text-align:center;margin-bottom:12px}
+.s2-eyebrow{font-size:11px;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:var(--gold3);opacity:.85;margin-bottom:8px}
+.s2-title{font-family:'Playfair Display',serif;font-style:italic;font-weight:700;font-size:31px;line-height:1.12;color:var(--cream);text-shadow:0 3px 16px rgba(0,0,0,.32)}
+.s2-sub{font-size:13.5px;color:rgba(245,237,216,.72);margin-top:9px;line-height:1.5}
 
-/* Le sachet complet */
-.booster-pkg{
-  position:relative;width:100%;height:100%;
-  transform-style:preserve-3d;
+/* ── Scène ── */
+.wheel-scene{
+  position:relative;width:min(86vw,318px);height:min(86vw,318px);
+  margin:4px auto 0;display:grid;place-items:center;
 }
+.wheel-glow{
+  position:absolute;inset:-12%;border-radius:50%;pointer-events:none;z-index:1;
+  background:radial-gradient(circle,rgba(226,178,90,.36) 0%,transparent 65%);
+  animation:wheelGlow 3.6s ease-in-out infinite;
+}
+@keyframes wheelGlow{0%,100%{opacity:.55;transform:scale(1)}50%{opacity:1;transform:scale(1.09)}}
 
-/* Dos du sachet — crème */
-.booster-back{
-  position:absolute;inset:0;
-  background:linear-gradient(180deg,#f6edd6 0%,#ede0c2 40%,#e8d8b8 100%);
-  border-radius:18px;
-  box-shadow:0 18px 48px rgba(0,0,0,.35),0 0 0 1px rgba(200,150,62,.12) inset;
-  overflow:hidden;
-}
-/* Texture papier */
-.booster-back::before{
-  content:'';position:absolute;inset:0;
-  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='p'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.2' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23p)' opacity='.08'/%3E%3C/svg%3E");
-  background-size:100px 100px;
-  pointer-events:none;
-}
-/* Ornements du sachet */
-.booster-ornament{
-  position:absolute;bottom:20px;left:0;right:0;
-  display:flex;flex-direction:column;align-items:center;gap:6px;
-  z-index:1;
-}
-.booster-bakery-name{
-  font-family:'Playfair Display',serif;
-  font-size:18px;font-weight:700;font-style:italic;
-  color:var(--gold);opacity:.45;letter-spacing:.03em;
-}
-.booster-stars-deco{font-size:11px;letter-spacing:3px;color:var(--gold);opacity:.3}
-
-/* Carte cadeau cachée à l'intérieur */
-.booster-card{
-  position:absolute;
-  left:10%;right:10%;top:12%;
-  height:65%;
-  background:var(--cream3);
-  border-radius:14px;
-  border:1.5px solid var(--gold-border);
-  box-shadow:0 6px 24px rgba(0,0,0,.18);
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  gap:7px;text-align:center;padding:16px;
-  z-index:2;
-  /* Cachée au départ — sera révélée par l'ouverture */
-  opacity:0;
-  transform:translateY(30px) scale(.92);
-  transition:none;
-}
-.booster-card.revealed{
-  opacity:1;
-  transform:translateY(-28px) scale(1);
-  transition:opacity .45s ease, transform .55s cubic-bezier(.34,1.56,.64,1);
-}
-.card-emoji{font-size:58px;line-height:1}
-.card-badge{
-  display:inline-flex;align-items:center;gap:4px;
-  background:rgba(200,150,62,.1);border:1px solid rgba(200,150,62,.28);
-  border-radius:999px;padding:3px 12px;
-  font-size:9px;font-weight:700;color:var(--gold);letter-spacing:.08em;text-transform:uppercase;
-}
-.card-name{font-family:'Playfair Display',serif;font-size:19px;font-weight:700;color:var(--ink)}
-.card-divider{width:28px;height:1px;background:var(--gold-border)}
-.card-msg{font-size:11px;color:var(--muted);line-height:1.45}
-
-/* Halo lumineux derrière la carte */
-.booster-halo{
-  position:absolute;
-  top:15%;left:5%;right:5%;height:55%;
-  border-radius:50%;
-  background:radial-gradient(circle,rgba(226,178,90,.35) 0%,transparent 65%);
-  z-index:1;
-  opacity:0;
-  transform:scale(.6);
-  transition:opacity .5s ease,transform .6s ease;
-  pointer-events:none;
-}
-.booster-halo.show{opacity:1;transform:scale(1.1)}
-
-/* Front du sachet : deux volets qui s'ouvrent */
-.booster-flap{
-  position:absolute;
-  top:0;width:50%;height:100%;
-  z-index:5;
-  transform-origin:center;
-  transition:none;
+.wheel-svg{
+  position:relative;z-index:2;width:100%;height:100%;display:block;
+  transform:rotate(0deg);transform-origin:50% 50%;
+  filter:drop-shadow(0 16px 38px rgba(0,0,0,.42));
   will-change:transform;
 }
-.booster-flap-l{
-  left:0;border-radius:18px 0 0 18px;
-  background:linear-gradient(135deg,#d4a245 0%,#c89040 30%,#bf8530 60%,#c89040 100%);
-  transform-origin:left center;
-}
-.booster-flap-r{
-  right:0;border-radius:0 18px 18px 0;
-  background:linear-gradient(225deg,#d4a245 0%,#c89040 30%,#bf8530 60%,#c89040 100%);
-  transform-origin:right center;
-}
-/* Texture grain sur les volets */
-.booster-flap::before{
-  content:'';position:absolute;inset:0;
-  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='150' height='150' filter='url(%23g)' opacity='.06'/%3E%3C/svg%3E");
-  background-size:80px 80px;
-  pointer-events:none;border-radius:inherit;
-}
 
-/* Nom boulangerie sur le volet gauche */
-.flap-brand{
-  position:absolute;top:50%;left:50%;
-  transform:translate(-50%,-50%) rotate(-90deg);
-  font-family:'Playfair Display',serif;
-  font-size:28px;font-weight:700;font-style:italic;
-  color:rgba(255,255,255,.18);
-  white-space:nowrap;letter-spacing:.04em;
-  pointer-events:none;
+/* Pointeur fixe (au-dessus de la roue) */
+.wheel-pointer{
+  position:absolute;z-index:4;top:-4px;left:50%;
+  width:0;height:0;
+  border-left:13px solid transparent;border-right:13px solid transparent;
+  border-top:27px solid var(--cream3);
+  transform:translateX(-50%);transform-origin:50% 0%;
+  /* double ombre = liseré sombre : reste lisible sur secteur crème ET sur secteur doré */
+  filter:drop-shadow(0 0 1.5px rgba(0,0,0,.85)) drop-shadow(0 5px 10px rgba(0,0,0,.55));
+  transition:transform .05s ease-out;pointer-events:none;
 }
-/* Étoiles sur le volet droit */
-.flap-stars{
-  position:absolute;top:50%;left:50%;
-  transform:translate(-50%,-50%) rotate(90deg);
-  font-size:14px;letter-spacing:4px;
-  color:rgba(255,255,255,.14);pointer-events:none;
+.wheel-pointer::after{
+  content:'';position:absolute;top:-33px;left:-13px;width:26px;height:26px;border-radius:50%;
+  background:linear-gradient(160deg,var(--cream3),#d8cbb0);
+  border:2.5px solid var(--gold);
+  box-shadow:0 3px 10px rgba(0,0,0,.45);
 }
+.wheel-pointer.tick{transform:translateX(-50%) rotate(-12deg)}
 
-/* Ligne de déchirure — joint central */
-.booster-tear{
-  position:absolute;top:0;bottom:0;
-  left:50%;transform:translateX(-50%);
-  width:3px;z-index:6;
-  background:repeating-linear-gradient(180deg,rgba(255,255,255,.15) 0px,rgba(255,255,255,.15) 4px,transparent 4px,transparent 9px);
-  pointer-events:none;
-  transition:opacity .3s ease;
+/* Moyeu = bouton TOURNER */
+.wheel-hub{
+  position:absolute;z-index:5;width:29%;height:29%;border-radius:50%;
+  background:radial-gradient(circle at 34% 28%,var(--gold3) 0%,var(--gold) 62%,#a5762a 100%);
+  border:3px solid rgba(251,246,238,.92);
+  cursor:pointer;display:grid;place-items:center;
+  font-family:'Inter',sans-serif;font-size:11.5px;font-weight:800;letter-spacing:.07em;
+  color:#2a2110;text-transform:uppercase;line-height:1.1;text-align:center;padding:4px;
+  transition:transform .18s cubic-bezier(.34,1.6,.64,1);
+  animation:hubBeat 2.1s ease-in-out infinite;
 }
+@keyframes hubBeat{
+  0%,100%{box-shadow:0 8px 24px rgba(0,0,0,.45),inset 0 2px 6px rgba(255,255,255,.45),0 0 0 0 rgba(245,208,122,.55)}
+  50%    {box-shadow:0 8px 24px rgba(0,0,0,.45),inset 0 2px 6px rgba(255,255,255,.45),0 0 0 15px rgba(245,208,122,0)}
+}
+.wheel-hub:active{transform:scale(.93)}
+.wheel-hub.spinning{animation:none;cursor:default;opacity:.6;font-size:17px}
+.wheel-hub.done{animation:none;cursor:default;font-size:24px}
 
-/* Languette d'ouverture */
-.booster-tab{
-  position:absolute;
-  top:50%;left:50%;
-  transform:translate(-50%,-50%);
-  z-index:10;
-  width:72px;height:72px;
-  border-radius:50%;
-  background:radial-gradient(circle at 40% 35%,#f5d07a,#c89040 70%);
-  border:2.5px solid rgba(255,255,255,.25);
-  box-shadow:0 4px 16px rgba(0,0,0,.3),0 0 0 4px rgba(200,150,62,.12);
-  display:flex;align-items:center;justify-content:center;
-  cursor:grab;
-  touch-action:none;
-  transition:transform .2s ease,box-shadow .2s ease;
-}
-.booster-tab:active{cursor:grabbing}
-.booster-tab-inner{
-  display:flex;flex-direction:column;align-items:center;gap:1px;
-  pointer-events:none;
-}
-.booster-tab-arrow{
-  font-size:18px;color:var(--ink);opacity:.7;
-  animation:slideArrow 1.8s ease-in-out infinite;
-}
-@keyframes slideArrow{0%,100%{transform:translateX(0);opacity:.7}50%{transform:translateX(5px);opacity:1}}
-.booster-tab-text{font-size:8px;font-weight:700;color:var(--ink);opacity:.5;letter-spacing:.08em;text-transform:uppercase}
-
-/* Shimmer foil animé */
-.booster-shimmer{
-  position:absolute;inset:0;z-index:8;
-  border-radius:18px;overflow:hidden;pointer-events:none;
-  opacity:.7;
-}
-.booster-shimmer::before{
-  content:'';position:absolute;
-  top:-60%;left:-60%;width:220%;height:220%;
-  background:conic-gradient(from 0deg,transparent 0%,rgba(245,208,122,.18) 10%,transparent 20%,rgba(255,255,255,.12) 30%,transparent 40%);
-  animation:shimmerSpin 4s linear infinite;
-}
-@keyframes shimmerSpin{to{transform:rotate(360deg)}}
-.booster-shimmer.off{opacity:0;transition:opacity .4s ease}
-
-/* Flash de révélation */
-.booster-flash{
-  position:absolute;inset:-20px;z-index:20;
-  background:radial-gradient(circle,rgba(255,255,255,.7) 0%,transparent 65%);
-  border-radius:50%;
-  opacity:0;pointer-events:none;
-  transform:scale(.5);
-}
-.booster-flash.fire{
-  animation:flashPop .4s ease-out forwards;
-}
-@keyframes flashPop{
-  0%{opacity:0;transform:scale(.5)}
-  30%{opacity:.85;transform:scale(1.1)}
-  100%{opacity:0;transform:scale(1.4)}
-}
-
-/* "Bravo" qui pop */
-.booster-bravo{
-  position:absolute;top:4%;left:50%;transform:translateX(-50%);
-  z-index:25;
-  font-family:'Playfair Display',serif;
-  font-size:32px;font-weight:900;font-style:italic;
-  color:var(--gold3);
-  text-shadow:0 2px 12px rgba(200,150,62,.5);
-  opacity:0;pointer-events:none;
-}
-.booster-bravo.show{animation:bravoIn .6s cubic-bezier(.34,1.56,.64,1) forwards}
-@keyframes bravoIn{0%{opacity:0;transform:translateX(-50%) scale(0) rotate(-8deg)}60%{transform:translateX(-50%) scale(1.12) rotate(3deg)}100%{opacity:1;transform:translateX(-50%) scale(1) rotate(0)}}
-
-/* Booster hint */
-.booster-hint{
-  font-size:12px;color:rgba(245,237,216,.48);letter-spacing:.04em;
-  margin-bottom:10px;
+.wheel-hint{
+  font-size:12.5px;color:rgba(245,237,216,.6);letter-spacing:.02em;margin-top:14px;
   animation:blink 2s ease-in-out infinite;
 }
-@keyframes blink{0%,100%{opacity:.4}50%{opacity:.82}}
-.booster-hint.off{display:none}
+@keyframes blink{0%,100%{opacity:.42}50%{opacity:.85}}
+.wheel-hint.off{display:none}
+
+/* ── Carte résultat ── */
+.wheel-result{
+  display:none;width:100%;max-width:308px;margin-top:18px;
+  background:var(--cream3);border-radius:22px;padding:22px 20px 20px;text-align:center;
+  border:1px solid var(--gold-border);box-shadow:0 18px 48px rgba(0,0,0,.4);
+}
+.wheel-result.show{display:block;animation:resultPop .55s cubic-bezier(.2,.9,.3,1.28) both}
+@keyframes resultPop{from{opacity:0;transform:translateY(18px) scale(.93)}to{opacity:1;transform:none}}
+.wr-badge{
+  display:inline-block;font-size:9.5px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--gold);border:1px solid var(--gold-border);border-radius:999px;padding:5px 12px;margin-bottom:12px;
+}
+.wr-emoji{
+  font-size:60px;line-height:1;display:block;margin-bottom:6px;
+  filter:drop-shadow(0 8px 16px rgba(0,0,0,.18));animation:wrFloat 3s ease-in-out infinite;
+}
+@keyframes wrFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+.wr-name{font-family:'Playfair Display',serif;font-weight:700;font-size:23px;color:var(--ink);line-height:1.2}
+.wr-divider{width:44px;height:1px;background:var(--gold-border);margin:13px auto}
+.wr-msg{font-size:12.5px;color:var(--muted);line-height:1.5}
 
 /* Boutons */
 .btn-fallback{
   display:none;background:none;border:1.5px solid rgba(245,237,216,.25);
-  border-radius:11px;padding:10px 18px;margin-bottom:8px;
+  border-radius:11px;padding:10px 18px;margin-top:14px;
   font-size:13px;color:rgba(245,237,216,.6);cursor:pointer;font-family:'Inter',sans-serif;transition:all .2s;
 }
 .btn-fallback.show{display:block}
 .btn-fallback:hover{border-color:rgba(245,237,216,.55);color:var(--cream)}
 .btn-claim{
-  display:none;width:100%;max-width:300px;padding:15px;
+  display:none;width:100%;max-width:300px;padding:15px;margin-top:16px;
   background:linear-gradient(135deg,var(--gold),var(--gold2));
   color:var(--ink);border:none;border-radius:15px;
   font-family:'Inter',sans-serif;font-size:15px;font-weight:700;cursor:pointer;
@@ -418,7 +276,7 @@ body::after{
       </a>
       <div class="s1-unlock" id="unlockMsg">
         <div class="s1-unlock-dot"></div>
-        Parfait — ouvrez votre cadeau !
+        Parfait — la roue est débloquée !
       </div>
       <div class="s1-optional">
         <span class="s1-optional-icon">💛</span>
@@ -426,79 +284,40 @@ body::after{
       </div>
     </div>
   </div>
-  <div class="s1-skip" id="skipReviewBtn" onclick="goToBooster()">Continuer sans laisser d'avis</div>
+  <div class="s1-skip" id="skipReviewBtn" onclick="goToWheel()">Continuer sans laisser d'avis</div>
 </div>
 </div>
 </div>
 
-<!-- ══ S2 — BOOSTER SACHET ══ -->
+<!-- ══ S2 — ROUE DE LA CHANCE ══ -->
 <div class="screen" id="screen2">
 <div class="screen-inner">
 <div class="s2-wrap">
 
   <div class="s2-header">
     <div class="s2-eyebrow">Votre cadeau</div>
-    <div class="s2-title">Ouvrez votre cadeau.</div>
-    <div class="s2-sub">Touchez le sachet pour l'ouvrir 🎁</div>
+    <div class="s2-title">Faites tourner<br>la roue.</div>
+    <div class="s2-sub">Un produit offert vous attend — 100&nbsp;% gagnant 🎁</div>
   </div>
 
-  <div class="booster-scene" id="boosterScene">
-    <div class="booster-pkg" id="boosterPkg">
-
-      <!-- Dos crème -->
-      <div class="booster-back">
-        <div class="booster-ornament">
-          <span class="booster-bakery-name">Falman</span>
-          <span class="booster-stars-deco">★ ★ ★ ★ ★</span>
-        </div>
-      </div>
-
-      <!-- Halo derrière la carte -->
-      <div class="booster-halo" id="boosterHalo"></div>
-
-      <!-- Carte cadeau cachée -->
-      <div class="booster-card" id="boosterCard">
-        <span class="card-emoji" id="cardEmoji">🥐</span>
-        <div class="card-badge">✦ Vous avez gagné</div>
-        <div class="card-name" id="cardName">Croissant Artisanal</div>
-        <div class="card-divider"></div>
-        <div class="card-msg">Produit à présenter en caisse 🎁</div>
-      </div>
-
-      <!-- Volet gauche -->
-      <div class="booster-flap booster-flap-l" id="flapL">
-        <span class="flap-brand">Falman</span>
-      </div>
-      <!-- Volet droit -->
-      <div class="booster-flap booster-flap-r" id="flapR">
-        <span class="flap-stars">★★★★★</span>
-      </div>
-
-      <!-- Ligne de déchirure -->
-      <div class="booster-tear" id="boosterTear"></div>
-
-      <!-- Languette (seule zone draggable) -->
-      <div class="booster-tab" id="boosterTab">
-        <div class="booster-tab-inner">
-          <span class="booster-tab-arrow">→</span>
-          <span class="booster-tab-text">Ouvrir</span>
-        </div>
-      </div>
-
-      <!-- Shimmer foil -->
-      <div class="booster-shimmer" id="boosterShimmer"></div>
-
-      <!-- Flash -->
-      <div class="booster-flash" id="boosterFlash"></div>
-
-      <!-- Bravo -->
-      <div class="booster-bravo" id="boosterBravo">Bravo !</div>
-    </div>
+  <div class="wheel-scene">
+    <div class="wheel-glow"></div>
+    <svg class="wheel-svg" id="wheelSvg" viewBox="0 0 300 300" aria-hidden="true"></svg>
+    <div class="wheel-pointer" id="wheelPointer"></div>
+    <button class="wheel-hub" id="wheelHub" type="button" onclick="spinWheel()" aria-label="Faire tourner la roue">Tourner</button>
   </div>
 
-  <div class="booster-hint" id="boosterHint">Touchez le sachet pour l'ouvrir ✦</div>
+  <div class="wheel-hint" id="wheelHint">Touchez le bouton pour lancer ✦</div>
 
-  <button class="btn-fallback" id="fallbackBtn" onclick="revealBooster()">Ouvrir mon cadeau →</button>
+  <div class="wheel-result" id="wheelResult">
+    <div class="wr-badge">✦ Vous avez gagné</div>
+    <span class="wr-emoji" id="wrEmoji">🥐</span>
+    <div class="wr-name" id="wrName">Croissant Artisanal</div>
+    <div class="wr-divider"></div>
+    <div class="wr-msg">Produit à présenter en caisse 🎁</div>
+  </div>
+
+  <button class="btn-fallback" id="fallbackBtn" onclick="spinWheel()">Lancer la roue →</button>
   <button class="btn-claim" id="claimBtn" onclick="goToForm()">Recevoir mon code 🎁</button>
 
 </div>
@@ -574,12 +393,10 @@ body::after{
   var r=document.documentElement.style;
   r.setProperty('--gold',T[t][0]); r.setProperty('--gold2',T[t][1]); r.setProperty('--gold3',T[t][2]); r.setProperty('--gold-border',hx(T[t][0],.35));
   document.addEventListener('DOMContentLoaded',function(){
-    document.querySelectorAll('.booster-bakery-name,.flap-brand').forEach(function(e){e.textContent=N[t];});
     var vn=document.querySelector('.viewer-name'); if(vn) vn.textContent=N[t];
     var cv=document.getElementById('threeCanvas'); if(cv) cv.style.setProperty('display','none','important');
     var vl=document.getElementById('viewerLoading'); if(vl) vl.classList.add('gone');
     var fb=document.getElementById('croissantFallback'); if(fb){ fb.textContent=E[t]; fb.classList.add('show'); }
-    var ce=document.getElementById('cardEmoji'); if(ce) ce.textContent=E[t];
     document.title=N[t];
   });
 })();
@@ -616,7 +433,6 @@ const GLB_PATH   = "/assets/croissant-ai-textured.glb";
 
 let wonPrize = null;
 let googleOpened = false;
-let boosterOpened = false;
 
 /* card_id de la carte NFC : présent si on arrive depuis card.html (?id=FAL-XXXX).
    S'il est là, la fin du parcours avis créera le profil fidélité (bascule avis → fidélité). */
@@ -631,16 +447,16 @@ function showScreen(id){
 window.addEventListener("load",()=>{
   showScreen("screen1");
   drawPrize();
+  buildWheel();
   initThree();
   scheduleSkipReviewButton();
 });
 
 /* ─── Tirage ─── */
+/* ─── Tirage (probas inchangées : 50 % / 48 % / 2 %) ─── */
 function drawPrize(){
   const r=Math.random();
   wonPrize = r<.5?PRIZES[0]:r<.98?PRIZES[1]:PRIZES[2];
-  document.getElementById("cardEmoji").textContent = wonPrize.emoji;
-  document.getElementById("cardName").textContent  = wonPrize.name;
 }
 
 /* ─── S1 ─── */
@@ -672,7 +488,7 @@ function openGoogle(e){
   spawnParticles();
   setTimeout(()=>showScreen("screen2"),1400);
 }
-function goToBooster(){ hideSkipReviewButton(); showScreen("screen2"); }
+function goToWheel(){ hideSkipReviewButton(); showScreen("screen2"); }
 
 /* ═══════════════════════════════════════════
    THREE.JS — VIEWER 3D (inchangé)
@@ -742,170 +558,186 @@ function attach3dDrag(c){
 }
 
 /* ═══════════════════════════════════════════
-   BOOSTER — OUVERTURE SACHET CADEAU
-   Drag horizontal sur la languette uniquement
+   S2 — ROUE DE LA CHANCE
+   Le lot est pré-tiré par drawPrize() (probas inchangées : 50 / 48 / 2).
+   La roue est purement visuelle : elle s'arrête sur le lot déjà tiré.
+   6 secteurs = 3 lots × 2 → roue visuellement pleine et équilibrée.
 ═══════════════════════════════════════════ */
-const DRAG_DISTANCE = 220; // px nécessaires pour atteindre 100%
-const OPEN_THRESHOLD = 0.80;
+const WHEEL_SEGMENTS = 6;
+const SEG_ANGLE      = 360 / WHEEL_SEGMENTS;
+const SPIN_TURNS     = 6;
+const SPIN_MS        = 5200;
+let   wheelSpinning  = false;
+let   wheelDone      = false;
 
-let bDragging = false;
-let bStartX   = 0;
-let bProgress = 0; // 0 → 1
-let bMoved    = false; // a-t-on bougé significativement ? sinon = simple tap
+/* deg = 0 en haut, croissant dans le sens horaire */
+function polar(cx,cy,r,deg){
+  const a = (deg-90)*Math.PI/180;
+  return { x: cx + r*Math.cos(a), y: cy + r*Math.sin(a) };
+}
+function svgEsc(s){
+  return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+}
 
-const tab   = ()=> document.getElementById("boosterTab");
-const flapL = ()=> document.getElementById("flapL");
-const flapR = ()=> document.getElementById("flapR");
-const tear  = ()=> document.getElementById("boosterTear");
+/* Construit la roue en SVG — les lots suivent PRIZES (donc ?type=) */
+function buildWheel(){
+  const svg = document.getElementById("wheelSvg");
+  if(!svg) return;
+  const CX=150, CY=150, R=138;
+  let out = "";
 
-/* Attacher les events sur la languette */
-document.addEventListener("DOMContentLoaded",()=>{
-  const t = document.getElementById("boosterTab");
-  if(!t){
-    document.getElementById("fallbackBtn").classList.add("show");
-    return;
+  /* Palette : lue dans les variables CSS → suit le thème du commerce (?type=) */
+  const cs    = getComputedStyle(document.documentElement);
+  const cvar  = function(n,fb){ const v = cs.getPropertyValue(n).trim(); return v || fb; };
+  const GOLD  = cvar('--gold',  '#C8963E');
+  const GOLD3 = cvar('--gold3', '#F5D07A');
+  const CREAM = cvar('--cream3','#FBF6EE');
+  const INK   = cvar('--ink',   '#1a1a14');
+
+  /* Jante */
+  out += '<circle cx="'+CX+'" cy="'+CY+'" r="'+(R+6)+'" fill="'+GOLD+'"/>';
+  out += '<circle cx="'+CX+'" cy="'+CY+'" r="'+(R+6)+'" fill="rgba(0,0,0,.28)"/>';
+  out += '<circle cx="'+CX+'" cy="'+CY+'" r="'+(R+2.5)+'" fill="none" stroke="'+GOLD3+'" stroke-width="2.5"/>';
+
+  /* Secteurs */
+  for(let i=0;i<WHEEL_SEGMENTS;i++){
+    const prize = PRIZES[i % PRIZES.length];
+    const a1 = i*SEG_ANGLE, a2 = (i+1)*SEG_ANGLE;
+    const p1 = polar(CX,CY,R,a1), p2 = polar(CX,CY,R,a2);
+    const light = (i % 2 === 0);
+    const fill  = light ? CREAM : GOLD;
+    const ink   = light ? INK   : CREAM;
+
+    out += '<path d="M'+CX+','+CY+' L'+p1.x.toFixed(2)+','+p1.y.toFixed(2)
+         + ' A'+R+','+R+' 0 0 1 '+p2.x.toFixed(2)+','+p2.y.toFixed(2)+' Z"'
+         + ' fill="'+fill+'" stroke="rgba(0,0,0,.22)" stroke-width="1"/>';
+
+    /* Contenu du secteur, pivoté sur son axe.
+       Moitié basse : on pivote de 180° de plus et on miroite les Y,
+       sinon les libellés se lisent à l'envers. */
+    const mid   = a1 + SEG_ANGLE/2;
+    const flip  = (mid > 90 && mid < 270);
+    const rot   = flip ? mid + 180 : mid;
+    const yEmo  = flip ? 2*CY - 54 : 54;
+    const yTxt  = flip ? 2*CY - 78 : 78;
+    const dy    = flip ? -12 : 12;
+
+    const words = String(prize.name).split(/\s+/);
+    const l1    = words[0] || "";
+    const l2    = words.slice(1).join(" ");
+    out += '<g transform="rotate('+rot+' '+CX+' '+CY+')">'
+         + '<text x="'+CX+'" y="'+yEmo+'" text-anchor="middle" font-size="26">'+svgEsc(prize.emoji)+'</text>'
+         + '<text x="'+CX+'" y="'+yTxt+'" text-anchor="middle" fill="'+ink+'"'
+         + ' font-family="Inter,sans-serif" font-size="10.5" font-weight="700">'+svgEsc(l1)
+         + (l2 ? '<tspan x="'+CX+'" dy="'+dy+'">'+svgEsc(l2)+'</tspan>' : '')
+         + '</text></g>';
   }
-  t.addEventListener("pointerdown",  onBDown,  {passive:false});
-  t.addEventListener("pointermove",  onBMove,  {passive:true});
-  t.addEventListener("pointerup",    onBUp,    {passive:true});
-  t.addEventListener("pointercancel",onBUp,    {passive:true});
 
-  // Clic / tap n'importe où sur le sachet → ouverture (en plus du swipe)
-  const scene = document.getElementById("boosterScene");
-  if(scene) scene.addEventListener("click", ()=>{ if(!boosterOpened) revealBooster(); });
-});
-
-function onBDown(e){
-  if(boosterOpened) return;
-  e.preventDefault(); // empêche le scroll
-  bDragging = true;
-  bMoved    = false;
-  bStartX   = e.clientX;
-  tab().setPointerCapture(e.pointerId);
-  tab().style.transition = "none";
-  flapL().style.transition = "none";
-  flapR().style.transition = "none";
-}
-
-function onBMove(e){
-  if(!bDragging || boosterOpened) return;
-  const dx = e.clientX - bStartX;
-  if(Math.abs(dx) > 8) bMoved = true;
-  bProgress = Math.max(0, Math.min(1, dx / DRAG_DISTANCE));
-  applyProgress(bProgress);
-}
-
-function onBUp(){
-  if(!bDragging) return;
-  bDragging = false;
-
-  if(bProgress >= OPEN_THRESHOLD){
-    revealBooster();              // glissé jusqu'au bout
-  } else if(!bMoved){
-    revealBooster();              // simple tap / clic → s'ouvre tout seul
-  } else {
-    snapBack();                  // glissé trop court → revient
+  /* Ampoules de jante */
+  for(let i=0;i<12;i++){
+    const p = polar(CX,CY,R-4,i*30+15);
+    out += '<circle cx="'+p.x.toFixed(2)+'" cy="'+p.y.toFixed(2)+'" r="3" fill="'+GOLD3+'" opacity=".92"/>';
   }
+
+  /* Axe central (masqué derrière le moyeu HTML) */
+  out += '<circle cx="'+CX+'" cy="'+CY+'" r="46" fill="rgba(0,0,0,.18)"/>';
+
+  svg.innerHTML = out;
 }
 
-function applyProgress(p){
-  // Languette : translate horizontalement
-  const tabOffset = p * DRAG_DISTANCE;
-  tab().style.transform = `translate(calc(-50% + ${tabOffset}px), -50%)`;
-
-  // Volets : rotation perspective 3D
-  const flapAngle = p * 85; // max 85 degrés
-  flapL().style.transform = `rotateY(-${flapAngle}deg)`;
-  flapR().style.transform = `rotateY(${flapAngle}deg)`;
-
-  // Ligne de déchirure : s'efface
-  tear().style.opacity = String(1 - p*2);
-
-  // Shimmer s'atténue
-  document.getElementById("boosterShimmer").style.opacity = String(.7 * (1 - p));
-
-  // Tab glow en fonction de la progression
-  const glow = Math.round(p * 20);
-  tab().style.boxShadow = `0 4px ${16+glow}px rgba(200,150,62,${.3+p*.4}), 0 0 ${glow}px rgba(245,208,122,${p*.6})`;
+/* Angle courant (0-360) lu dans la matrice CSS — sert au tic-tac du pointeur */
+function wheelAngleNow(el){
+  const t = getComputedStyle(el).transform;
+  if(!t || t === "none") return 0;
+  const m = t.match(/matrix\(([^)]+)\)/);
+  if(!m) return 0;
+  const v = m[1].split(",").map(parseFloat);
+  const a = Math.atan2(v[1], v[0]) * 180/Math.PI;
+  return a < 0 ? a + 360 : a;
 }
 
-function snapBack(){
-  const ease = "transform .35s cubic-bezier(.4,0,.2,1)";
-  tab().style.transition = ease;
-  flapL().style.transition = ease;
-  flapR().style.transition = ease;
-  tear().style.transition  = "opacity .35s ease";
-
-  bProgress = 0;
-  applyProgress(0);
-  tab().style.transform = "translate(-50%,-50%)";
+/* Le pointeur cliquette à chaque secteur qui passe */
+function startWheelTicks(){
+  const svg = document.getElementById("wheelSvg");
+  const ptr = document.getElementById("wheelPointer");
+  if(!svg || !ptr) return;
+  let lastBucket = -1;
+  (function loop(){
+    if(!wheelSpinning) return;
+    const bucket = Math.floor(wheelAngleNow(svg) / SEG_ANGLE);
+    if(bucket !== lastBucket){
+      lastBucket = bucket;
+      ptr.classList.add("tick");
+      setTimeout(function(){ ptr.classList.remove("tick"); }, 52);
+      if(navigator.vibrate) navigator.vibrate(6);
+    }
+    requestAnimationFrame(loop);
+  })();
 }
 
-function revealBooster(){
-  if(boosterOpened) return;
-  boosterOpened = true;
-  bProgress = 1;
+function spinWheel(){
+  if(wheelSpinning || wheelDone) return;
+  if(!wonPrize) drawPrize();
+  wheelSpinning = true;
 
-  // Transition fluide vers état ouvert
-  const ease = ".5s cubic-bezier(.4,0,.2,1)";
-  tab().style.transition    = `transform ${ease}, opacity ${ease}`;
-  flapL().style.transition  = `transform ${ease}`;
-  flapR().style.transition  = `transform ${ease}`;
+  const hub = document.getElementById("wheelHub");
+  hub.classList.add("spinning");
+  hub.disabled  = true;
+  hub.textContent = "···";
+  document.getElementById("wheelHint").classList.add("off");
+  const fb = document.getElementById("fallbackBtn");
+  if(fb) fb.classList.remove("show");
+  if(navigator.vibrate) navigator.vibrate(20);
 
-  // Volets s'ouvrent complètement + s'effacent
-  flapL().style.transform = "rotateY(-95deg)";
-  flapR().style.transform = "rotateY(95deg)";
-  flapL().style.opacity   = "0";
-  flapR().style.opacity   = "0";
-  flapL().style.transition += ", opacity .5s ease .2s";
-  flapR().style.transition += ", opacity .5s ease .2s";
+  /* Secteur cible : l'un des deux qui portent le lot tiré */
+  const idx  = PRIZES.indexOf(wonPrize);
+  const cand = [];
+  for(let i=0;i<WHEEL_SEGMENTS;i++){ if(i % PRIZES.length === idx) cand.push(i); }
+  const seg  = cand[Math.floor(Math.random()*cand.length)];
 
-  // Languette disparaît
-  tab().style.opacity = "0";
-  tab().style.pointerEvents = "none";
+  /* Léger décalage pour ne pas tomber pile au milieu du secteur */
+  const jitter = (Math.random()*0.56 - 0.28) * SEG_ANGLE;
+  const target = SPIN_TURNS*360 - (seg*SEG_ANGLE + SEG_ANGLE/2) + jitter;
 
-  // Ligne de déchirure
-  tear().style.opacity = "0";
+  const svg = document.getElementById("wheelSvg");
+  svg.style.transition = "transform " + SPIN_MS + "ms cubic-bezier(.13,.72,.12,1)";
+  void svg.offsetWidth;                       /* force le reflow avant d'animer */
+  svg.style.transform  = "rotate(" + target + "deg)";
 
-  // Shimmer off
-  document.getElementById("boosterShimmer").classList.add("off");
-
-  // Vibration mobile
-  if(navigator.vibrate) navigator.vibrate(40);
-
-  // Flash
-  const flash = document.getElementById("boosterFlash");
-  flash.classList.add("fire");
-
-  // Halo doré
-  setTimeout(()=>{
-    document.getElementById("boosterHalo").classList.add("show");
-  }, 150);
-
-  // Carte cadeau sort
-  setTimeout(()=>{
-    document.getElementById("boosterCard").classList.add("revealed");
-  }, 300);
-
-  // "Bravo !"
-  setTimeout(()=>{
-    document.getElementById("boosterBravo").classList.add("show");
-  }, 550);
-
-  // Particules
-  setTimeout(()=>{
-    if(wonPrize && wonPrize.prob === 1) spawnConfetti();
-    else spawnParticles();
-  }, 350);
-
-  // Hint off
-  document.getElementById("boosterHint").classList.add("off");
-
-  // CTA
-  setTimeout(()=>{
-    document.getElementById("claimBtn").classList.add("show");
-  }, 900);
+  startWheelTicks();
+  setTimeout(onWheelStop, SPIN_MS + 130);
 }
+
+function onWheelStop(){
+  wheelSpinning = false;
+  wheelDone     = true;
+  if(navigator.vibrate) navigator.vibrate([28,45,70]);
+
+  const hub = document.getElementById("wheelHub");
+  hub.classList.remove("spinning");
+  hub.classList.add("done");
+  hub.textContent = "🎉";
+
+  document.getElementById("wrEmoji").textContent = wonPrize.emoji;
+  document.getElementById("wrName").textContent  = wonPrize.name;
+  document.getElementById("wheelResult").classList.add("show");
+
+  if(wonPrize.prob === 1) spawnConfetti(); else spawnParticles();
+
+  setTimeout(function(){
+    const btn = document.getElementById("claimBtn");
+    btn.classList.add("show");
+    try{ btn.scrollIntoView({behavior:"smooth", block:"nearest"}); }catch(e){}
+  }, 520);
+}
+
+/* Filet de sécurité : roue pas lancée au bout de 12 s → bouton simple */
+setTimeout(function(){
+  if(wheelDone || wheelSpinning) return;
+  const s2 = document.getElementById("screen2");
+  const fb = document.getElementById("fallbackBtn");
+  if(s2 && fb && s2.classList.contains("active")) fb.classList.add("show");
+}, 12000);
 
 /* ─── S3 formulaire ─── */
 function goToForm(){
