@@ -200,40 +200,44 @@ body::after{
 
 /* ══════════════════════════════════
    S2b — AJOUTER LA CARTE (Wallet)
+   Ecran d'action : typo sans-serif, texte reduit au minimum,
+   badge Apple officiel. Volontairement different des ecrans
+   « emotion » (S1/S2) qui eux sont en Playfair.
 ══════════════════════════════════ */
-.sw-wrap{width:100%;max-width:360px;display:flex;flex-direction:column;align-items:center;text-align:center}
+.sw-wrap{width:100%;max-width:340px;display:flex;flex-direction:column;align-items:center;text-align:center}
 
 .sw-prize{
-  background:var(--cream3);border-radius:20px;padding:20px 18px;width:100%;
-  border:1px solid var(--gold-border);box-shadow:0 14px 40px rgba(0,0,0,.35);margin-bottom:24px;
+  background:var(--cream3);border-radius:20px;padding:18px 18px 16px;width:100%;
+  border:1px solid var(--gold-border);box-shadow:0 14px 40px rgba(0,0,0,.35);margin-bottom:26px;
 }
-.sw-prize-emoji{font-size:46px;line-height:1;display:block;margin-bottom:8px;filter:drop-shadow(0 6px 12px rgba(0,0,0,.15))}
-.sw-prize-label{font-size:9.5px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);margin-bottom:6px}
-.sw-prize-name{font-family:'Playfair Display',serif;font-weight:700;font-size:20px;color:var(--ink);line-height:1.2}
+.sw-prize-emoji{font-size:44px;line-height:1;display:block;margin-bottom:6px;filter:drop-shadow(0 6px 12px rgba(0,0,0,.15))}
+.sw-prize-name{font-family:'Playfair Display',serif;font-weight:700;font-size:19px;color:var(--ink);line-height:1.2}
 
-.sw-title{font-family:'Playfair Display',serif;font-style:italic;font-weight:700;font-size:27px;color:var(--cream);line-height:1.18;margin-bottom:9px;text-shadow:0 3px 16px rgba(0,0,0,.3)}
-.sw-sub{font-size:13.5px;color:rgba(245,237,216,.74);line-height:1.5;margin-bottom:22px}
+.sw-title{
+  font-family:'Inter',sans-serif;font-weight:600;font-size:19px;letter-spacing:-.01em;
+  color:var(--cream);line-height:1.4;margin-bottom:24px;
+}
 
-/* Bouton Wallet : noir, comme le veut la charte Apple */
+/* ── Badge officiel « Ajouter à Apple Cartes » ── */
 .btn-wallet{
-  width:100%;padding:16px;border:none;border-radius:15px;cursor:pointer;
-  background:#000;color:#fff;font-family:'Inter',sans-serif;font-size:15.5px;font-weight:700;
-  display:flex;align-items:center;justify-content:center;gap:9px;
-  box-shadow:0 8px 26px rgba(0,0,0,.5);transition:transform .16s;
+  width:100%;max-width:300px;padding:0;border:none;background:none;cursor:pointer;
+  display:block;line-height:0;transition:transform .16s;
 }
 .btn-wallet:active{transform:scale(.97)}
-.btn-wallet[disabled]{opacity:.55;cursor:default;transform:none}
-.btn-wallet .apple{font-size:18px;line-height:1;margin-top:-2px}
-
-.sw-perks{list-style:none;margin:18px 0 0;padding:0;font-size:12.5px;color:rgba(245,237,216,.6);text-align:left;width:100%}
-.sw-perks li{padding:5px 0 5px 22px;position:relative;line-height:1.45}
-.sw-perks li::before{content:'✓';position:absolute;left:2px;color:var(--gold2);font-weight:700}
-
-.sw-done{display:none;font-size:13.5px;color:var(--gold3);margin-top:18px;line-height:1.5}
-.sw-done.show{display:block;animation:fadeUp .5s ease both}
+.btn-wallet[disabled]{opacity:.5;cursor:default;transform:none}
+.btn-wallet svg{width:100%;height:auto;display:block}
+.btn-wallet .sw-loading{display:none}
+.btn-wallet.is-loading svg{display:none}
+.btn-wallet.is-loading .sw-loading{
+  display:flex;align-items:center;justify-content:center;gap:10px;
+  height:74px;border-radius:13px;background:#000;border:1.5px solid #a9a9a9;
+  font-family:-apple-system,BlinkMacSystemFont,'Inter',sans-serif;font-size:15px;color:#fff;line-height:1;
+}
+.sw-spin{width:15px;height:15px;border:2px solid rgba(255,255,255,.25);border-top-color:#fff;border-radius:50%;animation:swSpin .7s linear infinite}
+@keyframes swSpin{to{transform:rotate(360deg)}}
 
 .sw-alt{
-  margin-top:24px;background:none;border:none;font-family:'Inter',sans-serif;font-size:13px;
+  margin-top:22px;background:none;border:none;font-family:'Inter',sans-serif;font-size:13px;
   color:rgba(245,237,216,.5);text-decoration:underline;text-underline-offset:3px;cursor:pointer;padding:8px;
 }
 .sw-alt:hover{color:var(--cream)}
@@ -372,27 +376,34 @@ body::after{
 
   <div class="sw-prize">
     <span class="sw-prize-emoji" id="swEmoji">🥐</span>
-    <div class="sw-prize-label">✦ Vous avez gagné</div>
     <div class="sw-prize-name" id="swName">Croissant Artisanal</div>
   </div>
 
-  <div class="sw-title">Votre carte<br>de fidélité.</div>
-  <div class="sw-sub">Votre cadeau est dedans — et vous cumulez des points à chaque passage.</div>
+  <div class="sw-title">Votre cadeau vous attend<br>dans votre carte.</div>
 
-  <button class="btn-wallet" id="btnWallet" onclick="addToWallet()">
-    <span class="apple"></span> Ajouter à Apple Wallet
+  <button class="btn-wallet" id="btnWallet" onclick="addToWallet()" aria-label="Ajouter à Apple Cartes">
+    <!-- Badge officiel Apple, redessiné en SVG (net à toutes les tailles, aucun fichier à charger) -->
+    <svg viewBox="0 0 288 90" role="img" aria-hidden="true">
+      <rect x="1.6" y="1.6" width="284.8" height="86.8" rx="15" fill="#000" stroke="#a9a9a9" stroke-width="3.2"/>
+      <g transform="translate(25,20)">
+        <rect x="8" y="0"  width="36" height="12" rx="3"   fill="#4a90d9"/>
+        <rect x="4" y="8"  width="44" height="12" rx="3"   fill="#5baf4e"/>
+        <rect x="0" y="16" width="52" height="14" rx="3"   fill="#f2bc3f"/>
+        <rect x="0" y="24" width="52" height="26" rx="5"   fill="#e5e1d6"/>
+        <rect x="13" y="31" width="26" height="6"  rx="3"  fill="#ed7a6a"/>
+      </g>
+      <text x="98" y="37" fill="#fff" font-size="19" font-weight="400"
+            font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, sans-serif">Ajouter à</text>
+      <text x="98" y="69" fill="#fff" font-size="27" font-weight="500" letter-spacing="-.3"
+            font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, sans-serif">Apple Cartes</text>
+    </svg>
+    <span class="sw-loading"><span class="sw-spin"></span> Préparation…</span>
   </button>
 
-  <ul class="sw-perks">
-    <li>Votre cadeau toujours dans votre téléphone</li>
-    <li>Aucun email à saisir</li>
-    <li>Vos points se mettent à jour tout seuls</li>
-  </ul>
+  <button class="sw-alt" onclick="goToForm()">Recevoir par email</button>
 
-  <div class="sw-done" id="swDone">✓ C'est ajouté — retrouvez votre carte dans l'app Cartes.</div>
-
-  <button class="sw-alt" onclick="goToForm()">Recevoir par email à la place</button>
-
+</div>
+</div>
 </div>
 </div>
 </div>
@@ -851,9 +862,9 @@ function afterWheel(){
 
 function addToWallet(){
   var btn = document.getElementById('btnWallet');
-  var original = btn.innerHTML;
+  /* etat de chargement : on masque le badge et on affiche un spinner (cf. .is-loading) */
   btn.disabled = true;
-  btn.innerHTML = 'Préparation de votre carte…';
+  btn.classList.add('is-loading');
 
   claimCode = claimCode || generateCode();
   var gain  = wonPrize ? wonPrize.name  : 'Votre cadeau';
@@ -880,8 +891,7 @@ function addToWallet(){
       if(!lnk || lnk.status !== 'ok' || !lnk.url){
         throw new Error((lnk && lnk.message) || 'lien indisponible');
       }
-      document.getElementById('swDone').classList.add('show');
-      btn.innerHTML = original;
+      btn.classList.remove('is-loading');
       btn.disabled = false;
       /* iOS ouvre la feuille « Ajouter a Apple Wallet » sur un fichier .pkpass */
       window.location.href = lnk.url;
@@ -889,7 +899,7 @@ function addToWallet(){
 
     .catch(function(err){
       console.warn('[wallet]', err);
-      btn.innerHTML = original;
+      btn.classList.remove('is-loading');
       btn.disabled = false;
       alert("Votre carte n'a pas pu être préparée.\nVous pouvez recevoir votre code par email à la place.");
     });
