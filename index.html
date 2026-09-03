@@ -198,6 +198,46 @@ body::after{
 @keyframes slideUp{from{transform:translateY(12px);opacity:0}to{transform:none;opacity:1}}
 .btn-claim:active{transform:scale(.97)}
 
+/* ══════════════════════════════════
+   S2b — AJOUTER LA CARTE (Wallet)
+══════════════════════════════════ */
+.sw-wrap{width:100%;max-width:360px;display:flex;flex-direction:column;align-items:center;text-align:center}
+
+.sw-prize{
+  background:var(--cream3);border-radius:20px;padding:20px 18px;width:100%;
+  border:1px solid var(--gold-border);box-shadow:0 14px 40px rgba(0,0,0,.35);margin-bottom:24px;
+}
+.sw-prize-emoji{font-size:46px;line-height:1;display:block;margin-bottom:8px;filter:drop-shadow(0 6px 12px rgba(0,0,0,.15))}
+.sw-prize-label{font-size:9.5px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);margin-bottom:6px}
+.sw-prize-name{font-family:'Playfair Display',serif;font-weight:700;font-size:20px;color:var(--ink);line-height:1.2}
+
+.sw-title{font-family:'Playfair Display',serif;font-style:italic;font-weight:700;font-size:27px;color:var(--cream);line-height:1.18;margin-bottom:9px;text-shadow:0 3px 16px rgba(0,0,0,.3)}
+.sw-sub{font-size:13.5px;color:rgba(245,237,216,.74);line-height:1.5;margin-bottom:22px}
+
+/* Bouton Wallet : noir, comme le veut la charte Apple */
+.btn-wallet{
+  width:100%;padding:16px;border:none;border-radius:15px;cursor:pointer;
+  background:#000;color:#fff;font-family:'Inter',sans-serif;font-size:15.5px;font-weight:700;
+  display:flex;align-items:center;justify-content:center;gap:9px;
+  box-shadow:0 8px 26px rgba(0,0,0,.5);transition:transform .16s;
+}
+.btn-wallet:active{transform:scale(.97)}
+.btn-wallet[disabled]{opacity:.55;cursor:default;transform:none}
+.btn-wallet .apple{font-size:18px;line-height:1;margin-top:-2px}
+
+.sw-perks{list-style:none;margin:18px 0 0;padding:0;font-size:12.5px;color:rgba(245,237,216,.6);text-align:left;width:100%}
+.sw-perks li{padding:5px 0 5px 22px;position:relative;line-height:1.45}
+.sw-perks li::before{content:'✓';position:absolute;left:2px;color:var(--gold2);font-weight:700}
+
+.sw-done{display:none;font-size:13.5px;color:var(--gold3);margin-top:18px;line-height:1.5}
+.sw-done.show{display:block;animation:fadeUp .5s ease both}
+
+.sw-alt{
+  margin-top:24px;background:none;border:none;font-family:'Inter',sans-serif;font-size:13px;
+  color:rgba(245,237,216,.5);text-decoration:underline;text-underline-offset:3px;cursor:pointer;padding:8px;
+}
+.sw-alt:hover{color:var(--cream)}
+
 /* ══ S3, S4, ALREADY — inchangés ══ */
 .s3-wrap{width:100%;max-width:380px}
 .s3-card{background:var(--cream3);border-radius:26px;overflow:hidden;box-shadow:0 20px 56px rgba(0,0,0,.35);border:1px solid rgba(200,150,62,.14)}
@@ -318,12 +358,44 @@ body::after{
   </div>
 
   <button class="btn-fallback" id="fallbackBtn" onclick="spinWheel()">Lancer la roue →</button>
-  <button class="btn-claim" id="claimBtn" onclick="goToForm()">Recevoir mon code 🎁</button>
+  <button class="btn-claim" id="claimBtn" onclick="afterWheel()">Récupérer mon cadeau 🎁</button>
 
 </div>
 </div>
 </div>
 
+
+<!-- ══ S2b — AJOUTER LA CARTE AU WALLET ══ -->
+<div class="screen" id="screenWallet">
+<div class="screen-inner">
+<div class="sw-wrap">
+
+  <div class="sw-prize">
+    <span class="sw-prize-emoji" id="swEmoji">🥐</span>
+    <div class="sw-prize-label">✦ Vous avez gagné</div>
+    <div class="sw-prize-name" id="swName">Croissant Artisanal</div>
+  </div>
+
+  <div class="sw-title">Votre carte<br>de fidélité.</div>
+  <div class="sw-sub">Votre cadeau est dedans — et vous cumulez des points à chaque passage.</div>
+
+  <button class="btn-wallet" id="btnWallet" onclick="addToWallet()">
+    <span class="apple"></span> Ajouter à Apple Wallet
+  </button>
+
+  <ul class="sw-perks">
+    <li>Votre cadeau toujours dans votre téléphone</li>
+    <li>Aucun email à saisir</li>
+    <li>Vos points se mettent à jour tout seuls</li>
+  </ul>
+
+  <div class="sw-done" id="swDone">✓ C'est ajouté — retrouvez votre carte dans l'app Cartes.</div>
+
+  <button class="sw-alt" onclick="goToForm()">Recevoir par email à la place</button>
+
+</div>
+</div>
+</div>
 <!-- ══ S3 — FORMULAIRE ══ -->
 <div class="screen" id="screen3">
 <div class="screen-inner">
@@ -739,6 +811,90 @@ setTimeout(function(){
   if(s2 && fb && s2.classList.contains("active")) fb.classList.add("show");
 }, 12000);
 
+/* ═══════════════════════════════════════════
+   S2b — AJOUT DE LA CARTE AU WALLET
+   Chemin principal apres la roue sur iPhone : la carte PORTE le cadeau,
+   donc ni formulaire ni email. Le formulaire reste le repli (lien discret,
+   et chemin unique sur Android/ordinateur tant que Google Wallet n'est pas fait).
+
+   Rien de nouveau cote backend : on enchaine 3 actions deja deployees.
+═══════════════════════════════════════════ */
+const IS_IOS = /iPad|iPhone|iPod/.test(navigator.userAgent)
+            || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+const TYPE_PARAM = (new URLSearchParams(location.search).get('type') || 'boulangerie').toLowerCase();
+
+/* Code du coupon — partage entre le chemin Wallet et le formulaire,
+   pour qu'un client qui essaie les deux ne genere pas deux coupons. */
+let claimCode = null;
+
+/* GET vers Apps Script. XMLHttpRequest et pas fetch : Safari iOS casse sur les 302. */
+function apiGet(params){
+  return new Promise(function(resolve, reject){
+    var qs = Object.keys(params).map(function(k){
+      return encodeURIComponent(k) + '=' + encodeURIComponent(params[k]);
+    }).join('&');
+    var x = new XMLHttpRequest();
+    x.open('GET', SHEETS_URL + '?' + qs, true);
+    x.onload  = function(){ try { resolve(JSON.parse(x.responseText)); } catch(e){ reject(e); } };
+    x.onerror = function(){ reject(new Error('reseau')); };
+    x.send();
+  });
+}
+
+/* Apres la roue : Wallet sur iPhone, formulaire partout ailleurs. */
+function afterWheel(){
+  if(!IS_IOS || DEMO){ goToForm(); return; }
+  document.getElementById('swEmoji').textContent = wonPrize ? wonPrize.emoji : '🎁';
+  document.getElementById('swName').textContent  = wonPrize ? wonPrize.name  : 'Votre cadeau';
+  showScreen('screenWallet');
+}
+
+function addToWallet(){
+  var btn = document.getElementById('btnWallet');
+  var original = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = 'Préparation de votre carte…';
+
+  claimCode = claimCode || generateCode();
+  var gain  = wonPrize ? wonPrize.name  : 'Votre cadeau';
+  var emoji = wonPrize ? wonPrize.emoji : '🎁';
+
+  /* 1. Le coupon — sans email : aucun envoi, mais le kiosque pourra le valider. */
+  apiGet({ action:'save', code:claimCode, gain:gain, prenom:'', email:'', emoji:emoji })
+
+    /* 2. La carte de fidelite, creee sans email (fid_activate anonyme).
+          Si le client vient deja d'une carte (?id=), on reutilise la sienne. */
+    .then(function(){
+      var p = { action:'fid_activate', gain:gain, code:claimCode };
+      if(fidCardId) p.card_id = fidCardId;
+      return apiGet(p);
+    })
+
+    /* 3. Le lien signe vers le service qui fabrique le .pkpass. */
+    .then(function(act){
+      if(!act || !act.card_id) throw new Error('carte non creee');
+      return apiGet({ action:'wallet_link', card_id:act.card_id, type:TYPE_PARAM });
+    })
+
+    .then(function(lnk){
+      if(!lnk || lnk.status !== 'ok' || !lnk.url){
+        throw new Error((lnk && lnk.message) || 'lien indisponible');
+      }
+      document.getElementById('swDone').classList.add('show');
+      btn.innerHTML = original;
+      btn.disabled = false;
+      /* iOS ouvre la feuille « Ajouter a Apple Wallet » sur un fichier .pkpass */
+      window.location.href = lnk.url;
+    })
+
+    .catch(function(err){
+      console.warn('[wallet]', err);
+      btn.innerHTML = original;
+      btn.disabled = false;
+      alert("Votre carte n'a pas pu être préparée.\nVous pouvez recevoir votre code par email à la place.");
+    });
+}
+
 /* ─── S3 formulaire ─── */
 function goToForm(){
   showScreen("screen3");
@@ -758,7 +914,7 @@ async function submitForm(){
   const btn=document.querySelector(".s3-submit");
   const btnOriginal=btn.textContent;
   btn.textContent="Envoi en cours…";btn.disabled=true;
-  const code=generateCode();
+  const code = claimCode || generateCode();   // reprend le code deja cree si le client a tente le Wallet
   const gain=wonPrize?wonPrize.name:"Votre cadeau";
   const gainEmoji=wonPrize?wonPrize.emoji:"🎁";
 
