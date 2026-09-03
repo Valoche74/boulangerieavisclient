@@ -852,26 +852,22 @@ function apiGet(params){
   });
 }
 
-/* Apres la roue : Wallet sur iPhone, formulaire partout ailleurs. */
-function afterWheel(){
-  if(!IS_IOS || DEMO){ goToForm(); return; }
-  document.getElementById('swEmoji').textContent = wonPrize ? wonPrize.emoji : '🎁';
-  document.getElementById('swName').textContent  = wonPrize ? wonPrize.name  : 'Votre cadeau';
-  showScreen('screenWallet');
-}
+/* Preparation ANTICIPEE de la carte.
+   Les 3 appels a Apps Script prennent 1 a 3 s chacun. Les lancer au moment du tap
+   faisait attendre le client 5 a 10 s devant un bouton qui tourne. On les lance
+   donc des l'affichage de l'ecran, pendant qu'il lit : au tap, tout est deja pret.
+   `walletReady` est la promesse en cours — addToWallet() se contente de l'attendre. */
+let walletReady = null;
 
-function addToWallet(){
-  var btn = document.getElementById('btnWallet');
-  /* etat de chargement : on masque le badge et on affiche un spinner (cf. .is-loading) */
-  btn.disabled = true;
-  btn.classList.add('is-loading');
+function prepareWallet(){
+  if(walletReady) return walletReady;
 
   claimCode = claimCode || generateCode();
   var gain  = wonPrize ? wonPrize.name  : 'Votre cadeau';
   var emoji = wonPrize ? wonPrize.emoji : '🎁';
 
   /* 1. Le coupon — sans email : aucun envoi, mais le kiosque pourra le valider. */
-  apiGet({ action:'save', code:claimCode, gain:gain, prenom:'', email:'', emoji:emoji })
+  walletReady = apiGet({ action:'save', code:claimCode, gain:gain, prenom:'', email:'', emoji:emoji })
 
     /* 2. La carte de fidelite, creee sans email (fid_activate anonyme).
           Si le client vient deja d'une carte (?id=), on reutilise la sienne. */
@@ -891,10 +887,38 @@ function addToWallet(){
       if(!lnk || lnk.status !== 'ok' || !lnk.url){
         throw new Error((lnk && lnk.message) || 'lien indisponible');
       }
+      return lnk.url;
+    })
+
+    .catch(function(err){
+      walletReady = null;                 // on autorise un nouvel essai au tap suivant
+      throw err;
+    });
+
+  return walletReady;
+}
+
+/* Apres la roue : Wallet sur iPhone, formulaire partout ailleurs. */
+function afterWheel(){
+  if(!IS_IOS || DEMO){ goToForm(); return; }
+  document.getElementById('swEmoji').textContent = wonPrize ? wonPrize.emoji : '🎁';
+  document.getElementById('swName').textContent  = wonPrize ? wonPrize.name  : 'Votre cadeau';
+  showScreen('screenWallet');
+  prepareWallet().catch(function(){});    // en tache de fond, l'erreur est traitee au tap
+}
+
+function addToWallet(){
+  var btn = document.getElementById('btnWallet');
+  /* etat de chargement : on masque le badge et on affiche un spinner (cf. .is-loading) */
+  btn.disabled = true;
+  btn.classList.add('is-loading');
+
+  prepareWallet()
+    .then(function(url){
       btn.classList.remove('is-loading');
       btn.disabled = false;
-      /* iOS ouvre la feuille « Ajouter a Apple Wallet » sur un fichier .pkpass */
-      window.location.href = lnk.url;
+      /* iOS reconnait le type application/vnd.apple.pkpass et ouvre Wallet */
+      window.location.href = url;
     })
 
     .catch(function(err){
