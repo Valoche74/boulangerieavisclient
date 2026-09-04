@@ -87,6 +87,12 @@ body{font-family:var(--font-ui);-webkit-font-smoothing:antialiased;color:var(--i
   font-weight:700;cursor:pointer;color:#3a2705;background:linear-gradient(135deg,var(--gold),var(--gold2));
   box-shadow:0 4px 12px rgba(200,150,62,.34)}
 .st.use:active{transform:scale(.95)}
+/* cadeau validé : reste cliquable pour être rouvert en grand devant le vendeur */
+.st.done.live{border:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;
+  background:var(--green-soft);border-radius:14px;padding:7px 13px;font-family:var(--font-ui)}
+.st.done.live .ok{font-size:12px;font-weight:700;color:var(--green)}
+.st.done.live .cd{font-size:10.5px;color:var(--muted);font-variant-numeric:tabular-nums}
+.st.done.live:active{transform:scale(.96)}
 
 .use-ov{position:fixed;inset:0;z-index:60;background:rgba(30,24,12,.55);backdrop-filter:blur(6px);
   display:none;align-items:center;justify-content:center;padding:24px}
@@ -316,10 +322,10 @@ body{font-family:var(--font-ui);-webkit-font-smoothing:antialiased;color:var(--i
   </div>
 
   <div class="hero">
-    <div class="hero-top"><span class="hero-label">Mes tampons</span><span class="badge-lvl" id="cLvl">★ Découverte</span></div>
+    <div class="hero-top"><span class="hero-label">Mes tampons</span></div>
     <div class="hero-pts"><span class="v" id="cSolde">0</span><span class="u">tampons</span></div>
-    <div class="hero-sub" id="cHeroSub">—</div>
-    <div class="tier-line" id="tierLine" style="display:none"></div>
+    
+    
   </div>
 
   <!-- Encart conversion : active les emails = +2 tampons (masqué si déjà activé) -->
@@ -604,28 +610,41 @@ function renderStamps(solde, next){
   grid.innerHTML = html;
 }
 
+
+/* 🔄 04/09 — Toute variation de solde doit rafraichir la grille et le catalogue,
+   pas seulement le gros chiffre. Sans ca, gagner des tampons par une action
+   laissait la grille figee sur la valeur du chargement de page (constate en test :
+   6 tampons affiches, grille a 1/10). */
+/* 🔄 04/09 — Toute variation de solde doit rafraichir la grille ET le catalogue,
+   pas seulement le gros chiffre. Sans ca, gagner des tampons par une action
+   laissait la grille figee sur la valeur du chargement de page (constate en
+   test : 6 tampons affiches en haut, grille a 1/10 juste en dessous). */
+function applySolde(n){
+  solde = n;
+  if($('cSolde')) $('cSolde').textContent = n;
+  const next = CATALOGUE.filter(r=>r.cout > n).sort((a,b)=>a.cout-b.cout)[0];
+  if(next){
+    $('progL').innerHTML = 'Plus que <b>'+(next.cout-n)+' tampon'+((next.cout-n)>1?'s':'')+'</b> pour '+esc(next.libelle);
+    $('progR').textContent = n+' / '+next.cout;
+    $('progBar').style.width = Math.max(4, Math.round(n/next.cout*100))+'%';
+  } else {
+    $('progL').innerHTML = '🎉 Tu peux débloquer <b>tous</b> les cadeaux !';
+    $('progR').textContent = '';
+    $('progBar').style.width = '100%';
+  }
+  renderStamps(n, next);
+}
+
 function render(c){
   solde = c.points_solde;
   $('cName').textContent = (c.prenom||'').trim() || 'gourmand';
   $('cAv').textContent = (c.prenom||'?').trim().charAt(0).toUpperCase();
   $('cSolde').textContent = c.points_solde;
-  $('cLvl').textContent = '★ ' + (c.niveau||'Découverte');
-  // niveau suivant
-  const cur = NIVEAUX.find(n=>n.nom===(c.niveau||'Découverte')) || NIVEAUX[0];
-  const nxt = NIVEAUX[NIVEAUX.indexOf(cur)+1];
-  $('cHeroSub').innerHTML = nxt
-    ? 'Encore <b>'+Math.max(0,nxt.min-c.points_statut)+' tampons</b> pour <b>'+nxt.nom+'</b> · '+c.points_statut+' cumulés'
-    : '🏆 Niveau maximum · '+c.points_statut+' tampons cumulés';
-  // tier (par € dépensés) + cadeau anniversaire associé
-  const tl = $('tierLine');
-  if(c.tier){
-    tl.style.display='';
-    const tk = (c.tier_key || String(c.tier)).toLowerCase();
-    tl.innerHTML = '<span class="tier-chip tc-'+tk+'">◆ '+esc(c.tier)+'</span>'
-      + (c.tier_next
-          ? '<span class="tt">Plus que <b>'+c.tier_reste_eur+' €</b> d\'achats pour passer <b>'+esc(c.tier_next)+'</b></span>'
-          : '<span class="tt">🏆 Statut maximum atteint</span>');
-  } else tl.style.display='none';
+  /* 🔄 04/09 — SYSTEME DE RANGS RETIRE (niveaux ET tiers).
+     Deux echelles de progression coexistaient pour le meme client, dont une
+     (« 50 € d'achats pour passer Argent ») fondee sur des montants que le
+     commercant ne saisit jamais : elle affichait donc du faux.
+     Le tampon est desormais la seule mesure. */
   if(c.tier_gift && $('annivGift')) $('annivGift').textContent = c.tier_gift+' offert·e';
   // prochaine récompense
   /* Le prochain palier = le MOINS CHER encore hors de portée, pas le premier du
@@ -684,7 +703,7 @@ window.redeem = function(item, btn){
 window.setOptin = function(on){
   api('fid_optin',{card_id:cardId, value:on?'on':'off'}).then(d=>{
     if(d.status==='ok'){
-      if(d.bonus>0){ solde+=d.bonus; if($('cSolde')) $('cSolde').textContent=solde; showConfirm({badge:'🎉 +'+d.bonus+' tampons !', emoji:'🔔', title:'Alertes activées !', lib:'+'+d.bonus+' tampons offerts', note:'Tu seras prévenu des produits gratuits, offres flash et paniers anti-gaspi 🥐'}); }
+      if(d.bonus>0){ applySolde(solde + d.bonus); showConfirm({badge:'🎉 +'+d.bonus+' tampons !', emoji:'🔔', title:'Alertes activées !', lib:'+'+d.bonus+' tampons offerts', note:'Tu seras prévenu des produits gratuits, offres flash et paniers anti-gaspi 🥐'}); }
       else toast(on?'🔔 Alertes activées':'Alertes désactivées');
       const el=$('optMail'); if(el) el.checked=on; refreshOptinHero(on?'on':'off');
     }
@@ -701,7 +720,7 @@ function applyActions(st){
 window.claimAction = function(key){
   if(!cardId || actionsState[key]) return;   // pas de carte ou déjà récompensé
   api('fid_action',{card_id:cardId, key:key}).then(d=>{
-    if(d.status==='ok'){ actionsState[key]=true; solde+=d.points_delta; if($('cSolde')) $('cSolde').textContent=solde; toast('🎉 +'+d.points_delta+' points, merci !'); applyActions(actionsState); }
+    if(d.status==='ok'){ actionsState[key]=true; applySolde(solde + d.points_delta); toast('🎉 +'+d.points_delta+' tampon'+(d.points_delta>1?'s':'')+', merci !'); applyActions(actionsState); }
     else if(d.status==='already'){ actionsState[key]=true; applyActions(actionsState); }
   }).catch(()=>{});
 };
@@ -727,24 +746,81 @@ function creditPassage(){
 /* Fenêtre pendant laquelle un cadeau validé reste affiché (doit correspondre à
    REDEEM_WINDOW_SEC côté Code.gs). Passé ce délai, il disparaît de la liste. */
 const REDEEM_WINDOW_MS = 3600 * 1000;
+/* ⏱️ Écart d'horloge client ↔ serveur.
+   Les horodatages viennent d'Apps Script, mais le compte à rebours s'affiche sur
+   le téléphone du client. Si les deux horloges divergent (constaté : 9 h d'écart),
+   un calcul direct donne des durées absurdes. On mesure donc l'écart une fois et
+   on convertit tous les horodatages serveur en heure locale du client. */
+let clockSkew = 0;                       // (heure serveur) − (heure client)
+function setServerNow(ms){ if(ms) clockSkew = Number(ms) - Date.now(); }
+function toLocal(serverMs){ return Number(serverMs) - clockSkew; }
 
-function renderRewards(list){
-  /* Un cadeau consommé il y a plus d'une heure ne s'affiche plus. */
-  const now = Date.now();
-  list = (list||[]).filter(g => !(g.statut==='done' && g.used_at && (now - g.used_at) > REDEEM_WINDOW_MS));
+let lastRewards = [];
+let listTimer = null;
 
-  if(!list.length){ $('giftsWrap').style.display='none'; return; }
+function renderRewards(list, serverNow){
+  setServerNow(serverNow);
+  lastRewards = (list||[]);
+
+  /* Un cadeau consommé il y a plus d'une heure disparaît de la liste. */
+  const shown = lastRewards.filter(g =>
+    !(g.statut==='done' && g.used_at && (Date.now() - toLocal(g.used_at)) > REDEEM_WINDOW_MS));
+
+  if(!shown.length){ $('giftsWrap').style.display='none'; if(listTimer) clearInterval(listTimer); return; }
   $('giftsWrap').style.display='';
-  $('gifts').innerHTML = list.map(g=>{
+
+  $('gifts').innerHTML = shown.map(g=>{
     const done = g.statut==='done';
+    const lib = esc(g.libelle).replace(/'/g,"\\'");
     return '<div class="gift"><div class="ic">🎁</div>'
-      +'<div class="meta"><div class="n">'+esc(g.libelle)+'</div><div class="d">'+esc(g.date)+(g.code?(' · code '+esc(g.code)):'')+'</div></div>'
+      +'<div class="meta"><div class="n">'+esc(g.libelle)+'</div>'
+      +'<div class="d">'+(g.code?('code '+esc(g.code)):'')+'</div></div>'
       +(done
-        ? '<div class="st done">✓ Récupéré</div>'
-        : '<button class="st use" onclick="askUse(\''+esc(g.code)+'\',\''+esc(g.libelle).replace(/'/g,"\\'")+'\')">Utiliser</button>')
+        /* Validé : on garde le bouton actif — le client doit pouvoir le rouvrir
+           en grand devant le vendeur, et voir le temps qu'il lui reste. */
+        ? '<button class="st done live" data-left="'+(g.used_at||0)+'" '
+          +'onclick="showUsed(\''+esc(g.code)+'\',\''+lib+'\','+(g.used_at||0)+')">'
+          +'<span class="ok">✓ Validé</span><span class="cd" id="cd_'+esc(g.code)+'">—</span></button>'
+        : '<button class="st use" onclick="askUse(\''+esc(g.code)+'\',\''+lib+'\')">Utiliser</button>')
       +'</div>';
   }).join('');
+
+  /* Les compte-à-rebours de la liste tournent en continu. */
+  if(listTimer) clearInterval(listTimer);
+  const tickList = ()=>{
+    let encore = false;
+    shown.forEach(g=>{
+      if(g.statut!=='done' || !g.used_at) return;
+      const el = document.getElementById('cd_'+g.code);
+      if(!el) return;
+      const reste = REDEEM_WINDOW_MS - (Date.now() - toLocal(g.used_at));
+      if(reste <= 0){ el.textContent = 'expiré'; return; }
+      encore = true;
+      const m = Math.floor(reste/60000), s = Math.floor(reste%60000/1000);
+      el.textContent = m+' min '+String(s).padStart(2,'0');
+    });
+    if(!encore) clearInterval(listTimer);
+  };
+  tickList(); listTimer = setInterval(tickList, 1000);
 }
+
+function loadRewards(){
+  api('fid_rewards',{card_id:cardId}, true)
+    .then(d=>{ if(d.status==='ok') renderRewards(d.rewards, d.now); })
+    .catch(()=>{});
+}
+
+/* Rouvre l'écran de validation en grand — c'est ce qu'on montre au vendeur. */
+window.showUsed = function(code, libelle, usedAt){
+  $('useLib').textContent = libelle; $('useLib2').textContent = libelle;
+  $('useCode').textContent = code;
+  $('useModal').dataset.code = code;
+  $('useStep1').style.display = 'none';
+  $('useStep2').style.display = '';
+  $('useModal').classList.add('on');
+  startUseClock(toLocal(usedAt) || Date.now());
+};
+
 
 /* ─── 🎟️ Utiliser un cadeau — devant le vendeur ──────────────────────────
    Le disclaimer arrive AVANT le tap, jamais après : découvrir qu'on avait une
@@ -759,7 +835,7 @@ window.askUse = function(code, libelle){
 }
 window.closeUse = function(){ $("useModal").classList.remove("on"); if(useTimer) clearInterval(useTimer); };
 
-let useTimer = null;
+let useTimer = null;/* Horloge de l'ecran de validation. Ancree sur l'heure LOCALE du client :   l'heure qui defile doit correspondre a celle du telephone que le vendeur   regarde, pas a celle du serveur Google (9 h d'ecart constate). */function startUseClock(startLocalMs){  const tick = ()=>{    const n = new Date();    $('useClock').textContent = n.toLocaleTimeString('fr-FR');    const reste = Math.max(0, REDEEM_WINDOW_MS - (n.getTime() - startLocalMs));    const m = Math.floor(reste/60000), s = Math.floor(reste%60000/1000);    $('useLeft').textContent = reste > 0      ? 'Valable encore ' + m + ' min ' + String(s).padStart(2,'0')      : 'Ce cadeau a expire';  };  tick(); if(useTimer) clearInterval(useTimer); useTimer = setInterval(tick, 1000);}
 window.confirmUse = function(btn){
   const code = $('useModal').dataset.code;
   btn.disabled = true; btn.textContent = 'Validation…';
@@ -771,22 +847,11 @@ window.confirmUse = function(btn){
     }
     $('useStep1').style.display = 'none';
     $('useStep2').style.display = '';
-    const start = Number(d.used_at) || Date.now();
-    /* L'heure défile en direct : une capture d'écran se repère immédiatement. */
-    const tick = ()=>{
-      const n = new Date();
-      $('useClock').textContent = n.toLocaleTimeString('fr-FR');
-      const reste = Math.max(0, REDEEM_WINDOW_MS - (n.getTime() - start));
-      const m = Math.floor(reste/60000), s = Math.floor(reste%60000/1000);
-      $('useLeft').textContent = reste > 0
-        ? 'Valable encore ' + m + ' min ' + String(s).padStart(2,'0')
-        : 'Expiré';
-    };
-    tick(); if(useTimer) clearInterval(useTimer); useTimer = setInterval(tick, 1000);
+    setServerNow(d.now);
+    startUseClock(toLocal(Number(d.used_at)) || Date.now());
     loadRewards();
   }).catch(()=>{ btn.disabled=false; btn.textContent='Oui, je suis en caisse'; toast('Connexion impossible.'); });
 }
-function loadRewards(){ api('fid_rewards',{card_id:cardId}, true).then(d=>{ if(d.status==='ok') renderRewards(d.rewards); }).catch(()=>{}); }
 
 /* 🎟️ Activation d'une offre promo reçue par email (?promo=CAMP) → cadeau en attente + animation redeem */
 function claimPromo(camp){
@@ -836,7 +901,7 @@ else{
   api('fid_open',{card_id:cardId, source:'scan'}, true).then(d=>{
     if(d.status==='active'){
       rememberCard(cardId);          // reconnu → on retient pour les prochains passages
-      render(d.client); show('stateActive'); renderRewards(d.rewards); renderPaniers(d.paniers); applyActions(d.actions);
+      render(d.client); show('stateActive'); renderRewards(d.rewards, d.now); renderPaniers(d.paniers); applyActions(d.actions);
       var _promo=(params.get('promo')||'').trim();
       if(_promo){ claimPromo(_promo); }           // activation d'une offre reçue par email (prioritaire)
       else if(d.anniv){
