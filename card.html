@@ -13,8 +13,8 @@
 /* ════════════════════════════════════════════════════════════════
    CARD.HTML v3 — page client ouverte par la carte NFC (?id=card_id)
    • Routeur : carte sans profil → parcours avis · profil actif → fidélité
-   • Données EN DIRECT (fid_client) · +10 pts/scan (fid_passage, anti-spam)
-   • Échange points → cadeau (fid_redeem, crée un coupon validable au kiosque)
+   • Données EN DIRECT (fid_client) · +1 tampon/jour (fid_passage, anti-spam)
+   • Échange tampons → cadeau (fid_redeem, crée un coupon validable au kiosque)
    • Achat de ticket de tirage (fid_buyticket) · Répertoire (fid_rewards)
    ════════════════════════════════════════════════════════════════ */
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
@@ -79,6 +79,17 @@ body{font-family:var(--font-ui);-webkit-font-smoothing:antialiased;color:var(--i
 .bar{height:11px;border-radius:99px;background:var(--cream2);overflow:hidden;border:1px solid var(--line)}
 .bar i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,var(--gold),var(--gold2),var(--gold3));transition:width .6s cubic-bezier(.16,1,.3,1);box-shadow:0 1px 4px rgba(200,150,62,.4)}
 
+/* grille de tampons — remplace la barre tant que le palier reste lisible (≤ 25).
+   Au-delà, une grille de 40 ou 80 pastilles devient illisible : on repasse à la barre. */
+.stamps{display:none;grid-template-columns:repeat(10,1fr);gap:6px}
+.stamps.on{display:grid}
+.stamp{aspect-ratio:1;border-radius:50%;border:2px dashed var(--gold-line);background:var(--cream2);
+  display:grid;place-items:center;font-size:12px;line-height:1}
+.stamp.on{border:none;background:linear-gradient(135deg,var(--gold),var(--gold2));
+  box-shadow:0 3px 8px rgba(200,150,62,.34);animation:stampPop .34s cubic-bezier(.2,.9,.3,1.5) both}
+@keyframes stampPop{from{transform:scale(.35);opacity:0}to{transform:none;opacity:1}}
+@media (prefers-reduced-motion:reduce){.stamp.on{animation:none}}
+
 .sec-h{display:flex;align-items:baseline;justify-content:space-between;margin:8px 2px 0}
 .sec-h .t{font-family:var(--font-display);font-size:21px;font-weight:700;color:var(--ink)}
 .sec-h .a{font-size:11.5px;font-weight:600;color:var(--muted2)}
@@ -104,7 +115,7 @@ body{font-family:var(--font-ui);-webkit-font-smoothing:antialiased;color:var(--i
 .rw .btn:disabled{opacity:.5;cursor:default}
 .rw.locked .ph{filter:grayscale(.3) opacity(.85)}
 
-/* encart opt-in +30 pts (haut de page) */
+/* encart opt-in +2 tampons (haut de page) */
 .optin-hero{display:flex;align-items:center;gap:13px;width:100%;margin:0 0 14px;padding:14px 16px;border:0;border-radius:18px;text-align:left;cursor:pointer;font-family:inherit;
   background:linear-gradient(135deg,var(--gold),var(--gold2));color:#1a1206;box-shadow:0 12px 28px var(--gold-soft);transition:transform .12s,filter .15s}
 .optin-hero:active{transform:scale(.985)}
@@ -247,17 +258,17 @@ body{font-family:var(--font-ui);-webkit-font-smoothing:antialiased;color:var(--i
   </div>
 
   <div class="hero">
-    <div class="hero-top"><span class="hero-label">Solde de points</span><span class="badge-lvl" id="cLvl">★ Découverte</span></div>
-    <div class="hero-pts"><span class="v" id="cSolde">0</span><span class="u">points</span></div>
+    <div class="hero-top"><span class="hero-label">Mes tampons</span><span class="badge-lvl" id="cLvl">★ Découverte</span></div>
+    <div class="hero-pts"><span class="v" id="cSolde">0</span><span class="u">tampons</span></div>
     <div class="hero-sub" id="cHeroSub">—</div>
     <div class="tier-line" id="tierLine" style="display:none"></div>
   </div>
 
-  <!-- Encart conversion : active les emails = +30 pts (masqué si déjà activé) -->
+  <!-- Encart conversion : active les emails = +2 tampons (masqué si déjà activé) -->
   <button class="optin-hero" id="optinHero" style="display:none" onclick="optinFromHero(this)">
     <div class="oh-ic">🎁</div>
     <div class="oh-txt">
-      <div class="oh-t">Active les emails · <b>+30 points offerts</b></div>
+      <div class="oh-t">Active les emails · <b>+2 tampons offerts</b></div>
       <div class="oh-d">Reçois en avant-première les <b>produits gratuits</b>, offres flash et <b>alertes anti-gaspi</b>.</div>
     </div>
     <span class="oh-go">Activer →</span>
@@ -265,7 +276,8 @@ body{font-family:var(--font-ui);-webkit-font-smoothing:antialiased;color:var(--i
 
   <div class="prog">
     <div class="prog-top"><span class="l" id="progL">—</span><span class="r" id="progR"></span></div>
-    <div class="bar"><i id="progBar" style="width:0%"></i></div>
+    <div class="bar" id="progBarWrap"><i id="progBar" style="width:0%"></i></div>
+    <div class="stamps" id="stampGrid"></div>
   </div>
 
   <!-- bandeau anti-gaspi : paniers invendus du jour (alerte clients fidélité) -->
@@ -274,9 +286,9 @@ body{font-family:var(--font-ui);-webkit-font-smoothing:antialiased;color:var(--i
   <div class="sec-h"><span class="t">Mes récompenses</span><span class="a">glisse →</span></div>
   <div class="cat" id="cat"></div>
 
-  <div class="sec-h"><span class="t">Gagner plus de points</span></div>
+  <div class="sec-h"><span class="t">Gagner plus de tampons</span></div>
   <div class="bonus">
-    <a class="bn" id="lkTrust" href="#" target="_blank" rel="noopener" style="text-decoration:none" onclick="claimAction('trustpilot')"><div class="ic trust">★</div><div class="t">Avis Trustpilot</div><div class="s">+30 pts</div></a>
+    <a class="bn" id="lkTrust" href="#" target="_blank" rel="noopener" style="text-decoration:none" onclick="claimAction('trustpilot')"><div class="ic trust">★</div><div class="t">Avis Trustpilot</div><div class="s">+3 tampons</div></a>
     <div class="bn green"><div class="ic">🎂</div><div class="t">Anniversaire</div><div class="s" id="annivGift">Cadeau le jour J</div></div>
     <div class="bn"><div class="ic">📱</div><div class="t">Giveaway du mois</div><div class="s">Suis-nous !</div></div>
   </div>
@@ -286,12 +298,12 @@ body{font-family:var(--font-ui);-webkit-font-smoothing:antialiased;color:var(--i
     <div class="tick-prize" id="tickPrize"></div>
     <div class="big" id="cTickets">Tu as 0 ticket</div>
     <div class="sub" id="tickSub">—</div>
-    <button class="tick-buy" id="buyBtn" onclick="buyTicket()">🎟️ Acheter un ticket · 100 pts</button>
+    <button class="tick-buy" id="buyBtn" onclick="buyTicket()">🎟️ Acheter un ticket · 5 tampons</button>
     <div class="tick-note">Plus tu as de tickets, plus tu as de chances 🍀</div>
   </div>
 
   <div class="social">
-    <div class="social-txt">Suis-nous : <b>+20 pts</b> par réseau ! Et chaque mois, <b>un abonné</b> est tiré au sort 🎁</div>
+    <div class="social-txt">Suis-nous : <b>+2 tampons</b> par réseau ! Et chaque mois, <b>un abonné</b> est tiré au sort 🎁</div>
     <div class="social-links">
       <a class="slink ig" id="lkIg" href="#" target="_blank" rel="noopener" aria-label="Instagram" onclick="claimAction('insta')"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#fff" stroke-width="2"><rect x="2.5" y="2.5" width="19" height="19" rx="5.5"/><circle cx="12" cy="12" r="4.3"/><circle cx="17.6" cy="6.4" r="1.3" fill="#fff" stroke="none"/></svg></a>
       <a class="slink fb" id="lkFb" href="#" target="_blank" rel="noopener" aria-label="Facebook" onclick="claimAction('facebook')"><svg viewBox="0 0 24 24" width="22" height="22" fill="#fff"><path d="M13.5 21v-8h2.7l.4-3.1h-3.1V7.9c0-.9.25-1.5 1.55-1.5H17V3.6c-.3-.04-1.3-.13-2.46-.13-2.43 0-4.1 1.48-4.1 4.21v2.35H7.7V13h2.74v8h3.06z"/></svg></a>
@@ -344,7 +356,7 @@ const AVIS_URL   = 'https://boulangerieavisclient.vercel.app/';
 const INSTA_URL  = 'https://www.instagram.com/dupainetdesidees/';  /* PLACEHOLDER boulangerie — à remplacer par le compte Falman */
 const FB_URL     = 'https://www.facebook.com/poilane/';            /* PLACEHOLDER boulangerie — à remplacer par le compte Falman */
 const TRUST_URL  = 'https://fr.trustpilot.com/';                   /* PLACEHOLDER — à remplacer par la page Trustpilot du commerce */
-const NIVEAUX = [{nom:'Découverte',min:0},{nom:'Fidèle',min:150},{nom:'VIP',min:600}];
+const NIVEAUX = [{nom:'Découverte',min:0},{nom:'Fidèle',min:15},{nom:'VIP',min:40}];
 
 // ════ PRESETS MULTI-COMMERCE — 1 base, N verticales. Sélection via ?type= (défaut boulangerie) ════
 // Boulangerie = inchangée (catalogue photos + thème :root). Autres = emoji + thème injecté.
@@ -352,63 +364,63 @@ const PRESETS = {
   boulangerie:{ name:'Falman', foot:'Falman — Emmanuelle & Flavien', eyebrow:'✦ Ma fidélité',
     fl:['🥐','🥖','🧁','🥨','🍞','🥐'], theme:null,
     catalogue:[
-      {item:'cafe',libelle:'Boisson chaude',cout:250,img:'assets/cafe.png'},
-      {item:'viennoiserie',libelle:'Viennoiserie',cout:300,img:'assets/viennoiserie.png'},
-      {item:'baguette',libelle:'Baguette tradition',cout:350,img:'assets/baguette.png'},
-      {item:'jus',libelle:'Boisson fraîche',cout:400,img:'assets/jus.png'},
-      {item:'patisserie',libelle:'Pâtisserie',cout:500,img:'assets/patisserie.png'},
-      {item:'sandwich',libelle:'Formule sandwich',cout:650,img:'assets/sandwich.png'},
-      {item:'gateau',libelle:'Gros lot — gâteau',cout:1500,img:'assets/gateau.png'}
+      {item:'cafe',libelle:'Boisson chaude',cout:12,img:'assets/cafe.png'},
+      {item:'viennoiserie',libelle:'Viennoiserie',cout:10,img:'assets/viennoiserie.png'},
+      {item:'baguette',libelle:'Baguette tradition',cout:15,img:'assets/baguette.png'},
+      {item:'jus',libelle:'Boisson fraîche',cout:18,img:'assets/jus.png'},
+      {item:'patisserie',libelle:'Pâtisserie',cout:25,img:'assets/patisserie.png'},
+      {item:'sandwich',libelle:'Formule sandwich',cout:40,img:'assets/sandwich.png'},
+      {item:'gateau',libelle:'Gros lot — gâteau',cout:80,img:'assets/gateau.png'}
     ]},
   fleuriste:{ name:'Au Jardin de Rose', foot:'Au Jardin de Rose — Fleuriste', eyebrow:'✦ Ma fidélité',
     fl:['🌷','🌹','🌻','💐','🌸','🪷'],
     theme:{cream:'#FBF5F8',cream2:'#F2E2EC',gold:'#C8568E',gold2:'#E084B0',gold3:'#F4B6D2',green:'#5E8C57',ink:'#3A2531'},
     catalogue:[
-      {item:'f1',libelle:'Fleur à la tige',cout:250,img:'assets/fleuriste/fleur.png',emoji:'🌷'},
-      {item:'f2',libelle:'Sachet de graines',cout:350,img:'assets/fleuriste/graines.png',emoji:'🌱'},
-      {item:'f3',libelle:'Mini plante grasse',cout:550,img:'assets/fleuriste/plante.png',emoji:'🪴'},
-      {item:'f4',libelle:'-20 % sur un bouquet',cout:800,img:'assets/fleuriste/bouquet20.png',emoji:'🎟️'},
-      {item:'f5',libelle:'Bouquet du marché',cout:1500,img:'assets/fleuriste/bouquet.png',emoji:'💐'}
+      {item:'f1',libelle:'Fleur à la tige',cout:12,img:'assets/fleuriste/fleur.png',emoji:'🌷'},
+      {item:'f2',libelle:'Sachet de graines',cout:15,img:'assets/fleuriste/graines.png',emoji:'🌱'},
+      {item:'f3',libelle:'Mini plante grasse',cout:28,img:'assets/fleuriste/plante.png',emoji:'🪴'},
+      {item:'f4',libelle:'-20 % sur un bouquet',cout:50,img:'assets/fleuriste/bouquet20.png',emoji:'🎟️'},
+      {item:'f5',libelle:'Bouquet du marché',cout:80,img:'assets/fleuriste/bouquet.png',emoji:'💐'}
     ]},
   pizzeria:{ name:'Bella Napoli', foot:'Bella Napoli — Pizzeria', eyebrow:'✦ Ma fidélité',
     fl:['🍕','🍅','🧀','🌶️','🫒','🍕'],
     theme:{cream:'#FBF6EE',cream2:'#F3E6D4',gold:'#C8442E',gold2:'#E2664E',gold3:'#F2A07E',green:'#4E7C3F',ink:'#33231C'},
     catalogue:[
-      {item:'p1',libelle:'Boisson',cout:250,img:'assets/pizzeria/boisson.png',emoji:'🥤'},
-      {item:'p2',libelle:'Pain à l’ail',cout:350,img:'assets/pizzeria/painail.png',emoji:'🧄'},
-      {item:'p3',libelle:'Supplément topping',cout:300,img:'assets/pizzeria/topping.png',emoji:'🧀'},
-      {item:'p4',libelle:'Tiramisu maison',cout:500,img:'assets/pizzeria/tiramisu.png',emoji:'🍰'},
-      {item:'p5',libelle:'Pizza au choix',cout:1100,img:'assets/pizzeria/pizza.png',emoji:'🍕'}
+      {item:'p1',libelle:'Boisson',cout:12,img:'assets/pizzeria/boisson.png',emoji:'🥤'},
+      {item:'p2',libelle:'Pain à l’ail',cout:15,img:'assets/pizzeria/painail.png',emoji:'🧄'},
+      {item:'p3',libelle:'Supplément topping',cout:10,img:'assets/pizzeria/topping.png',emoji:'🧀'},
+      {item:'p4',libelle:'Tiramisu maison',cout:25,img:'assets/pizzeria/tiramisu.png',emoji:'🍰'},
+      {item:'p5',libelle:'Pizza au choix',cout:65,img:'assets/pizzeria/pizza.png',emoji:'🍕'}
     ]},
   vape:{ name:'VapoStore', foot:'VapoStore — Cigarette électronique', eyebrow:'✦ Ma fidélité',
     fl:['💨','🫐','🍓','🥭','⚡','💜'],
     theme:{cream:'#F3F5FB',cream2:'#E4E7F3',gold:'#6D5AE0',gold2:'#8A7AF0',gold3:'#B6ABFF',green:'#2BB3A3',ink:'#26283A'},
     catalogue:[
-      {item:'v1',libelle:'Résistance / coil',cout:250,img:'assets/vape/coil.png',emoji:'🔩'},
-      {item:'v2',libelle:'Kit cotton',cout:350,img:'assets/vape/cotton.png',emoji:'🧵'},
-      {item:'v3',libelle:'-25 % e-liquide',cout:450,img:'assets/vape/liquide25.png',emoji:'🎟️'},
-      {item:'v4',libelle:'E-liquide 10 ml',cout:600,img:'assets/vape/eliquide.png',emoji:'🧪'},
-      {item:'v5',libelle:'Pod / kit',cout:1500,img:'assets/vape/podkit.png',emoji:'🎁'}
+      {item:'v1',libelle:'Résistance / coil',cout:12,img:'assets/vape/coil.png',emoji:'🔩'},
+      {item:'v2',libelle:'Kit cotton',cout:15,img:'assets/vape/cotton.png',emoji:'🧵'},
+      {item:'v3',libelle:'-25 % e-liquide',cout:20,img:'assets/vape/liquide25.png',emoji:'🎟️'},
+      {item:'v4',libelle:'E-liquide 10 ml',cout:30,img:'assets/vape/eliquide.png',emoji:'🧪'},
+      {item:'v5',libelle:'Pod / kit',cout:80,img:'assets/vape/podkit.png',emoji:'🎁'}
     ]},
   restaurant:{ name:'Le Bistrot', foot:'Le Bistrot — Restaurant', eyebrow:'✦ Ma fidélité',
     fl:['🍽️','🍷','🥩','🍝','🧆','🍤'],
     theme:{cream:'#FBF6F1',cream2:'#F0E2D8',gold:'#9A3F4C',gold2:'#B85A68',gold3:'#D78F99',green:'#6E7A3C',ink:'#321F22'},
     catalogue:[
-      {item:'r1',libelle:'Café ou soft',cout:250,img:'assets/restaurant/boisson.png',emoji:'🥤'},
-      {item:'r2',libelle:'Kir / apéritif',cout:400,img:'assets/restaurant/kir.png',emoji:'🍷'},
-      {item:'r3',libelle:'Café gourmand',cout:500,img:'assets/restaurant/cafegourmand.png',emoji:'☕'},
-      {item:'r4',libelle:'Dessert',cout:550,img:'assets/restaurant/dessert.png',emoji:'🍰'},
-      {item:'r5',libelle:'Menu complet',cout:1500,img:'assets/restaurant/menu.png',emoji:'🍽️'}
+      {item:'r1',libelle:'Café ou soft',cout:12,img:'assets/restaurant/boisson.png',emoji:'🥤'},
+      {item:'r2',libelle:'Kir / apéritif',cout:18,img:'assets/restaurant/kir.png',emoji:'🍷'},
+      {item:'r3',libelle:'Café gourmand',cout:25,img:'assets/restaurant/cafegourmand.png',emoji:'☕'},
+      {item:'r4',libelle:'Dessert',cout:28,img:'assets/restaurant/dessert.png',emoji:'🍰'},
+      {item:'r5',libelle:'Menu complet',cout:80,img:'assets/restaurant/menu.png',emoji:'🍽️'}
     ]},
   primeur:{ name:'Le Panier Frais', foot:'Le Panier Frais — Primeur', eyebrow:'✦ Ma fidélité',
     fl:['🍎','🥕','🍓','🥦','🍊','🍇'],
     theme:{cream:'#F5FBF2',cream2:'#E2F0DC',gold:'#E0892E',gold2:'#F0A94E',gold3:'#F8C87C',green:'#4FA03F',ink:'#26301F'},
     catalogue:[
-      {item:'pr1',libelle:'Fruit à l’unité',cout:200,img:'assets/primeur/fruit.png',emoji:'🍎'},
-      {item:'pr2',libelle:'Botte d’herbes',cout:350,img:'assets/primeur/herbes.png',emoji:'🌿'},
-      {item:'pr3',libelle:'Barquette fraises',cout:450,img:'assets/primeur/fraises.png',emoji:'🍓'},
-      {item:'pr4',libelle:'-15 % sur le panier',cout:700,img:'assets/primeur/panier15.png',emoji:'🎟️'},
-      {item:'pr5',libelle:'Grand panier saison',cout:1200,img:'assets/primeur/grandpanier.png',emoji:'🧺'}
+      {item:'pr1',libelle:'Fruit à l’unité',cout:8,img:'assets/primeur/fruit.png',emoji:'🍎'},
+      {item:'pr2',libelle:'Botte d’herbes',cout:15,img:'assets/primeur/herbes.png',emoji:'🌿'},
+      {item:'pr3',libelle:'Barquette fraises',cout:20,img:'assets/primeur/fraises.png',emoji:'🍓'},
+      {item:'pr4',libelle:'-15 % sur le panier',cout:45,img:'assets/primeur/panier15.png',emoji:'🎟️'},
+      {item:'pr5',libelle:'Grand panier saison',cout:70,img:'assets/primeur/grandpanier.png',emoji:'🧺'}
     ]}
 };
 const _q = new URLSearchParams(location.search);
@@ -510,6 +522,29 @@ function showConfirm(o){
 }
 window.closeRewardModal = function(){ $('cmOverlay').classList.remove('show'); };
 
+/* Grille de tampons vers le prochain palier.
+   Au-delà de 25, une grille devient un mur de pastilles illisible : on garde la
+   barre de progression, qui reste lisible quel que soit le nombre. */
+const STAMP_GRID_MAX = 25;
+function renderStamps(solde, next){
+  const grid = $('stampGrid'), bar = $('progBarWrap');
+  if(!grid || !bar) return;
+  if(!next || next.cout > STAMP_GRID_MAX){
+    grid.classList.remove('on'); grid.innerHTML=''; bar.style.display=''; return;
+  }
+  bar.style.display = 'none';
+  grid.classList.add('on');
+  const mark = (P.fl && P.fl[0]) || '✓';
+  let html = '';
+  for(let i=0; i<next.cout; i++){
+    const on = i < solde;
+    html += '<div class="stamp'+(on?' on':'')+'"'
+          + (on ? ' style="animation-delay:'+Math.min(i,14)*35+'ms"' : '')
+          + '>'+(on ? mark : '')+'</div>';
+  }
+  grid.innerHTML = html;
+}
+
 function render(c){
   solde = c.points_solde;
   $('cName').textContent = (c.prenom||'').trim() || 'gourmand';
@@ -520,8 +555,8 @@ function render(c){
   const cur = NIVEAUX.find(n=>n.nom===(c.niveau||'Découverte')) || NIVEAUX[0];
   const nxt = NIVEAUX[NIVEAUX.indexOf(cur)+1];
   $('cHeroSub').innerHTML = nxt
-    ? 'Encore <b>'+Math.max(0,nxt.min-c.points_statut)+' pts</b> pour <b>'+nxt.nom+'</b> · '+c.points_statut+' pts cumulés'
-    : '🏆 Niveau maximum · '+c.points_statut+' pts cumulés';
+    ? 'Encore <b>'+Math.max(0,nxt.min-c.points_statut)+' tampons</b> pour <b>'+nxt.nom+'</b> · '+c.points_statut+' cumulés'
+    : '🏆 Niveau maximum · '+c.points_statut+' tampons cumulés';
   // tier (par € dépensés) + cadeau anniversaire associé
   const tl = $('tierLine');
   if(c.tier){
@@ -534,9 +569,12 @@ function render(c){
   } else tl.style.display='none';
   if(c.tier_gift && $('annivGift')) $('annivGift').textContent = c.tier_gift+' offert·e';
   // prochaine récompense
-  const next = CATALOGUE.find(r=>r.cout > c.points_solde);
+  /* Le prochain palier = le MOINS CHER encore hors de portée, pas le premier du
+     tableau : le catalogue n'est pas trié par prix, et on proposait la Boisson
+     chaude (12) alors que la Viennoiserie (10) était plus proche. */
+  const next = CATALOGUE.filter(r=>r.cout > c.points_solde).sort((a,b)=>a.cout-b.cout)[0];
   if(next){
-    $('progL').innerHTML = 'Plus que <b>'+(next.cout-c.points_solde)+' pts</b> pour '+esc(next.libelle);
+    $('progL').innerHTML = 'Plus que <b>'+(next.cout-c.points_solde)+' tampon'+((next.cout-c.points_solde)>1?'s':'')+'</b> pour '+esc(next.libelle);
     $('progR').textContent = c.points_solde+' / '+next.cout;
     $('progBar').style.width = Math.max(4, Math.round(c.points_solde/next.cout*100))+'%';
   } else {
@@ -544,24 +582,25 @@ function render(c){
     $('progR').textContent = '';
     $('progBar').style.width = '100%';
   }
+  renderStamps(c.points_solde, next);
   // catalogue
-  $('cat').innerHTML = CATALOGUE.map(r=>{
+  $('cat').innerHTML = [...CATALOGUE].sort((a,b)=>a.cout-b.cout).map(r=>{   // trié par palier croissant
     const ok = c.points_solde >= r.cout;
     return '<div class="rw'+(ok?'':' locked')+'">'
       +(r.img ? '<div class="ph"><img class="ph-img" src="'+r.img+'" alt="" loading="lazy"></div>' : '<div class="ph ph-emoji">'+(r.emoji||'🎁')+'</div>')
       +'<div class="nm">'+esc(r.libelle)+'</div>'
-      +'<div class="cost">'+r.cout+' pts</div>'
+      +'<div class="cost">'+r.cout+' tampons</div>'
       +(ok ? '<button class="btn go" onclick="redeem(\''+r.item+'\', this)">Échanger</button>'
-           : '<button class="btn lock">Plus que '+(r.cout-c.points_solde)+' pts</button>')
+           : '<button class="btn lock">Plus que '+(r.cout-c.points_solde)+' tampons</button>')
       +'</div>';
   }).join('');
   // tickets
   $('cTickets').textContent = 'Tu as '+c.tickets_mois+' ticket'+(c.tickets_mois>1?'s':'');
   const achet = (c.tickets_achetables!=null) ? c.tickets_achetables : Math.floor(c.points_solde/100);
-  $('tickSub').innerHTML = 'Prochain tirage sur notre Instagram.<br>Tu peux t\'offrir <b>'+achet+' ticket'+(achet>1?'s':'')+'</b> avec tes points.';
+  $('tickSub').innerHTML = 'Prochain tirage sur notre Instagram.<br>Tu peux t\'offrir <b>'+achet+' ticket'+(achet>1?'s':'')+'</b> avec tes tampons.';
   const cout = c.cout_ticket || 100;
   $('buyBtn').disabled = c.points_solde < cout;
-  $('buyBtn').textContent = '🎟️ Acheter un ticket · '+cout+' pts';
+  $('buyBtn').textContent = '🎟️ Acheter un ticket · '+cout+' tampons';
   $('cardNo').textContent = cardId;
   const oi = String(c.email_opt_in||'').toLowerCase();
   if($('optMail')) $('optMail').checked = !(oi==='off'||oi==='non'||oi==='no'||oi==='0'||oi==='false');
@@ -573,12 +612,12 @@ window.optinFromHero = function(){ const h=$('optinHero'); if(h) h.style.display
 
 window.redeem = function(item, btn){
   const r = CATALOGUE.find(x=>x.item===item); if(!r) return;
-  if(solde < r.cout){ toast('Il te manque '+(r.cout-solde)+' points.'); return; }
+  if(solde < r.cout){ toast('Il te manque '+(r.cout-solde)+' tampons.'); return; }
   if(btn){ btn.disabled=true; btn.textContent='…'; }
   const restore=()=>{ if(btn){ btn.disabled=false; btn.textContent='Échanger'; } };
   api('fid_redeem',{card_id:cardId, item:item}).then(d=>{
     if(d.status==='ok'){ render(d.client); loadRewards(); showConfirm({badge:'✓ Cadeau confirmé', img:r.img, title:'Bravo 🎉', lib:d.libelle, code:d.code, note:"Un email de confirmation t'a été envoyé. Montre ce code en caisse 🥐"}); }
-    else if(d.status==='insufficient'){ toast('Il te manque '+d.manque+' points.'); restore(); }
+    else if(d.status==='insufficient'){ toast('Il te manque '+d.manque+' tampons.'); restore(); }
     else { toast('Action impossible pour le moment.'); restore(); }
   }).catch(()=>{ toast('Connexion impossible.'); restore(); });
 };
@@ -586,7 +625,7 @@ window.redeem = function(item, btn){
 window.setOptin = function(on){
   api('fid_optin',{card_id:cardId, value:on?'on':'off'}).then(d=>{
     if(d.status==='ok'){
-      if(d.bonus>0){ solde+=d.bonus; if($('cSolde')) $('cSolde').textContent=solde; showConfirm({badge:'🎉 +'+d.bonus+' points !', emoji:'🔔', title:'Alertes activées !', lib:'+'+d.bonus+' points offerts', note:'Tu seras prévenu des produits gratuits, offres flash et paniers anti-gaspi 🥐'}); }
+      if(d.bonus>0){ solde+=d.bonus; if($('cSolde')) $('cSolde').textContent=solde; showConfirm({badge:'🎉 +'+d.bonus+' tampons !', emoji:'🔔', title:'Alertes activées !', lib:'+'+d.bonus+' tampons offerts', note:'Tu seras prévenu des produits gratuits, offres flash et paniers anti-gaspi 🥐'}); }
       else toast(on?'🔔 Alertes activées':'Alertes désactivées');
       const el=$('optMail'); if(el) el.checked=on; refreshOptinHero(on?'on':'off');
     }
@@ -610,11 +649,11 @@ window.claimAction = function(key){
 
 window.buyTicket = function(){
   const cout = 100;
-  if(solde < cout){ toast('Il te manque '+(cout-solde)+' points.'); return; }
+  if(solde < cout){ toast('Il te manque '+(cout-solde)+' tampons.'); return; }
   $('buyBtn').disabled = true;
   api('fid_buyticket',{card_id:cardId, qty:1, source:'client'}).then(d=>{
     if(d.status==='ok'){ render(d.client); showConfirm({badge:'🎟️ Ticket validé', emoji:'🎟️', title:'Bonne chance 🍀', lib:'Tu as '+d.client.tickets_mois+' ticket(s) ce mois', note:"Un email de confirmation t'a été envoyé. Tirage en fin de mois !"}); }
-    else if(d.status==='insufficient'){ render(d.client); toast('Il te manque '+d.manque+' points.'); }
+    else if(d.status==='insufficient'){ render(d.client); toast('Il te manque '+d.manque+' tampons.'); }
     else { toast('Action impossible.'); render(d.client||{}); }
   }).catch(()=>{ toast('Connexion impossible.'); });
 };
@@ -671,7 +710,7 @@ function renderPaniers(list){
 
 /* ROUTAGE */
 if(DEMO){
-  const m={prenom:'Camille',nom:'',points_solde:520,points_statut:340,points_mois:60,niveau:'Fidèle',tickets_mois:2,tier:'Argent',tier_key:'argent',tier_gift:(CATALOGUE[1]?CATALOGUE[1].libelle:''),tier_next:'Or',tier_reste_eur:60,cout_ticket:100,tickets_achetables:5,prochain_ticket:40,email_opt_in:'on'};
+  const m={prenom:'Camille',nom:'',points_solde:7,points_statut:18,points_mois:4,niveau:'Fidèle',tickets_mois:1,tier:'Argent',tier_key:'argent',tier_gift:(CATALOGUE[1]?CATALOGUE[1].libelle:''),tier_next:'Or',tier_reste_eur:60,cout_ticket:5,tickets_achetables:1,prochain_ticket:3,email_opt_in:'on'};
   render(m); show('stateActive');
   renderPaniers([{libelle:'Panier surprise du jour',qty:3,prix_reduit:4.9,prix_origine:12,retrait_avant:'18h00',emoji:(P.fl&&P.fl[0])||'🎁'}]);
 }
