@@ -834,6 +834,13 @@ const IS_IOS = /iPad|iPhone|iPod/.test(navigator.userAgent)
             || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 const TYPE_PARAM = (new URLSearchParams(location.search).get('type') || 'boulangerie').toLowerCase();
 
+/* Mémoire locale de la carte — même clé que card.html, qui est sur la même
+   origine. C'est ce qui permet au présentoir (URL identique pour tous) de
+   reconnaître un client à ses passages suivants. */
+function rememberCard(id){
+  try{ if(id) localStorage.setItem('boostavis.card.' + TYPE_PARAM, String(id)); }catch(e){}
+}
+
 /* Code du coupon — partage entre le chemin Wallet et le formulaire,
    pour qu'un client qui essaie les deux ne genere pas deux coupons. */
 let claimCode = null;
@@ -880,6 +887,7 @@ function prepareWallet(){
     /* 3. Le lien signe vers le service qui fabrique le .pkpass. */
     .then(function(act){
       if(!act || !act.card_id) throw new Error('carte non creee');
+      rememberCard(act.card_id);      // le presentoir le reconnaitra au prochain passage
       return apiGet({ action:'wallet_link', card_id:act.card_id, type:TYPE_PARAM });
     })
 
@@ -1010,12 +1018,16 @@ async function submitForm(){
   xhr.send();
 }
 
-/* ─── Bascule avis → fidélité : crée le profil de la carte NFC (fire-and-forget) ─── */
+/* ─── Bascule avis → fidélité : crée le profil client ─────────────────────
+   ⚠️ Avant le 04/09, cette fonction abandonnait s'il n'y avait pas de card_id
+   (le parcours supposait une carte NFC physique). Avec le présentoir, PERSONNE
+   n'en a : les clients passant par l'email repartaient donc sans carte de
+   fidélité. On laisse maintenant le serveur en créer une (fid_activate anonyme),
+   et on retient son identifiant pour les passages suivants. */
 function activateFidelite(prenom, nom, email, gain, code, naissance, optin){
-  if(!fidCardId) return;   // pas venu d'une carte NFC → parcours avis classique, rien à activer
   const url = SHEETS_URL
     + "?action=fid_activate"
-    + "&card_id=" + encodeURIComponent(fidCardId)
+    + (fidCardId ? ("&card_id=" + encodeURIComponent(fidCardId)) : "")
     + "&prenom="  + encodeURIComponent(prenom||"")
     + "&nom="     + encodeURIComponent(nom||"")
     + "&email="   + encodeURIComponent(email||"")
@@ -1025,7 +1037,12 @@ function activateFidelite(prenom, nom, email, gain, code, naissance, optin){
     + "&email_opt_in=" + encodeURIComponent(optin||"off");
   const ax = new XMLHttpRequest();
   ax.open("GET", url, true); ax.timeout = 15000;
-  ax.onload  = ()=>console.log("[BoostAvis] fid_activate:", ax.responseText.slice(0,160));
+  ax.onload  = function(){
+    try{
+      var d = JSON.parse(ax.responseText);
+      if(d && d.card_id) rememberCard(d.card_id);
+    }catch(e){}
+  };
   ax.onerror = ()=>console.warn("[BoostAvis] fid_activate échec réseau");
   ax.send();
 }
