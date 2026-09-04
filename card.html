@@ -79,6 +79,40 @@ body{font-family:var(--font-ui);-webkit-font-smoothing:antialiased;color:var(--i
 .bar{height:11px;border-radius:99px;background:var(--cream2);overflow:hidden;border:1px solid var(--line)}
 .bar i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,var(--gold),var(--gold2),var(--gold3));transition:width .6s cubic-bezier(.16,1,.3,1);box-shadow:0 1px 4px rgba(200,150,62,.4)}
 
+/* ─── Utiliser un cadeau : avertissement + écran de validation ─── */
+.use-warn{background:rgba(200,150,62,.10);border:1px solid var(--gold-line);border-radius:14px;
+  padding:11px 14px;font-size:12.5px;color:var(--muted);line-height:1.5;margin:0 2px}
+.use-warn b{color:var(--ink)}
+.st.use{border:none;border-radius:99px;padding:8px 15px;font-family:var(--font-ui);font-size:12px;
+  font-weight:700;cursor:pointer;color:#3a2705;background:linear-gradient(135deg,var(--gold),var(--gold2));
+  box-shadow:0 4px 12px rgba(200,150,62,.34)}
+.st.use:active{transform:scale(.95)}
+
+.use-ov{position:fixed;inset:0;z-index:60;background:rgba(30,24,12,.55);backdrop-filter:blur(6px);
+  display:none;align-items:center;justify-content:center;padding:24px}
+.use-ov.on{display:flex}
+.use-box{background:var(--card);border-radius:26px;padding:28px 24px;max-width:360px;width:100%;
+  text-align:center;box-shadow:0 24px 70px rgba(0,0,0,.35)}
+.use-box h3{font-family:var(--font-display);font-size:23px;color:var(--ink);margin-bottom:8px}
+.use-box p{font-size:14px;color:var(--muted);line-height:1.55;margin-bottom:18px}
+.use-box .lib{font-weight:700;color:var(--ink);font-size:16px;margin-bottom:4px}
+.use-box .cd{font-size:12px;color:var(--muted2);letter-spacing:.06em;margin-bottom:18px}
+.use-actions{display:flex;flex-direction:column;gap:9px}
+.use-actions button{border:none;border-radius:14px;padding:14px;font-family:var(--font-ui);
+  font-size:15px;font-weight:700;cursor:pointer}
+.use-go{background:linear-gradient(135deg,var(--gold),var(--gold2));color:#3a2705;
+  box-shadow:0 6px 18px rgba(200,150,62,.36)}
+.use-no{background:transparent;color:var(--muted);font-weight:600}
+/* écran validé : le vendeur doit le reconnaître d'un coup d'œil */
+.use-ok{width:78px;height:78px;border-radius:50%;margin:0 auto 14px;display:grid;place-items:center;
+  font-size:38px;color:#fff;background:linear-gradient(135deg,#3F7D2E,#5DA648);
+  box-shadow:0 10px 26px rgba(63,125,46,.4);animation:okPop .45s cubic-bezier(.2,.9,.3,1.5) both}
+@keyframes okPop{from{transform:scale(.4);opacity:0}to{transform:none;opacity:1}}
+.use-clock{font-size:34px;font-weight:800;letter-spacing:-.01em;color:var(--ink);margin:4px 0 2px;
+  font-variant-numeric:tabular-nums}
+.use-left{font-size:13px;color:var(--muted);margin-bottom:20px}
+@media (prefers-reduced-motion:reduce){.use-ok{animation:none}}
+
 /* grille de tampons — remplace la barre tant que le palier reste lisible (≤ 25).
    Au-delà, une grille de 40 ou 80 pastilles devient illisible : on repasse à la barre. */
 .stamps{display:none;grid-template-columns:repeat(10,1fr);gap:6px}
@@ -251,6 +285,30 @@ body{font-family:var(--font-ui);-webkit-font-smoothing:antialiased;color:var(--i
 </div></div>
 
 <!-- FIDÉLITÉ -->
+<!-- 🎟️ Validation d'un cadeau, devant le vendeur -->
+<div class="use-ov" id="useModal">
+  <div class="use-box">
+    <div id="useStep1">
+      <h3>Tu es en caisse ?</h3>
+      <div class="lib" id="useLib">—</div>
+      <div class="cd">code <span id="useCode">—</span></div>
+      <p>Ne valide que <b>devant le vendeur</b> : une fois validé, ce cadeau est utilisé et reste affiché <b>1 heure</b> seulement.</p>
+      <div class="use-actions">
+        <button class="use-go" onclick="confirmUse(this)">Oui, je suis en caisse</button>
+        <button class="use-no" onclick="closeUse()">Pas encore</button>
+      </div>
+    </div>
+    <div id="useStep2" style="display:none">
+      <div class="use-ok">✓</div>
+      <h3>Validé</h3>
+      <div class="lib" id="useLib2">—</div>
+      <div class="use-clock" id="useClock">—</div>
+      <div class="use-left" id="useLeft">—</div>
+      <div class="use-actions"><button class="use-no" onclick="closeUse()">Fermer</button></div>
+    </div>
+  </div>
+</div>
+
 <div class="screen" id="stateActive"><div class="wrap">
   <div class="head">
     <div><div class="eyebrow">✦ Ma fidélité</div><div class="bakery" id="cBakery">Falman</div><div class="greet">Bonjour <span id="cName">—</span> 👋</div></div>
@@ -312,6 +370,7 @@ body{font-family:var(--font-ui);-webkit-font-smoothing:antialiased;color:var(--i
 
   <div id="giftsWrap" style="display:none">
     <div class="sec-h"><span class="t">Mes cadeaux</span></div>
+    <div class="use-warn">⏱️ Un cadeau validé reste valable <b>1 heure</b>. Ne le valide qu'au moment de le récupérer, devant le vendeur.</div>
     <div class="gifts" id="gifts"></div>
   </div>
 
@@ -665,15 +724,67 @@ function creditPassage(){
   }).catch(()=>{});
 }
 
+/* Fenêtre pendant laquelle un cadeau validé reste affiché (doit correspondre à
+   REDEEM_WINDOW_SEC côté Code.gs). Passé ce délai, il disparaît de la liste. */
+const REDEEM_WINDOW_MS = 3600 * 1000;
+
 function renderRewards(list){
-  if(!list || !list.length){ $('giftsWrap').style.display='none'; return; }
+  /* Un cadeau consommé il y a plus d'une heure ne s'affiche plus. */
+  const now = Date.now();
+  list = (list||[]).filter(g => !(g.statut==='done' && g.used_at && (now - g.used_at) > REDEEM_WINDOW_MS));
+
+  if(!list.length){ $('giftsWrap').style.display='none'; return; }
   $('giftsWrap').style.display='';
   $('gifts').innerHTML = list.map(g=>{
     const done = g.statut==='done';
     return '<div class="gift"><div class="ic">🎁</div>'
       +'<div class="meta"><div class="n">'+esc(g.libelle)+'</div><div class="d">'+esc(g.date)+(g.code?(' · code '+esc(g.code)):'')+'</div></div>'
-      +'<div class="st '+(done?'done':'todo')+'">'+(done?'✓ Récupéré':'À récupérer')+'</div></div>';
+      +(done
+        ? '<div class="st done">✓ Récupéré</div>'
+        : '<button class="st use" onclick="askUse(\''+esc(g.code)+'\',\''+esc(g.libelle).replace(/'/g,"\\'")+'\')">Utiliser</button>')
+      +'</div>';
   }).join('');
+}
+
+/* ─── 🎟️ Utiliser un cadeau — devant le vendeur ──────────────────────────
+   Le disclaimer arrive AVANT le tap, jamais après : découvrir qu'on avait une
+   heure une fois le compteur lancé serait une mauvaise surprise. */
+window.askUse = function(code, libelle){
+  $('useLib').textContent = libelle; $('useLib2').textContent = libelle;
+  $('useCode').textContent = code;
+  $('useModal').dataset.code = code;
+  $('useStep1').style.display = '';
+  $('useStep2').style.display = 'none';
+  $('useModal').classList.add('on');
+}
+window.closeUse = function(){ $("useModal").classList.remove("on"); if(useTimer) clearInterval(useTimer); };
+
+let useTimer = null;
+window.confirmUse = function(btn){
+  const code = $('useModal').dataset.code;
+  btn.disabled = true; btn.textContent = 'Validation…';
+  api('fid_use', {card_id:cardId, code:code}).then(d=>{
+    btn.disabled = false; btn.textContent = 'Oui, je suis en caisse';
+    if(d.status !== 'ok' && d.status !== 'already'){
+      toast(d.status === 'not_yours' ? "Ce cadeau n'est pas sur ta carte." : "Impossible de valider.");
+      return;
+    }
+    $('useStep1').style.display = 'none';
+    $('useStep2').style.display = '';
+    const start = Number(d.used_at) || Date.now();
+    /* L'heure défile en direct : une capture d'écran se repère immédiatement. */
+    const tick = ()=>{
+      const n = new Date();
+      $('useClock').textContent = n.toLocaleTimeString('fr-FR');
+      const reste = Math.max(0, REDEEM_WINDOW_MS - (n.getTime() - start));
+      const m = Math.floor(reste/60000), s = Math.floor(reste%60000/1000);
+      $('useLeft').textContent = reste > 0
+        ? 'Valable encore ' + m + ' min ' + String(s).padStart(2,'0')
+        : 'Expiré';
+    };
+    tick(); if(useTimer) clearInterval(useTimer); useTimer = setInterval(tick, 1000);
+    loadRewards();
+  }).catch(()=>{ btn.disabled=false; btn.textContent='Oui, je suis en caisse'; toast('Connexion impossible.'); });
 }
 function loadRewards(){ api('fid_rewards',{card_id:cardId}, true).then(d=>{ if(d.status==='ok') renderRewards(d.rewards); }).catch(()=>{}); }
 
