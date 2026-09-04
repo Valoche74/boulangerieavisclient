@@ -763,6 +763,13 @@ function spinWheel(){
   if(!wonPrize) drawPrize();
   wheelSpinning = true;
 
+  /* ⚡ La carte se prepare PENDANT que la roue tourne.
+     Le lot est deja tire a cet instant (drawPrize ci-dessus), donc tout ce qu'il
+     faut au backend est connu. On offre ainsi les 5,2 s d'animation + le temps de
+     lecture du resultat a l'aller-retour Apps Script, au lieu de les faire attendre
+     au client apres le tap. L'erreur eventuelle est traitee au tap, dans addToWallet. */
+  if(IS_IOS && !DEMO) prepareWallet().catch(function(){});
+
   const hub = document.getElementById("wheelHub");
   hub.classList.add("spinning");
   hub.disabled  = true;
@@ -860,46 +867,86 @@ function apiGet(params){
 }
 
 /* Preparation ANTICIPEE de la carte.
-   Les 3 appels a Apps Script prennent 1 a 3 s chacun. Les lancer au moment du tap
-   faisait attendre le client 5 a 10 s devant un bouton qui tourne. On les lance
-   donc des l'affichage de l'ecran, pendant qu'il lit : au tap, tout est deja pret.
+
+   ⚡ 05/09 — UN SEUL APPEL, LANCE DES LE DEPART DE LA ROUE.
+   Avant : trois appels en serie (save → fid_activate → wallet_link), lances a
+   l'affichage de l'ecran Wallet, puis un quatrieme cote service (fid_client).
+   Mesure : chaque aller-retour Apps Script coute 1,9 a 6,0 s, meme a vide.
+   Le client attendait ~15 s le doigt sur le bouton.
+
+   Maintenant : `wallet_start` fait les trois en une execution et renvoie un lien
+   qui porte deja le profil signe, donc le service n'a plus rien a demander non
+   plus. Et comme le lot est tire AVANT l'animation, on lance tout des le depart
+   de la roue : les 5,2 s d'animation couvrent l'essentiel de l'attente.
+
    `walletReady` est la promesse en cours — addToWallet() se contente de l'attendre. */
 let walletReady = null;
 
-function prepareWallet(){
-  if(walletReady) return walletReady;
+/* Le chemin rapide : une seule action backend, un lien qui porte deja le profil. */
+function walletViaStart(){
+  var p = {
+    action : 'wallet_start',
+    code   : claimCode,
+    gain   : wonPrize.name,
+    emoji  : wonPrize.emoji,
+    prenom : '', email : '',          // le coupon part sans email : aucun envoi
+    type   : TYPE_PARAM
+  };
+  /* Si le client vient deja d'une carte (?id=), on reutilise la sienne. */
+  if(fidCardId) p.card_id = fidCardId;
 
-  claimCode = claimCode || generateCode();
-  var gain  = wonPrize ? wonPrize.name  : 'Votre cadeau';
-  var emoji = wonPrize ? wonPrize.emoji : '🎁';
+  return apiGet(p).then(function(r){
+    if(!r || r.status !== 'ok' || !r.url){
+      throw new Error((r && (r.message || r.etape)) || 'lien indisponible');
+    }
+    rememberCard(r.card_id);          // le presentoir le reconnaitra au prochain passage
+    return r.url;
+  });
+}
 
-  /* 1. Le coupon — sans email : aucun envoi, mais le kiosque pourra le valider. */
-  walletReady = apiGet({ action:'save', code:claimCode, gain:gain, prenom:'', email:'', emoji:emoji })
-
-    /* 2. La carte de fidelite, creee sans email (fid_activate anonyme).
-          Si le client vient deja d'une carte (?id=), on reutilise la sienne. */
+/* ⏳ REPLI : l'ancien enchainement en trois appels.
+   Il ne sert que si le Code.gs deploye ne connait pas encore `wallet_start` —
+   sans lui, un front deploye avant le backend casserait l'ajout de carte pour de
+   vrais clients. A SUPPRIMER une fois la nouvelle version d'Apps Script en place
+   depuis quelques jours. */
+function walletViaLegacy(){
+  return apiGet({ action:'save', code:claimCode, gain:wonPrize.name, prenom:'', email:'', emoji:wonPrize.emoji })
     .then(function(){
-      var p = { action:'fid_activate', gain:gain, code:claimCode };
+      var p = { action:'fid_activate', gain:wonPrize.name, code:claimCode };
       if(fidCardId) p.card_id = fidCardId;
       return apiGet(p);
     })
-
-    /* 3. Le lien signe vers le service qui fabrique le .pkpass. */
     .then(function(act){
       if(!act || !act.card_id) throw new Error('carte non creee');
-      rememberCard(act.card_id);      // le presentoir le reconnaitra au prochain passage
+      rememberCard(act.card_id);
       return apiGet({ action:'wallet_link', card_id:act.card_id, type:TYPE_PARAM });
     })
-
     .then(function(lnk){
       if(!lnk || lnk.status !== 'ok' || !lnk.url){
         throw new Error((lnk && lnk.message) || 'lien indisponible');
       }
       return lnk.url;
-    })
+    });
+}
 
+function prepareWallet(){
+  if(walletReady) return walletReady;
+  /* Sans lot tire, il n'y a rien a mettre sur la carte : on ne prepare rien. */
+  if(!wonPrize) return Promise.reject(new Error('lot non tire'));
+
+  claimCode = claimCode || generateCode();
+
+  walletReady = walletViaStart()
     .catch(function(err){
-      walletReady = null;                 // on autorise un nouvel essai au tap suivant
+      /* Seul le cas « backend pas encore a jour » declenche le repli : toute autre
+         erreur (reseau, carte refusee) doit remonter, sinon on la masquerait
+         derriere trois appels supplementaires qui echoueraient pareil. */
+      if(!/action inconnue/i.test(String((err && err.message) || ''))) throw err;
+      console.warn('[wallet] wallet_start absent du backend — repli sur l\'ancien enchainement');
+      return walletViaLegacy();
+    })
+    .catch(function(err){
+      walletReady = null;             // on autorise un nouvel essai au tap suivant
       throw err;
     });
 
