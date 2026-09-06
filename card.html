@@ -492,7 +492,77 @@ const _q = new URLSearchParams(location.search);
 const COMMERCE_TYPE = (_q.get('type')||'boulangerie').toLowerCase();
 const P = PRESETS[COMMERCE_TYPE] || PRESETS.boulangerie;
 const DEMO = _q.get('demo') === '1';
+/* ⚠️ SHEETS_URL n'est plus qu'un repli : le backend vient du registre des
+   commerces, resolu par ?c=. La table SHEETS_URLS ci-dessus reste le filet si le
+   registre est injoignable. */
 const SHEETS_URL = SHEETS_URLS[COMMERCE_TYPE] || SHEETS_URLS.boulangerie;
+/* Commerce historique — repli si le registre est injoignable. */
+var BA_REPLI = {
+  cle: 'falman', nom: 'Falman Emmanuelle & Flavien', nom_court: 'Falman',
+  metier: 'boulangerie', apps_script: 'https://script.google.com/macros/s/AKfycbx0N4dLSGtyUMgA_lA8N9O-B3rleX7zHgTFAXZyiV7hEf5ioXAcVI245hHdi4CMKuCn/exec'
+};
+
+/* ═══ REGISTRE DES COMMERCES ═════════════════════════════════════
+   Une seule source de vérité : commerces.json, servi par le site client.
+   Ajouter un commerce = une entrée là-bas, et rien à toucher ici.
+
+   Deux notions, longtemps confondues dans ?type= :
+     metier   = l'apparence (thème, lots de la roue, catalogue)
+     commerce = l'identité et le backend
+   Les confondre interdisait deux boulangeries.
+
+   ⚠️ ?type= reste accepté et le restera TOUJOURS : les cartes Wallet déjà dans
+   les téléphones des clients contiennent card.html?id=…&type=boulangerie.
+
+   ⚠️ Résolution ASYNCHRONE. Toute la page doit donc attendre BA.pret() avant son
+   premier appel au backend. En cas de panne du registre (réseau, fichier absent),
+   on retombe sur BA_REPLI — le commerce historique — pour que la boutique
+   continue de tourner. Un commerçant hors ligne est un commerçant perdu. */
+var BA = (function(){
+  var REGISTRE = 'https://boulangerieavisclient.vercel.app/commerces.json';
+  var q       = new URLSearchParams(location.search);
+  var cle     = (q.get('c') || '').trim().toLowerCase();
+  var metier  = (q.get('type') || '').trim().toLowerCase();
+  var promesse = null;
+
+  function resoudre(reg){
+    var k = null;
+    if (cle && reg.commerces && reg.commerces[cle]) k = cle;
+    if (!k && metier && reg.alias_metier && reg.alias_metier[metier]) k = reg.alias_metier[metier];
+    if (!k) k = reg.defaut;
+    var c = reg.commerces && reg.commerces[k];
+    if (!c || !c.apps_script) return BA_REPLI;
+    /* copie : on ne veut pas que la page modifie le registre en mémoire */
+    var out = {}; for (var p in c) out[p] = c[p];
+    out.cle = k;
+    return out;
+  }
+
+  return {
+    /** @returns {Promise<object>} le commerce courant — ne rejette jamais. */
+    pret: function(){
+      if (promesse) return promesse;
+      promesse = new Promise(function(ok){
+        var x = new XMLHttpRequest();
+        /* cache-buster à la minute : un commerce ajouté se propage vite, sans
+           pour autant refaire la requête à chaque navigation */
+        x.open('GET', REGISTRE + '?v=' + Math.floor(Date.now() / 60000), true);
+        x.timeout = 4000;
+        x.onload = function(){
+          try { ok(resoudre(JSON.parse(x.responseText))); }
+          catch(e){ console.warn('[BA] registre illisible, repli'); ok(BA_REPLI); }
+        };
+        x.onerror = x.ontimeout = function(){
+          console.warn('[BA] registre injoignable, repli');
+          ok(BA_REPLI);
+        };
+        x.send();
+      });
+      return promesse;
+    }
+  };
+})();
+
 const CATALOGUE = P.catalogue;
 const GIVE = {boulangerie:'un grand panier garni 🧺',fleuriste:'un grand bouquet 💐',pizzeria:'un menu duo 🍕',vape:'un kit premium 🎁',restaurant:'un dîner pour 2 🍽️',primeur:'un grand panier de saison 🧺'};
 const params = new URLSearchParams(location.search);
@@ -541,9 +611,11 @@ function applyPreset(p){
 }
 applyPreset(P);
 
+/* Point de passage UNIQUE vers le backend : c'est ici, et nulle part ailleurs,
+   qu'on attend le registre. Toute la page en herite. */
 function api(action, extra, retry){
-  return new Promise((resolve,reject)=>{
-    let url = SHEETS_URL + '?action=' + encodeURIComponent(action);
+  return BA.pret().then((com)=> new Promise((resolve,reject)=>{
+    let url = (com.apps_script || SHEETS_URL) + '?action=' + encodeURIComponent(action);
     if(extra) for(const k in extra) url += '&' + k + '=' + encodeURIComponent(extra[k]);
     const attempt = (left)=>{
       const x = new XMLHttpRequest();
@@ -555,7 +627,7 @@ function api(action, extra, retry){
       x.send();
     };
     attempt(retry?1:0);   // retry=true → 1 réessai (uniquement sur les lectures, jamais les écritures)
-  });
+  }));
 }
 function show(id){ ['loading','stateNew','stateUnknown','stateError','stateActive'].forEach(s=>$(s).classList.toggle('on', s===id)); }
 function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
