@@ -519,7 +519,23 @@ let googleOpened = false;
 
 /* card_id de la carte NFC : présent si on arrive depuis card.html (?id=FAL-XXXX).
    S'il est là, la fin du parcours avis créera le profil fidélité (bascule avis → fidélité). */
-const fidCardId = (new URLSearchParams(location.search).get("id") || "").trim();
+/* 🩹 06/09 — LA CARTE DU CLIENT, ET NON UNE CARTE NEUVE A CHAQUE PASSAGE.
+   Priorite a l'URL (?id=), puis a la memoire locale du navigateur.
+   Le presentoir porte la MEME URL pour tout le monde, donc jamais de ?id= : sans
+   ce repli, chaque passage creait une carte NEUVE et les tampons ne s'accumulaient
+   jamais. Constate le 06/09 sur un vrai client : deux cartes pour la meme
+   personne, 5 tampons sur l'une et 4 sur l'autre.
+   rememberCard() ecrivait bien cette cle depuis le 04/09 — personne ne la relisait.
+   Fonction anonyme et relecture du `type` en direct : TYPE_PARAM est declare plus
+   bas dans ce meme script, y toucher ici leverait une ReferenceError. */
+const fidCardId = (function(){
+  const url = (new URLSearchParams(location.search).get("id") || "").trim();
+  if (url) return url;
+  try {
+    const t = (new URLSearchParams(location.search).get("type") || "boulangerie").toLowerCase();
+    return (localStorage.getItem("boostavis.card." + t) || "").trim();
+  } catch (e) { return ""; }        // navigation privee, stockage bloque
+})();
 
 /* ─── Nav ─── */
 function showScreen(id){
