@@ -1,0 +1,1056 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#F8FAFC">
+<meta name="color-scheme" content="light">
+<title>Ma Fidélité — Falman (habillage Pulse)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+/* ════════════════════════════════════════════════════════════════
+   CARD.HTML v3 — page client ouverte par la carte NFC (?id=card_id)
+   • Routeur : carte sans profil → parcours avis · profil actif → fidélité
+   • Données EN DIRECT (fid_client) · +1 tampon/jour (fid_passage, anti-spam)
+   • Échange tampons → cadeau (fid_redeem, crée un coupon validable au kiosque)
+   • Répertoire des cadeaux (fid_rewards)
+   • 🗑️ 06/09 — LE TICKET DE TOMBOLA A ÉTÉ RETIRÉ de cette page. Il portait deux
+     bugs qui disparaissent avec lui : le bouton d'achat n'était jamais rafraîchi
+     par applySolde() (d'où un décalage d'un tampon), et trois valeurs de coût
+     étaient restées à 100, l'ancien tarif d'avant la bascule en tampons du 04/09.
+     L'action serveur `fid_buyticket` reste en place mais n'est plus appelée :
+     la colonne `tickets_mois` du Sheets ne doit pas être supprimée, elle
+     décalerait les index de toutes les autres.
+   ════════════════════════════════════════════════════════════════ */
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  /* Palette relevée sur le modèle : gris ardoise + un seul jaune. */
+  --cream:#F8FAFC;--cream2:#F1F5F9;--card:#FFFFFF;
+  --ink:#0F172A;--muted:#475569;--muted2:#94A3B8;
+  --gold:#FACC15;--gold2:#FDE047;--gold3:#FEF08A;
+  --gold-soft:rgba(250,204,21,.16);--gold-line:rgba(15,23,42,.10);
+  --green:#16A34A;--green-soft:rgba(22,163,74,.12);--trust:#00B67A;
+  --line:rgba(15,23,42,.10);
+  /* ⚠️ Signature du système : PAS D'OMBRE. Les bordures portent la hiérarchie.
+     Neutraliser la variable désamorce d'un coup les 27 usages de card.html. */
+  --shadow:none;
+  --font-display:'Inter',system-ui,sans-serif;--font-ui:'Inter',system-ui,sans-serif;
+  /* Rayons du modèle : 12 px pour les cartes, 10 px pour les boutons. */
+  --r-carte:12px;--r-bouton:10px;
+}
+html,body{background:var(--cream)}
+body{font-family:var(--font-ui);-webkit-font-smoothing:antialiased;color:var(--ink);min-height:100vh;font-variant-numeric:tabular-nums lining-nums;
+  background:var(--cream)}
+
+.floaties{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+.fl{position:fixed;opacity:.15;animation:floaty 7s ease-in-out infinite;will-change:transform}
+.fl1{left:-6px;top:13%;font-size:42px}.fl2{right:-10px;top:24%;font-size:50px;animation-delay:1.1s;animation-duration:8s}
+.fl3{left:-4px;top:48%;font-size:32px;animation-delay:.5s;animation-duration:6.5s}.fl4{right:-4px;top:60%;font-size:30px;animation-delay:1.9s}
+.fl5{left:-10px;top:80%;font-size:40px;animation-delay:.9s;animation-duration:7.5s}.fl6{right:-8px;top:90%;font-size:32px;animation-delay:2.3s}
+@keyframes floaty{0%,100%{transform:translateY(0) rotate(-4deg)}50%{transform:translateY(-16px) rotate(6deg)}}
+
+.screen{display:none}.screen.on{display:block}
+.wrap{position:relative;z-index:1;max-width:440px;margin:0 auto;padding:26px 18px 40px;display:flex;flex-direction:column;gap:14px}
+
+/* messages plein écran */
+.msg{position:relative;z-index:1;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:40px 26px;max-width:430px;margin:0 auto}
+.msg .mic{width:80px;height:80px;border-radius:50%;display:grid;place-items:center;font-size:36px;margin-bottom:18px;background:var(--gold-soft);border:1.5px solid var(--gold-line)}
+.msg .mic.bad{background:rgba(190,60,60,.10);border-color:rgba(190,60,60,.30)}
+.msg h2{font-family:var(--font-display);font-size:25px;color:var(--ink);margin-bottom:10px}
+.msg p{font-size:14px;color:var(--muted);line-height:1.6;margin-bottom:22px}
+.msg .cta{display:inline-block;padding:15px 28px;border:none;border-radius:14px;background:linear-gradient(135deg,var(--gold),var(--gold2));color:#3a2705;font-family:var(--font-ui);font-size:15px;font-weight:700;cursor:pointer;text-decoration:none;box-shadow:0 6px 18px rgba(200,150,62,.36)}
+.spin{width:32px;height:32px;border:3px solid var(--cream2);border-top-color:var(--gold);border-radius:50%;animation:rot .8s linear infinite}
+@keyframes rot{to{transform:rotate(360deg)}}
+
+/* header */
+.head{display:flex;align-items:center;justify-content:space-between}
+.head .eyebrow{font-size:10px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin-bottom:4px}
+.head .bakery{font-family:var(--font-display);font-size:24px;font-weight:700;font-style:italic;color:var(--ink);line-height:1}
+.head .greet{font-size:13px;color:var(--muted);margin-top:5px}
+.avatar{width:48px;height:48px;border-radius:50%;flex-shrink:0;display:grid;place-items:center;background:linear-gradient(135deg,var(--gold),var(--gold2) 55%,var(--gold3));font-family:var(--font-display);font-size:21px;font-weight:700;color:#fff;box-shadow:0 6px 16px rgba(200,150,62,.4)}
+
+/* solde */
+.hero{background:var(--card);border-radius:24px;padding:22px 22px 20px;box-shadow:var(--shadow);border:1px solid var(--line);position:relative;overflow:hidden}
+.hero::after{content:'';position:absolute;top:-40px;right:-30px;width:140px;height:140px;border-radius:50%;background:radial-gradient(circle,rgba(245,208,122,.35),transparent 70%);pointer-events:none}
+.hero-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px}
+.hero-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--muted2)}
+.badge-lvl{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;color:#5a3d05;background:linear-gradient(135deg,var(--gold3),var(--gold2));border-radius:99px;padding:5px 12px;box-shadow:0 3px 8px rgba(200,150,62,.3)}
+.hero-pts{display:flex;align-items:baseline;gap:9px}
+.hero-pts .v{font-family:var(--font-ui);font-size:62px;font-weight:800;line-height:.9;letter-spacing:-.02em;background:linear-gradient(135deg,var(--gold),var(--gold2) 60%,#b8842f);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.hero-pts .u{font-size:15px;font-weight:600;color:var(--muted)}
+.hero-sub{font-size:12px;color:var(--muted);margin-top:9px}
+.hero-sub b{color:var(--ink);font-weight:700}
+
+/* progression */
+.prog{background:var(--card);border-radius:20px;padding:16px 18px;box-shadow:var(--shadow);border:1px solid var(--line)}
+.prog-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;font-size:13px}
+.prog-top .l{color:var(--ink);font-weight:600}.prog-top .l b{color:var(--gold);font-weight:700}
+.prog-top .r{font-size:12px;color:var(--muted);font-weight:600}
+.bar{height:11px;border-radius:99px;background:var(--cream2);overflow:hidden;border:1px solid var(--line)}
+.bar i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,var(--gold),var(--gold2),var(--gold3));transition:width .6s cubic-bezier(.16,1,.3,1);box-shadow:0 1px 4px rgba(200,150,62,.4)}
+
+/* ─── Utiliser un cadeau : avertissement + écran de validation ─── */
+.use-warn{background:rgba(200,150,62,.10);border:1px solid var(--gold-line);border-radius:14px;
+  padding:11px 14px;font-size:12.5px;color:var(--muted);line-height:1.5;margin:0 2px}
+.use-warn b{color:var(--ink)}
+.st.use{border:none;border-radius:99px;padding:8px 15px;font-family:var(--font-ui);font-size:12px;
+  font-weight:700;cursor:pointer;color:#3a2705;background:linear-gradient(135deg,var(--gold),var(--gold2));
+  box-shadow:0 4px 12px rgba(200,150,62,.34)}
+.st.use:active{transform:scale(.95)}
+/* cadeau validé : reste cliquable pour être rouvert en grand devant le vendeur */
+.st.done.live{border:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;
+  background:var(--green-soft);border-radius:14px;padding:7px 13px;font-family:var(--font-ui)}
+.st.done.live .ok{font-size:12px;font-weight:700;color:var(--green)}
+.st.done.live .cd{font-size:10.5px;color:var(--muted);font-variant-numeric:tabular-nums}
+.st.done.live:active{transform:scale(.96)}
+
+.use-ov{position:fixed;inset:0;z-index:60;background:rgba(30,24,12,.55);backdrop-filter:blur(6px);
+  display:none;align-items:center;justify-content:center;padding:24px}
+.use-ov.on{display:flex}
+.use-box{background:var(--card);border-radius:26px;padding:28px 24px;max-width:360px;width:100%;
+  text-align:center;box-shadow:0 24px 70px rgba(0,0,0,.35)}
+.use-box h3{font-family:var(--font-display);font-size:23px;color:var(--ink);margin-bottom:8px}
+.use-box p{font-size:14px;color:var(--muted);line-height:1.55;margin-bottom:18px}
+.use-box .lib{font-weight:700;color:var(--ink);font-size:16px;margin-bottom:4px}
+.use-box .cd{font-size:12px;color:var(--muted2);letter-spacing:.06em;margin-bottom:18px}
+.use-actions{display:flex;flex-direction:column;gap:9px}
+.use-actions button{border:none;border-radius:14px;padding:14px;font-family:var(--font-ui);
+  font-size:15px;font-weight:700;cursor:pointer}
+.use-go{background:linear-gradient(135deg,var(--gold),var(--gold2));color:#3a2705;
+  box-shadow:0 6px 18px rgba(200,150,62,.36)}
+.use-no{background:transparent;color:var(--muted);font-weight:600}
+/* écran validé : le vendeur doit le reconnaître d'un coup d'œil */
+.use-ok{width:78px;height:78px;border-radius:50%;margin:0 auto 14px;display:grid;place-items:center;
+  font-size:38px;color:#fff;background:linear-gradient(135deg,#3F7D2E,#5DA648);
+  box-shadow:0 10px 26px rgba(63,125,46,.4);animation:okPop .45s cubic-bezier(.2,.9,.3,1.5) both}
+@keyframes okPop{from{transform:scale(.4);opacity:0}to{transform:none;opacity:1}}
+.use-clock{font-size:34px;font-weight:800;letter-spacing:-.01em;color:var(--ink);margin:4px 0 2px;
+  font-variant-numeric:tabular-nums}
+.use-left{font-size:13px;color:var(--muted);margin-bottom:20px}
+@media (prefers-reduced-motion:reduce){.use-ok{animation:none}}
+
+/* grille de tampons — remplace la barre tant que le palier reste lisible (≤ 25).
+   Au-delà, une grille de 40 ou 80 pastilles devient illisible : on repasse à la barre. */
+.stamps{display:none;grid-template-columns:repeat(10,1fr);gap:6px}
+.stamps.on{display:grid}
+.stamp{aspect-ratio:1;border-radius:50%;border:2px dashed var(--gold-line);background:var(--cream2);
+  display:grid;place-items:center;font-size:12px;line-height:1}
+.stamp.on{border:none;background:linear-gradient(135deg,var(--gold),var(--gold2));
+  box-shadow:0 3px 8px rgba(200,150,62,.34);animation:stampPop .34s cubic-bezier(.2,.9,.3,1.5) both}
+@keyframes stampPop{from{transform:scale(.35);opacity:0}to{transform:none;opacity:1}}
+@media (prefers-reduced-motion:reduce){.stamp.on{animation:none}}
+
+.sec-h{display:flex;align-items:baseline;justify-content:space-between;margin:8px 2px 0}
+.sec-h .t{font-family:var(--font-display);font-size:21px;font-weight:700;color:var(--ink)}
+.sec-h .a{font-size:11.5px;font-weight:600;color:var(--muted2)}
+
+/* catalogue carrousel */
+.cat{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;padding:4px 18px 8px;margin:0 -18px;-webkit-overflow-scrolling:touch;scrollbar-width:none;overscroll-behavior-x:contain}
+.cat::-webkit-scrollbar{display:none}
+.rw{flex:0 0 152px;scroll-snap-align:start;background:var(--card);border-radius:20px;padding:15px 13px 13px;box-shadow:var(--shadow);border:1px solid var(--line);display:flex;flex-direction:column;align-items:center;text-align:center}
+.rw .ph{width:104px;height:92px;border-radius:18px;margin-bottom:10px;background:var(--cream2);background-size:cover;background-position:center;box-shadow:inset 0 2px 8px rgba(200,150,62,.10)}
+.rw .ph-emoji{display:grid;place-items:center;font-size:46px;background:var(--gold-soft)}
+.rw .ph-img{width:100%;height:100%;object-fit:contain;border-radius:18px;padding:4px}
+/* commerces thémés : photos legacy encore avec fond -> on garde l'ancien rendu (cover + multiply) */
+.themed-photos .rw .ph-img{object-fit:cover;padding:0;mix-blend-mode:multiply;border-radius:18px}
+.rw .nm{font-size:14px;font-weight:600;color:var(--ink);line-height:1.2;min-height:34px;display:flex;align-items:center}
+.rw .cost{font-size:13px;font-weight:700;color:var(--gold);margin:7px 0 11px;display:inline-flex;align-items:center;gap:5px}
+.rw .cost::before{content:'';width:7px;height:7px;border-radius:50%;background:var(--gold)}
+.rw .btn{width:100%;padding:11px;border:none;border-radius:12px;font-family:var(--font-ui);font-size:13px;font-weight:700;cursor:pointer;transition:transform .12s}
+.rw .btn.go{background:linear-gradient(135deg,var(--gold),var(--gold2));color:#3a2705;box-shadow:0 5px 14px rgba(200,150,62,.36)}
+.rw .btn.go:active{transform:scale(.96)}
+.rw .btn.lock{background:var(--cream2);color:var(--muted2);cursor:default;font-size:11.5px;font-weight:700}
+.rw .btn:disabled{opacity:.5;cursor:default}
+.rw.locked .ph{filter:grayscale(.3) opacity(.85)}
+
+/* encart opt-in +2 tampons (haut de page) */
+.optin-hero{display:flex;align-items:center;gap:13px;width:100%;margin:0 0 14px;padding:14px 16px;border:0;border-radius:18px;text-align:left;cursor:pointer;font-family:inherit;
+  background:linear-gradient(135deg,var(--gold),var(--gold2));color:#1a1206;box-shadow:0 12px 28px var(--gold-soft);transition:transform .12s,filter .15s}
+.optin-hero:active{transform:scale(.985)}
+.optin-hero .oh-ic{font-size:30px;line-height:1;flex-shrink:0}
+.optin-hero .oh-txt{flex:1;min-width:0}
+.optin-hero .oh-t{font-size:15px;font-weight:800;line-height:1.2}
+.optin-hero .oh-d{font-size:12.5px;line-height:1.4;margin-top:3px;opacity:.82}
+.optin-hero .oh-go{flex-shrink:0;align-self:center;background:#1a1206;color:#fff;font-weight:800;font-size:12.5px;padding:10px 14px;border-radius:999px;white-space:nowrap}
+@media(max-width:380px){.optin-hero .oh-go{display:none}}
+
+/* bonus */
+.bonus{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:4px}
+.bn{background:var(--card);border-radius:18px;padding:15px 8px;box-shadow:var(--shadow);border:1px solid var(--line);text-align:center}
+.bn .ic{font-size:24px;line-height:1}.bn .ic.trust{color:var(--trust)}
+.bn .t{font-size:11.5px;font-weight:600;color:var(--ink);margin-top:7px;line-height:1.25}
+.bn .s{font-size:10.5px;color:var(--gold);font-weight:700;margin-top:3px}.bn.green .s{color:var(--green)}
+
+/* mes cadeaux */
+.gifts{background:var(--card);border-radius:20px;box-shadow:var(--shadow);border:1px solid var(--line);overflow:hidden}
+.gift{display:flex;align-items:center;gap:13px;padding:14px 16px;border-bottom:1px solid var(--line)}.gift:last-child{border-bottom:none}
+.gift .ic{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;font-size:21px;background:var(--gold-soft);flex-shrink:0}
+.gift .meta{flex:1;min-width:0}.gift .meta .n{font-size:14px;font-weight:600;color:var(--ink)}.gift .meta .d{font-size:11.5px;color:var(--muted);margin-top:2px}
+.gift .st{font-size:11px;font-weight:700;padding:5px 10px;border-radius:99px;white-space:nowrap}
+.gift .st.todo{background:var(--gold-soft);color:var(--gold)}.gift .st.done{background:var(--green-soft);color:var(--green)}
+
+.foot{text-align:center;margin-top:6px}.foot .ty{font-size:12px;color:var(--muted)}
+.foot .bk{font-family:var(--font-display);font-style:italic;color:var(--gold);font-weight:700}
+.cardno{margin-top:10px;font-size:10px;letter-spacing:.12em;color:var(--muted2)}.cardno b{color:var(--muted);font-weight:700}
+
+.toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,16px);background:var(--ink);color:#fff;padding:14px 20px;border-radius:14px;font-size:13.5px;font-weight:600;box-shadow:0 12px 34px rgba(0,0,0,.3);z-index:99;opacity:0;pointer-events:none;transition:opacity .25s,transform .25s;max-width:340px;text-align:center}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+
+/* modal cadeau confirmé + confettis */
+.cm-overlay{position:fixed;inset:0;z-index:200;display:none;align-items:center;justify-content:center;padding:26px;background:rgba(42,36,24,.55);backdrop-filter:blur(4px);opacity:0;transition:opacity .25s}
+.cm-overlay.show{display:flex;opacity:1}
+.cm-card{background:var(--card);border-radius:26px;padding:30px 24px 24px;max-width:330px;width:100%;text-align:center;box-shadow:0 30px 70px rgba(0,0,0,.35);border:1px solid var(--gold-line);transform:scale(.6) translateY(20px);opacity:0}
+.cm-overlay.show .cm-card{animation:cmPop .55s cubic-bezier(.34,1.56,.64,1) forwards}
+@keyframes cmPop{to{transform:scale(1) translateY(0);opacity:1}}
+.cm-badge{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--green);background:var(--green-soft);border-radius:99px;padding:6px 14px;display:inline-block;margin-bottom:14px}
+.cm-ph{width:120px;height:120px;border-radius:50%;margin:0 auto 16px;background:var(--cream2);background-size:cover;background-position:center;display:grid;place-items:center;font-size:58px;border:3px solid var(--gold-line);box-shadow:0 8px 22px rgba(200,150,62,.3)}
+.cm-title{font-family:var(--font-display);font-size:24px;font-weight:700;color:var(--ink);margin-bottom:4px}
+.cm-lib{font-size:14px;color:var(--muted);margin-bottom:18px}
+.cm-codebox{background:var(--cream);border:1px dashed var(--gold-line);border-radius:16px;padding:14px}
+.cm-codelbl{font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--muted2);margin-bottom:6px}
+.cm-code{font-family:var(--font-ui);font-size:38px;font-weight:800;letter-spacing:.1em;color:var(--gold);line-height:1}
+.cm-note{font-size:12px;color:var(--muted);margin:12px 0 18px;line-height:1.5}
+.cm-btn{width:100%;padding:14px;border:none;border-radius:14px;background:linear-gradient(135deg,var(--gold),var(--gold2));color:#3a2705;font-family:var(--font-ui);font-size:15px;font-weight:700;cursor:pointer}
+/* réseaux sociaux */
+.social{background:var(--card);border-radius:20px;padding:15px 18px;box-shadow:var(--shadow);border:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:12px}
+.social-txt{font-size:12.5px;color:var(--ink);line-height:1.45}.social-txt b{color:var(--gold);font-weight:700}
+.social-links{display:flex;gap:10px;flex-shrink:0}
+.slink{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;text-decoration:none;box-shadow:0 4px 12px rgba(0,0,0,.16);transition:transform .12s}
+.slink:active{transform:scale(.93)}
+.slink.ig{background:linear-gradient(45deg,#f09433,#e6683c 28%,#dc2743 50%,#cc2366 72%,#bc1888)}
+.slink.fb{background:#1877F2}
+.confetti{position:fixed;top:-14px;z-index:210;pointer-events:none;will-change:transform,opacity}
+@keyframes confFall{to{transform:translateY(110vh) rotate(720deg);opacity:.85}}
+
+/* tier (par € dépensés) */
+.tier-line{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-top:13px;padding-top:13px;border-top:1px dashed var(--gold-line)}
+.tier-chip{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;padding:4px 11px;border-radius:99px;border:1px solid}
+.tc-bronze{color:#9c6a2f;background:rgba(205,127,50,.12);border-color:rgba(205,127,50,.4)}
+.tc-argent{color:#5f6b78;background:rgba(120,140,160,.14);border-color:rgba(120,140,160,.42)}
+.tc-or{color:#9a6f12;background:rgba(245,208,122,.24);border-color:var(--gold-line)}
+.tc-platine{color:#236680;background:rgba(120,200,230,.16);border-color:rgba(80,170,200,.42)}
+.tier-line .tt{font-size:11.5px;color:var(--muted)}.tier-line .tt b{color:var(--ink);font-weight:700}
+
+/* bandeau anti-gaspi (alerte paniers du jour) */
+.agb{background:linear-gradient(135deg,rgba(63,125,46,.10),rgba(245,208,122,.13));border:1px solid rgba(63,125,46,.22);border-radius:20px;padding:15px 16px;box-shadow:var(--shadow)}
+.agb-h{display:flex;align-items:center;gap:8px;font-family:var(--font-display);font-size:18px;font-weight:700;color:var(--green)}
+.agb-h .tag{margin-left:auto;font-family:var(--font-ui);font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;color:#2a6b1f;background:rgba(63,125,46,.16);border:1px solid rgba(63,125,46,.3);border-radius:99px;padding:3px 9px}
+.agb-sub{font-size:12px;color:var(--muted);margin:3px 0 4px}
+.agb-item{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:11px 13px;margin-top:8px}
+.agb-emoji{width:46px;height:46px;border-radius:12px;display:grid;place-items:center;font-size:22px;background:var(--cream2);background-size:cover;background-position:center;flex-shrink:0}
+.agb-meta{flex:1;min-width:0}.agb-meta .n{font-size:14px;font-weight:700;color:var(--ink)}.agb-meta .d{font-size:11.5px;color:var(--muted);margin-top:2px}
+.agb-qty{font-weight:800;color:#2a6b1f}
+.agb-price{text-align:right;flex-shrink:0}
+.agb-price .pr{font-size:18px;font-weight:800;color:var(--green)}
+.agb-price .or{font-size:11px;color:var(--muted2);text-decoration:line-through}
+/* toggle alertes email (opt-in) */
+.optrow{display:flex;align-items:center;gap:13px;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:15px 16px;box-shadow:var(--shadow)}
+.optrow .oi{font-size:24px;flex-shrink:0}
+.optrow .ot{flex:1;min-width:0}
+.optrow .ot .n{font-size:14.5px;font-weight:700;color:var(--ink)}
+.optrow .ot .d{font-size:11.5px;color:var(--muted);margin-top:2px;line-height:1.4}
+.switch{position:relative;width:54px;height:31px;flex-shrink:0;cursor:pointer}
+.switch input{opacity:0;width:0;height:0;position:absolute}
+.switch .sl{position:absolute;inset:0;background:var(--cream2);border:1px solid var(--gold-line);border-radius:99px;transition:.2s}
+.switch .sl::before{content:'';position:absolute;width:25px;height:25px;left:2px;top:2px;background:#fff;border-radius:50%;box-shadow:0 2px 6px rgba(0,0,0,.22);transition:.2s}
+.switch input:checked + .sl{background:linear-gradient(135deg,var(--gold),var(--gold2));border-color:transparent}
+.switch input:checked + .sl::before{transform:translateX(23px)}
+@media(prefers-reduced-motion:reduce){.fl{animation:none}.cm-overlay.show .cm-card{animation:none;transform:none;opacity:1}}
+/* ══════════════════════════════════════════════════════════════════
+   HABILLAGE « PULSE » — généré par _outils/skin-pulse.mjs
+   Ne pas éditer à la main : relancer le script, il repart de card.html.
+   ══════════════════════════════════════════════════════════════════ */
+
+/* Les emojis qui flottent en fond appartiennent à l'univers artisanal ;
+   ce système-là est clinique, il ne supporte pas la décoration. */
+.floaties{display:none!important}
+
+/* Rayons homogènes. card.html en a 49 en dur, du 14 px au 28 px : on les
+   ramène aux deux seules valeurs du modèle. */
+.hero,.prog,.bn,.rw,.agb,.tick,.social,.optin-hero,.use-box,.msg{
+  border-radius:var(--r-carte)!important;
+}
+.cta,.use-go,.use-no,.btn,.oh-cta,.tick-buy,.bn .btn{
+  border-radius:var(--r-bouton)!important;
+}
+
+/* Aucune ombre nulle part — y compris celles écrites en dur. */
+.hero,.prog,.bn,.rw,.tick,.social,.optin-hero,.use-box,.agb,.avatar,.mic{
+  box-shadow:none!important;
+}
+
+/* Les surfaces se distinguent par une bordure, pas par une élévation. */
+.hero,.prog,.bn,.rw,.tick,.social,.optin-hero,.agb{
+  border:1px solid var(--line)!important;
+  background:var(--card)!important;
+}
+
+/* Titres serrés, corps aéré : le rapport typographique du modèle. */
+.bakery{font-family:var(--font-display);font-style:normal!important;font-weight:800!important;
+  letter-spacing:-.03em!important;line-height:1.05!important}
+h2{font-family:var(--font-display);font-weight:700!important;letter-spacing:-.02em!important;line-height:1.15!important}
+.hero-pts .v{font-weight:800!important;letter-spacing:-.04em!important}
+.sec-h .t{font-weight:700!important;letter-spacing:-.01em!important}
+p,.oh-d,.res-desc,.gs{line-height:1.55!important;color:var(--muted)}
+
+/* L'accent jaune porte du texte SOMBRE. C'est la signature du modèle, et
+   l'inverse (blanc sur jaune) serait illisible autant qu'étranger. */
+.cta,.use-go,.oh-cta,.tick-buy,.bn .btn:not(.lock){
+  background:var(--gold)!important;color:var(--ink)!important;
+  border:none!important;font-weight:700!important;
+}
+.cta:active,.use-go:active{filter:brightness(.95)}
+
+/* Les pastilles de tampons : creux net, plein jaune. Plus de tirets. */
+.stamp{border:1.5px solid var(--line)!important;background:var(--cream2)!important;border-style:solid!important}
+.stamp.on{background:var(--gold)!important;border-color:var(--gold)!important;color:var(--ink)!important}
+
+/* La barre de progression, en jaune plein plutôt qu'en dégradé doré. */
+.bar{background:var(--cream2)!important}
+.bar i{background:var(--gold)!important}
+
+/* L'éyebrow et les libellés secondaires : capitales espacées, gris ardoise. */
+.eyebrow,.hero-label,.sec-h .a{
+  color:var(--muted)!important;font-weight:600!important;letter-spacing:.06em!important;text-transform:uppercase;
+}
+
+/* L'avatar : carré arrondi façon SaaS, plus rond doré. */
+.avatar{border-radius:var(--r-bouton)!important;background:var(--ink)!important;color:#fff!important;font-weight:700!important}
+
+/* Neutralise les dégradés résiduels sur les surfaces. */
+.hero::before,.hero::after,.optin-hero::before{display:none!important}
+
+/* Le grand nombre est ENCRE, pas jaune : l'original le peint en dégradé doré
+   avec -webkit-text-fill-color:transparent, ce qui donne du jaune sur blanc —
+   illisible. Dans ce système l'accent souligne, il ne porte jamais le chiffre. */
+.hero-pts .v{
+  background:none!important;-webkit-text-fill-color:currentColor!important;
+  color:var(--ink)!important;letter-spacing:-.045em!important;
+}
+
+/* Tampons : disque jaune plein, sans emoji ni ombre. À 22 px de large un
+   croissant se réduit à une tache brune ; un aplat se lit d'un coup d'œil. */
+.stamp{font-size:0!important}
+.stamp.on{
+  background:var(--gold)!important;box-shadow:none!important;
+  border:1px solid var(--gold)!important;
+}
+/* La coche est dessinée, pas typographiée : nette à toutes les tailles. */
+.stamp.on::after{
+  content:'';width:42%;height:24%;
+  border-left:2px solid var(--ink);border-bottom:2px solid var(--ink);
+  transform:rotate(-45deg) translate(6%,-24%);opacity:.85;
+}
+
+</style>
+</head>
+<body>
+
+<div class="floaties" id="floaties" aria-hidden="true">
+  <span class="fl fl1">🥐</span><span class="fl fl2">🥖</span><span class="fl fl3">🧁</span>
+  <span class="fl fl4">🥨</span><span class="fl fl5">🍞</span><span class="fl fl6">🥐</span>
+</div>
+
+<!-- CHARGEMENT -->
+<div class="screen on" id="loading"><div class="msg"><div class="spin"></div><p style="margin-top:18px">Chargement de ta fidélité…</p></div></div>
+
+<!-- NOUVELLE CARTE -->
+<div class="screen" id="stateNew"><div class="msg">
+  <div class="mic">🥐</div><h2>Bienvenue !</h2>
+  <p>Active ta carte de fidélité en laissant ton avis — tu gagnes aussi une gourmandise offerte.</p>
+  <a class="cta" id="avisLink" href="#">Commencer →</a>
+</div></div>
+
+<!-- INCONNUE -->
+<div class="screen" id="stateUnknown"><div class="msg">
+  <div class="mic bad">✕</div><h2>Carte non reconnue</h2>
+  <p>Cette carte n'est pas enregistrée. Demande en boutique de l'associer à ton compte.</p>
+</div></div>
+
+<!-- ERREUR -->
+<div class="screen" id="stateError"><div class="msg">
+  <div class="mic bad">⚠️</div><h2>Connexion impossible</h2>
+  <p>Impossible de charger ta fidélité. Vérifie ta connexion.</p>
+  <button class="cta" onclick="location.reload()">Réessayer</button>
+</div></div>
+
+<!-- FIDÉLITÉ -->
+<!-- 🎟️ Validation d'un cadeau, devant le vendeur -->
+<div class="use-ov" id="useModal">
+  <div class="use-box">
+    <div id="useStep1">
+      <h3>Tu es en caisse ?</h3>
+      <div class="lib" id="useLib">—</div>
+      <div class="cd">code <span id="useCode">—</span></div>
+      <p>Ne valide que <b>devant le vendeur</b> : une fois validé, ce cadeau est utilisé et reste affiché <b>1 heure</b> seulement.</p>
+      <div class="use-actions">
+        <button class="use-go" onclick="confirmUse(this)">Oui, je suis en caisse</button>
+        <button class="use-no" onclick="closeUse()">Pas encore</button>
+      </div>
+    </div>
+    <div id="useStep2" style="display:none">
+      <div class="use-ok">✓</div>
+      <h3>Validé</h3>
+      <div class="lib" id="useLib2">—</div>
+      <div class="use-clock" id="useClock">—</div>
+      <div class="use-left" id="useLeft">—</div>
+      <div class="use-actions"><button class="use-no" onclick="closeUse()">Fermer</button></div>
+    </div>
+  </div>
+</div>
+
+<div class="screen" id="stateActive"><div class="wrap">
+  <div class="head">
+    <div><div class="eyebrow">✦ Ma fidélité</div><div class="bakery" id="cBakery">Falman</div><div class="greet">Bonjour <span id="cName">—</span> 👋</div></div>
+    <div class="avatar" id="cAv">–</div>
+  </div>
+
+  <div class="hero">
+    <div class="hero-top"><span class="hero-label">Mes tampons</span></div>
+    <div class="hero-pts"><span class="v" id="cSolde">0</span><span class="u">tampons</span></div>
+    
+    
+  </div>
+
+  <!-- Encart conversion : active les emails = +2 tampons (masqué si déjà activé) -->
+  <button class="optin-hero" id="optinHero" style="display:none" onclick="optinFromHero(this)">
+    <div class="oh-ic">🎁</div>
+    <div class="oh-txt">
+      <div class="oh-t">Active les emails · <b>+2 tampons offerts</b></div>
+      <div class="oh-d">Reçois en avant-première les <b>produits gratuits</b>, offres flash et <b>alertes anti-gaspi</b>.</div>
+    </div>
+    <span class="oh-go">Activer →</span>
+  </button>
+
+  <div class="prog">
+    <div class="prog-top"><span class="l" id="progL">—</span><span class="r" id="progR"></span></div>
+    <div class="bar" id="progBarWrap"><i id="progBar" style="width:0%"></i></div>
+    <div class="stamps" id="stampGrid"></div>
+  </div>
+
+  <!-- bandeau anti-gaspi : paniers invendus du jour (alerte clients fidélité) -->
+  <div class="agb" id="agBanner" style="display:none"></div>
+
+  <div class="sec-h"><span class="t">Mes récompenses</span><span class="a">glisse →</span></div>
+  <div class="cat" id="cat"></div>
+
+  <div class="sec-h"><span class="t">Gagner plus de tampons</span></div>
+  <div class="bonus">
+    <a class="bn" id="lkTrust" href="#" target="_blank" rel="noopener" style="text-decoration:none" onclick="claimAction('trustpilot')"><div class="ic trust">★</div><div class="t">Avis Trustpilot</div><div class="s">+3 tampons</div></a>
+    <div class="bn green"><div class="ic">🎂</div><div class="t">Anniversaire</div><div class="s" id="annivGift">Cadeau le jour J</div></div>
+    <div class="bn"><div class="ic">📱</div><div class="t">Giveaway du mois</div><div class="s">Suis-nous !</div></div>
+  </div>
+
+  <div class="social">
+    <div class="social-txt">Suis-nous : <b>+2 tampons</b> par réseau ! Et chaque mois, <b>un abonné</b> est tiré au sort 🎁</div>
+    <div class="social-links">
+      <a class="slink ig" id="lkIg" href="#" target="_blank" rel="noopener" aria-label="Instagram" onclick="claimAction('insta')"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#fff" stroke-width="2"><rect x="2.5" y="2.5" width="19" height="19" rx="5.5"/><circle cx="12" cy="12" r="4.3"/><circle cx="17.6" cy="6.4" r="1.3" fill="#fff" stroke="none"/></svg></a>
+      <a class="slink fb" id="lkFb" href="#" target="_blank" rel="noopener" aria-label="Facebook" onclick="claimAction('facebook')"><svg viewBox="0 0 24 24" width="22" height="22" fill="#fff"><path d="M13.5 21v-8h2.7l.4-3.1h-3.1V7.9c0-.9.25-1.5 1.55-1.5H17V3.6c-.3-.04-1.3-.13-2.46-.13-2.43 0-4.1 1.48-4.1 4.21v2.35H7.7V13h2.74v8h3.06z"/></svg></a>
+    </div>
+  </div>
+
+  <div id="giftsWrap" style="display:none">
+    <div class="sec-h"><span class="t">Mes cadeaux</span></div>
+    <div class="use-warn">⏱️ Un cadeau validé reste valable <b>1 heure</b>. Ne le valide qu'au moment de le récupérer, devant le vendeur.</div>
+    <div class="gifts" id="gifts"></div>
+  </div>
+
+  <div class="optrow">
+    <div class="oi">🔔</div>
+    <div class="ot"><div class="n">Alertes anti-gaspi</div><div class="d">Reçois un email quand un panier invendu est dispo</div></div>
+    <label class="switch"><input type="checkbox" id="optMail" onchange="setOptin(this.checked)"><span class="sl"></span></label>
+  </div>
+
+  <div class="foot">
+    <div class="ty">Merci pour ta fidélité 🙏</div>
+    <div class="bk" id="cFoot">Falman — Emmanuelle &amp; Flavien</div>
+    <div class="cardno">N° de carte · <b id="cardNo">—</b></div>
+  </div>
+</div></div>
+
+<div class="toast" id="toast"></div>
+
+<!-- MODAL CADEAU CONFIRMÉ -->
+<div class="cm-overlay" id="cmOverlay" onclick="if(event.target===this)closeRewardModal()">
+  <div class="cm-card">
+    <div class="cm-badge" id="cmBadge">✓ Cadeau confirmé</div>
+    <div class="cm-ph" id="cmPh"></div>
+    <div class="cm-title" id="cmTitle">Bravo 🎉</div>
+    <div class="cm-lib" id="cmLib">—</div>
+    <div class="cm-codebox" id="cmCodebox"><div class="cm-codelbl">Code à présenter en caisse</div><div class="cm-code" id="cmCode">000000</div></div>
+    <div class="cm-note" id="cmNote">—</div>
+    <button class="cm-btn" onclick="closeRewardModal()">Super, merci !</button>
+  </div>
+</div>
+
+<script>
+(function(){
+'use strict';
+/* Un backend (Apps Script) PAR commerce → coller l'URL /exec de chacun après déploiement */
+const SHEETS_URLS = {
+  boulangerie:'https://script.google.com/macros/s/AKfycbx0N4dLSGtyUMgA_lA8N9O-B3rleX7zHgTFAXZyiV7hEf5ioXAcVI245hHdi4CMKuCn/exec',
+  fleuriste:'https://script.google.com/macros/s/AKfycbygyQrhmSBzSEFA3LJ65pbbpP1oXZIO44LXG0EnZFYZT0xsx1lIJcoyt5Lmy-8q3NXV/exec',
+  pizzeria:'', vape:'', restaurant:'', primeur:''
+};
+const AVIS_URL   = 'https://boulangerieavisclient.vercel.app/';
+const INSTA_URL  = 'https://www.instagram.com/dupainetdesidees/';  /* PLACEHOLDER boulangerie — à remplacer par le compte Falman */
+const FB_URL     = 'https://www.facebook.com/poilane/';            /* PLACEHOLDER boulangerie — à remplacer par le compte Falman */
+const TRUST_URL  = 'https://fr.trustpilot.com/';                   /* PLACEHOLDER — à remplacer par la page Trustpilot du commerce */
+const NIVEAUX = [{nom:'Découverte',min:0},{nom:'Fidèle',min:15},{nom:'VIP',min:40}];
+
+// ════ PRESETS MULTI-COMMERCE — 1 base, N verticales. Sélection via ?type= (défaut boulangerie) ════
+// Boulangerie = inchangée (catalogue photos + thème :root). Autres = emoji + thème injecté.
+const PRESETS = {
+  boulangerie:{ name:'Falman', foot:'Falman — Emmanuelle & Flavien', eyebrow:'✦ Ma fidélité',
+    fl:['🥐','🥖','🧁','🥨','🍞','🥐'], theme:null,
+    catalogue:[
+      {item:'cafe',libelle:'Boisson chaude',cout:12,img:'assets/cafe.png'},
+      {item:'viennoiserie',libelle:'Viennoiserie',cout:10,img:'assets/viennoiserie.png'},
+      {item:'baguette',libelle:'Baguette tradition',cout:15,img:'assets/baguette.png'},
+      {item:'jus',libelle:'Boisson fraîche',cout:18,img:'assets/jus.png'},
+      {item:'patisserie',libelle:'Pâtisserie',cout:25,img:'assets/patisserie.png'},
+      {item:'sandwich',libelle:'Formule sandwich',cout:40,img:'assets/sandwich.png'},
+      {item:'gateau',libelle:'Gros lot — gâteau',cout:80,img:'assets/gateau.png'}
+    ]},
+  fleuriste:{ name:'Au Jardin de Rose', foot:'Au Jardin de Rose — Fleuriste', eyebrow:'✦ Ma fidélité',
+    fl:['🌷','🌹','🌻','💐','🌸','🪷'],
+    theme:{cream:'#FBF5F8',cream2:'#F2E2EC',gold:'#C8568E',gold2:'#E084B0',gold3:'#F4B6D2',green:'#5E8C57',ink:'#3A2531'},
+    catalogue:[
+      {item:'f1',libelle:'Fleur à la tige',cout:12,img:'assets/fleuriste/fleur.png',emoji:'🌷'},
+      {item:'f2',libelle:'Sachet de graines',cout:15,img:'assets/fleuriste/graines.png',emoji:'🌱'},
+      {item:'f3',libelle:'Mini plante grasse',cout:28,img:'assets/fleuriste/plante.png',emoji:'🪴'},
+      {item:'f4',libelle:'-20 % sur un bouquet',cout:50,img:'assets/fleuriste/bouquet20.png',emoji:'🎟️'},
+      {item:'f5',libelle:'Bouquet du marché',cout:80,img:'assets/fleuriste/bouquet.png',emoji:'💐'}
+    ]},
+  pizzeria:{ name:'Bella Napoli', foot:'Bella Napoli — Pizzeria', eyebrow:'✦ Ma fidélité',
+    fl:['🍕','🍅','🧀','🌶️','🫒','🍕'],
+    theme:{cream:'#FBF6EE',cream2:'#F3E6D4',gold:'#C8442E',gold2:'#E2664E',gold3:'#F2A07E',green:'#4E7C3F',ink:'#33231C'},
+    catalogue:[
+      {item:'p1',libelle:'Boisson',cout:12,img:'assets/pizzeria/boisson.png',emoji:'🥤'},
+      {item:'p2',libelle:'Pain à l’ail',cout:15,img:'assets/pizzeria/painail.png',emoji:'🧄'},
+      {item:'p3',libelle:'Supplément topping',cout:10,img:'assets/pizzeria/topping.png',emoji:'🧀'},
+      {item:'p4',libelle:'Tiramisu maison',cout:25,img:'assets/pizzeria/tiramisu.png',emoji:'🍰'},
+      {item:'p5',libelle:'Pizza au choix',cout:65,img:'assets/pizzeria/pizza.png',emoji:'🍕'}
+    ]},
+  vape:{ name:'VapoStore', foot:'VapoStore — Cigarette électronique', eyebrow:'✦ Ma fidélité',
+    fl:['💨','🫐','🍓','🥭','⚡','💜'],
+    theme:{cream:'#F3F5FB',cream2:'#E4E7F3',gold:'#6D5AE0',gold2:'#8A7AF0',gold3:'#B6ABFF',green:'#2BB3A3',ink:'#26283A'},
+    catalogue:[
+      {item:'v1',libelle:'Résistance / coil',cout:12,img:'assets/vape/coil.png',emoji:'🔩'},
+      {item:'v2',libelle:'Kit cotton',cout:15,img:'assets/vape/cotton.png',emoji:'🧵'},
+      {item:'v3',libelle:'-25 % e-liquide',cout:20,img:'assets/vape/liquide25.png',emoji:'🎟️'},
+      {item:'v4',libelle:'E-liquide 10 ml',cout:30,img:'assets/vape/eliquide.png',emoji:'🧪'},
+      {item:'v5',libelle:'Pod / kit',cout:80,img:'assets/vape/podkit.png',emoji:'🎁'}
+    ]},
+  restaurant:{ name:'Le Bistrot', foot:'Le Bistrot — Restaurant', eyebrow:'✦ Ma fidélité',
+    fl:['🍽️','🍷','🥩','🍝','🧆','🍤'],
+    theme:{cream:'#FBF6F1',cream2:'#F0E2D8',gold:'#9A3F4C',gold2:'#B85A68',gold3:'#D78F99',green:'#6E7A3C',ink:'#321F22'},
+    catalogue:[
+      {item:'r1',libelle:'Café ou soft',cout:12,img:'assets/restaurant/boisson.png',emoji:'🥤'},
+      {item:'r2',libelle:'Kir / apéritif',cout:18,img:'assets/restaurant/kir.png',emoji:'🍷'},
+      {item:'r3',libelle:'Café gourmand',cout:25,img:'assets/restaurant/cafegourmand.png',emoji:'☕'},
+      {item:'r4',libelle:'Dessert',cout:28,img:'assets/restaurant/dessert.png',emoji:'🍰'},
+      {item:'r5',libelle:'Menu complet',cout:80,img:'assets/restaurant/menu.png',emoji:'🍽️'}
+    ]},
+  primeur:{ name:'Le Panier Frais', foot:'Le Panier Frais — Primeur', eyebrow:'✦ Ma fidélité',
+    fl:['🍎','🥕','🍓','🥦','🍊','🍇'],
+    theme:{cream:'#F5FBF2',cream2:'#E2F0DC',gold:'#E0892E',gold2:'#F0A94E',gold3:'#F8C87C',green:'#4FA03F',ink:'#26301F'},
+    catalogue:[
+      {item:'pr1',libelle:'Fruit à l’unité',cout:8,img:'assets/primeur/fruit.png',emoji:'🍎'},
+      {item:'pr2',libelle:'Botte d’herbes',cout:15,img:'assets/primeur/herbes.png',emoji:'🌿'},
+      {item:'pr3',libelle:'Barquette fraises',cout:20,img:'assets/primeur/fraises.png',emoji:'🍓'},
+      {item:'pr4',libelle:'-15 % sur le panier',cout:45,img:'assets/primeur/panier15.png',emoji:'🎟️'},
+      {item:'pr5',libelle:'Grand panier saison',cout:70,img:'assets/primeur/grandpanier.png',emoji:'🧺'}
+    ]}
+};
+const _q = new URLSearchParams(location.search);
+const COMMERCE_TYPE = (_q.get('type')||'boulangerie').toLowerCase();
+const P = PRESETS[COMMERCE_TYPE] || PRESETS.boulangerie;
+const DEMO = _q.get('demo') === '1';
+/* ⚠️ SHEETS_URL n'est plus qu'un repli : le backend vient du registre des
+   commerces, resolu par ?c=. La table SHEETS_URLS ci-dessus reste le filet si le
+   registre est injoignable. */
+const SHEETS_URL = SHEETS_URLS[COMMERCE_TYPE] || SHEETS_URLS.boulangerie;
+/* Commerce historique — repli si le registre est injoignable. */
+var BA_REPLI = {
+  cle: 'falman', nom: 'Falman Emmanuelle & Flavien', nom_court: 'Falman',
+  metier: 'boulangerie', apps_script: 'https://script.google.com/macros/s/AKfycbx0N4dLSGtyUMgA_lA8N9O-B3rleX7zHgTFAXZyiV7hEf5ioXAcVI245hHdi4CMKuCn/exec'
+};
+
+/* ═══ REGISTRE DES COMMERCES ═════════════════════════════════════
+   Une seule source de vérité : commerces.json, servi par le site client.
+   Ajouter un commerce = une entrée là-bas, et rien à toucher ici.
+
+   Deux notions, longtemps confondues dans ?type= :
+     metier   = l'apparence (thème, lots de la roue, catalogue)
+     commerce = l'identité et le backend
+   Les confondre interdisait deux boulangeries.
+
+   ⚠️ ?type= reste accepté et le restera TOUJOURS : les cartes Wallet déjà dans
+   les téléphones des clients contiennent card.html?id=…&type=boulangerie.
+
+   ⚠️ Résolution ASYNCHRONE. Toute la page doit donc attendre BA.pret() avant son
+   premier appel au backend. En cas de panne du registre (réseau, fichier absent),
+   on retombe sur BA_REPLI — le commerce historique — pour que la boutique
+   continue de tourner. Un commerçant hors ligne est un commerçant perdu. */
+var BA = (function(){
+  var REGISTRE = 'https://boulangerieavisclient.vercel.app/commerces.json';
+  var q       = new URLSearchParams(location.search);
+  var cle     = (q.get('c') || '').trim().toLowerCase();
+  var metier  = (q.get('type') || '').trim().toLowerCase();
+  var promesse = null;
+
+  function resoudre(reg){
+    var k = null;
+    if (cle && reg.commerces && reg.commerces[cle]) k = cle;
+    if (!k && metier && reg.alias_metier && reg.alias_metier[metier]) k = reg.alias_metier[metier];
+    if (!k) k = reg.defaut;
+    var c = reg.commerces && reg.commerces[k];
+    if (!c || !c.apps_script) return BA_REPLI;
+    /* copie : on ne veut pas que la page modifie le registre en mémoire */
+    var out = {}; for (var p in c) out[p] = c[p];
+    out.cle = k;
+    return out;
+  }
+
+  return {
+    /** @returns {Promise<object>} le commerce courant — ne rejette jamais. */
+    pret: function(){
+      if (promesse) return promesse;
+      promesse = new Promise(function(ok){
+        var x = new XMLHttpRequest();
+        /* cache-buster à la minute : un commerce ajouté se propage vite, sans
+           pour autant refaire la requête à chaque navigation */
+        x.open('GET', REGISTRE + '?v=' + Math.floor(Date.now() / 60000), true);
+        x.timeout = 4000;
+        x.onload = function(){
+          try { ok(resoudre(JSON.parse(x.responseText))); }
+          catch(e){ console.warn('[BA] registre illisible, repli'); ok(BA_REPLI); }
+        };
+        x.onerror = x.ontimeout = function(){
+          console.warn('[BA] registre injoignable, repli');
+          ok(BA_REPLI);
+        };
+        x.send();
+      });
+      return promesse;
+    }
+  };
+})();
+
+const CATALOGUE = P.catalogue;
+const GIVE = {boulangerie:'un grand panier garni 🧺',fleuriste:'un grand bouquet 💐',pizzeria:'un menu duo 🍕',vape:'un kit premium 🎁',restaurant:'un dîner pour 2 🍽️',primeur:'un grand panier de saison 🧺'};
+const params = new URLSearchParams(location.search);
+
+/* ─── Mémoire locale de la carte ─────────────────────────────────────────
+   Le présentoir posé en boutique porte la MÊME URL pour tout le monde :
+   sans mémoire locale, la page ne saurait jamais qui vient de taper.
+   On retient donc le card_id dans le navigateur du client, par commerce
+   (il peut être membre chez plusieurs).
+
+   Le `?id=` de l'URL reste prioritaire : c'est celui du lien au dos de la
+   carte Wallet, ou d'une carte physique. Il écrase la mémoire locale, ce
+   qui permet aussi de reprendre la main sur un téléphone partagé. */
+const CARD_KEY = 'boostavis.card.' + COMMERCE_TYPE;
+function rememberCard(id){ try{ localStorage.setItem(CARD_KEY, id); }catch(e){} }
+function recallCard(){ try{ return (localStorage.getItem(CARD_KEY)||'').trim(); }catch(e){ return ''; } }
+function forgetCard(){ try{ localStorage.removeItem(CARD_KEY); }catch(e){} }
+
+const urlId  = (params.get('id')||'').trim();
+const cardId = urlId || recallCard();
+const $ = id => document.getElementById(id);
+let solde = 0;
+if($('lkIg')) $('lkIg').href = INSTA_URL;
+if($('lkFb')) $('lkFb').href = FB_URL;
+if($('lkTrust')) $('lkTrust').href = TRUST_URL;
+
+// hex → rgba (pour dériver les teintes douces du thème)
+function hexA(hex,a){ hex=String(hex).replace('#',''); if(hex.length===3) hex=hex.split('').map(c=>c+c).join(''); const n=parseInt(hex,16); return 'rgba('+((n>>16)&255)+','+((n>>8)&255)+','+(n&255)+','+a+')'; }
+// Applique un preset (thème + textes + emojis flottants)
+function applyPreset(p){
+  const t = p.theme;
+  if(t){
+    document.documentElement.classList.add('themed-photos');   // photos legacy (fond) -> rendu cover+multiply
+    const r = document.documentElement.style, M = {cream:'--cream',cream2:'--cream2',card:'--card',ink:'--ink',muted:'--muted',muted2:'--muted2',gold:'--gold',gold2:'--gold2',gold3:'--gold3',green:'--green'};
+    for(const k in t){ if(M[k]) r.setProperty(M[k], t[k]); }
+    if(t.gold){ r.setProperty('--gold-soft',hexA(t.gold,.10)); r.setProperty('--gold-line',hexA(t.gold,.28)); }
+    if(t.green){ r.setProperty('--green-soft',hexA(t.green,.12)); }
+    document.querySelector('meta[name="theme-color"]') && document.querySelector('meta[name="theme-color"]').setAttribute('content', t.cream||'#FBF7EF');
+  }
+  const bk=$('cBakery'); if(bk) bk.textContent = p.name;
+  const ft=$('cFoot'); if(ft) ft.textContent = p.foot;
+  const eb=document.querySelector('.eyebrow'); if(eb) eb.textContent = DEMO ? '✦ Démo fidélité' : (p.eyebrow||'✦ Ma fidélité');
+  const fzone=$('floaties'); if(fzone && p.fl) fzone.innerHTML = p.fl.map((e,i)=>'<span class="fl fl'+(i+1)+'">'+e+'</span>').join('');
+  document.title = 'Ma Fidélité — ' + p.name;
+}
+applyPreset(P);
+
+/* Point de passage UNIQUE vers le backend : c'est ici, et nulle part ailleurs,
+   qu'on attend le registre. Toute la page en herite. */
+function api(action, extra, retry){
+  return BA.pret().then((com)=> new Promise((resolve,reject)=>{
+    let url = (com.apps_script || SHEETS_URL) + '?action=' + encodeURIComponent(action);
+    if(extra) for(const k in extra) url += '&' + k + '=' + encodeURIComponent(extra[k]);
+    const attempt = (left)=>{
+      const x = new XMLHttpRequest();
+      x.open('GET', url, true); x.timeout = 20000;
+      const fail = (err)=>{ if(left>0) setTimeout(()=>attempt(left-1), 700); else reject(err); };
+      x.onload = ()=>{ try{ resolve(JSON.parse(x.responseText)); }catch(e){ fail(e); } };
+      x.onerror = ()=>fail(new Error('net'));
+      x.ontimeout = ()=>fail(new Error('timeout'));
+      x.send();
+    };
+    attempt(retry?1:0);   // retry=true → 1 réessai (uniquement sur les lectures, jamais les écritures)
+  }));
+}
+function show(id){ ['loading','stateNew','stateUnknown','stateError','stateActive'].forEach(s=>$(s).classList.toggle('on', s===id)); }
+function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+let tT=null;
+function toast(msg){ const t=$('toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(tT); tT=setTimeout(()=>t.classList.remove('show'),3200); }
+
+function spawnConfetti(){
+  if(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const colors=['#C8963E','#E2B25A','#F5D07A','#3F7D2E','#ffffff','#d98b5f'];
+  for(let i=0;i<90;i++){
+    const p=document.createElement('div'); p.className='confetti';
+    const size=6+Math.random()*8, dur=2.2+Math.random()*1.8, delay=Math.random()*.4;
+    p.style.cssText='left:'+(Math.random()*100)+'vw;width:'+size+'px;height:'+(size*1.4)+'px;background:'+colors[Math.floor(Math.random()*colors.length)]+';border-radius:'+(Math.random()>.5?'2px':'50%')+';animation:confFall '+dur+'s linear '+delay+'s forwards';
+    document.body.appendChild(p); setTimeout(()=>p.remove(),(dur+delay)*1000+300);
+  }
+}
+function showConfirm(o){
+  $('cmBadge').textContent = o.badge || '✓ Confirmé';
+  const ph = $('cmPh');
+  if(o.img){ ph.style.backgroundImage = "url('"+o.img+"')"; ph.textContent = ''; }
+  else { ph.style.backgroundImage = ''; ph.textContent = o.emoji || '🎁'; }
+  $('cmTitle').textContent = o.title || 'Bravo 🎉';
+  $('cmLib').textContent = o.lib || '';
+  if(o.code){ $('cmCodebox').style.display = ''; $('cmCode').textContent = o.code; }
+  else { $('cmCodebox').style.display = 'none'; }
+  $('cmNote').textContent = o.note || '';
+  $('cmOverlay').classList.add('show');
+  spawnConfetti();
+}
+window.closeRewardModal = function(){ $('cmOverlay').classList.remove('show'); };
+
+/* Grille de tampons vers le prochain palier.
+   Au-delà de 25, une grille devient un mur de pastilles illisible : on garde la
+   barre de progression, qui reste lisible quel que soit le nombre. */
+const STAMP_GRID_MAX = 25;
+function renderStamps(solde, next){
+  const grid = $('stampGrid'), bar = $('progBarWrap');
+  if(!grid || !bar) return;
+  if(!next || next.cout > STAMP_GRID_MAX){
+    grid.classList.remove('on'); grid.innerHTML=''; bar.style.display=''; return;
+  }
+  bar.style.display = 'none';
+  grid.classList.add('on');
+  const mark = (P.fl && P.fl[0]) || '✓';
+  let html = '';
+  for(let i=0; i<next.cout; i++){
+    const on = i < solde;
+    html += '<div class="stamp'+(on?' on':'')+'"'
+          + (on ? ' style="animation-delay:'+Math.min(i,14)*35+'ms"' : '')
+          + '>'+(on ? mark : '')+'</div>';
+  }
+  grid.innerHTML = html;
+}
+
+
+/* 🔄 04/09 — Toute variation de solde doit rafraichir la grille et le catalogue,
+   pas seulement le gros chiffre. Sans ca, gagner des tampons par une action
+   laissait la grille figee sur la valeur du chargement de page (constate en test :
+   6 tampons affiches, grille a 1/10). */
+/* 🔄 04/09 — Toute variation de solde doit rafraichir la grille ET le catalogue,
+   pas seulement le gros chiffre. Sans ca, gagner des tampons par une action
+   laissait la grille figee sur la valeur du chargement de page (constate en
+   test : 6 tampons affiches en haut, grille a 1/10 juste en dessous). */
+function applySolde(n){
+  solde = n;
+  if($('cSolde')) $('cSolde').textContent = n;
+  const next = CATALOGUE.filter(r=>r.cout > n).sort((a,b)=>a.cout-b.cout)[0];
+  if(next){
+    $('progL').innerHTML = 'Plus que <b>'+(next.cout-n)+' tampon'+((next.cout-n)>1?'s':'')+'</b> pour '+esc(next.libelle);
+    $('progR').textContent = n+' / '+next.cout;
+    $('progBar').style.width = Math.max(4, Math.round(n/next.cout*100))+'%';
+  } else {
+    $('progL').innerHTML = '🎉 Tu peux débloquer <b>tous</b> les cadeaux !';
+    $('progR').textContent = '';
+    $('progBar').style.width = '100%';
+  }
+  renderStamps(n, next);
+}
+
+function render(c){
+  solde = c.points_solde;
+  $('cName').textContent = (c.prenom||'').trim() || 'gourmand';
+  $('cAv').textContent = (c.prenom||'?').trim().charAt(0).toUpperCase();
+  $('cSolde').textContent = c.points_solde;
+  /* 🔄 04/09 — SYSTEME DE RANGS RETIRE (niveaux ET tiers).
+     Deux echelles de progression coexistaient pour le meme client, dont une
+     (« 50 € d'achats pour passer Argent ») fondee sur des montants que le
+     commercant ne saisit jamais : elle affichait donc du faux.
+     Le tampon est desormais la seule mesure. */
+  if(c.tier_gift && $('annivGift')) $('annivGift').textContent = c.tier_gift+' offert·e';
+  // prochaine récompense
+  /* Le prochain palier = le MOINS CHER encore hors de portée, pas le premier du
+     tableau : le catalogue n'est pas trié par prix, et on proposait la Boisson
+     chaude (12) alors que la Viennoiserie (10) était plus proche. */
+  const next = CATALOGUE.filter(r=>r.cout > c.points_solde).sort((a,b)=>a.cout-b.cout)[0];
+  if(next){
+    $('progL').innerHTML = 'Plus que <b>'+(next.cout-c.points_solde)+' tampon'+((next.cout-c.points_solde)>1?'s':'')+'</b> pour '+esc(next.libelle);
+    $('progR').textContent = c.points_solde+' / '+next.cout;
+    $('progBar').style.width = Math.max(4, Math.round(c.points_solde/next.cout*100))+'%';
+  } else {
+    $('progL').innerHTML = '🎉 Tu peux débloquer <b>tous</b> les cadeaux !';
+    $('progR').textContent = '';
+    $('progBar').style.width = '100%';
+  }
+  renderStamps(c.points_solde, next);
+  // catalogue
+  $('cat').innerHTML = [...CATALOGUE].sort((a,b)=>a.cout-b.cout).map(r=>{   // trié par palier croissant
+    const ok = c.points_solde >= r.cout;
+    return '<div class="rw'+(ok?'':' locked')+'">'
+      +(r.img ? '<div class="ph"><img class="ph-img" src="'+r.img+'" alt="" loading="lazy"></div>' : '<div class="ph ph-emoji">'+(r.emoji||'🎁')+'</div>')
+      +'<div class="nm">'+esc(r.libelle)+'</div>'
+      +'<div class="cost">'+r.cout+' tampons</div>'
+      +(ok ? '<button class="btn go" onclick="redeem(\''+r.item+'\', this)">Échanger</button>'
+           : '<button class="btn lock">Plus que '+(r.cout-c.points_solde)+' tampons</button>')
+      +'</div>';
+  }).join('');
+  $('cardNo').textContent = cardId;
+  const oi = String(c.email_opt_in||'').toLowerCase();
+  if($('optMail')) $('optMail').checked = !(oi==='off'||oi==='non'||oi==='no'||oi==='0'||oi==='false');
+  refreshOptinHero(oi);
+}
+// Encart +30 pts : visible tant que l'opt-in n'est pas explicitement 'on' (= bonus pas encore pris)
+function refreshOptinHero(oi){ const h=$('optinHero'); if(h) h.style.display = (String(oi).toLowerCase()==='on') ? 'none' : 'flex'; }
+window.optinFromHero = function(){ const h=$('optinHero'); if(h) h.style.display='none'; setOptin(true); };
+
+window.redeem = function(item, btn){
+  const r = CATALOGUE.find(x=>x.item===item); if(!r) return;
+  if(solde < r.cout){ toast('Il te manque '+(r.cout-solde)+' tampons.'); return; }
+  if(btn){ btn.disabled=true; btn.textContent='…'; }
+  const restore=()=>{ if(btn){ btn.disabled=false; btn.textContent='Échanger'; } };
+  api('fid_redeem',{card_id:cardId, item:item}).then(d=>{
+    if(d.status==='ok'){ render(d.client); loadRewards(); showConfirm({badge:'✓ Cadeau confirmé', img:r.img, title:'Bravo 🎉', lib:d.libelle, code:d.code, note:"Un email de confirmation t'a été envoyé. Montre ce code en caisse 🥐"}); }
+    else if(d.status==='insufficient'){ toast('Il te manque '+d.manque+' tampons.'); restore(); }
+    else { toast('Action impossible pour le moment.'); restore(); }
+  }).catch(()=>{ toast('Connexion impossible.'); restore(); });
+};
+
+window.setOptin = function(on){
+  api('fid_optin',{card_id:cardId, value:on?'on':'off'}).then(d=>{
+    if(d.status==='ok'){
+      if(d.bonus>0){ applySolde(solde + d.bonus); showConfirm({badge:'🎉 +'+d.bonus+' tampons !', emoji:'🔔', title:'Alertes activées !', lib:'+'+d.bonus+' tampons offerts', note:'Tu seras prévenu des produits gratuits, offres flash et paniers anti-gaspi 🥐'}); }
+      else toast(on?'🔔 Alertes activées':'Alertes désactivées');
+      const el=$('optMail'); if(el) el.checked=on; refreshOptinHero(on?'on':'off');
+    }
+    else { toast('Action impossible.'); const el=$('optMail'); if(el) el.checked=!on; }
+  }).catch(()=>{ toast('Connexion impossible.'); const el=$('optMail'); if(el) el.checked=!on; });
+};
+
+/* 🏅 Actions récompensées (1×/carte) — le clic ouvre le lien ET déclare l'action */
+let actionsState = {};
+function applyActions(st){
+  actionsState = st || {};
+  if(actionsState.trustpilot){ const t=$('lkTrust'); if(t){ const s=t.querySelector('.s'); if(s) s.textContent='✓ points gagnés'; } }
+}
+window.claimAction = function(key){
+  if(!cardId || actionsState[key]) return;   // pas de carte ou déjà récompensé
+  api('fid_action',{card_id:cardId, key:key}).then(d=>{
+    if(d.status==='ok'){ actionsState[key]=true; applySolde(solde + d.points_delta); toast('🎉 +'+d.points_delta+' tampon'+(d.points_delta>1?'s':'')+', merci !'); applyActions(actionsState); }
+    else if(d.status==='already'){ actionsState[key]=true; applyActions(actionsState); }
+  }).catch(()=>{});
+};
+
+function creditPassage(){
+  api('fid_passage',{card_id:cardId, source:'scan'}).then(d=>{
+    if(d.status==='ok'){ render(d.client); toast('🎉 +'+d.points_delta+' points pour ton passage !'); }
+    else if(d.status==='cooldown' && d.client){ render(d.client); }
+  }).catch(()=>{});
+}
+
+/* Fenêtre pendant laquelle un cadeau validé reste affiché (doit correspondre à
+   REDEEM_WINDOW_SEC côté Code.gs). Passé ce délai, il disparaît de la liste. */
+const REDEEM_WINDOW_MS = 3600 * 1000;
+/* ⏱️ Écart d'horloge client ↔ serveur.
+   Les horodatages viennent d'Apps Script, mais le compte à rebours s'affiche sur
+   le téléphone du client. Si les deux horloges divergent (constaté : 9 h d'écart),
+   un calcul direct donne des durées absurdes. On mesure donc l'écart une fois et
+   on convertit tous les horodatages serveur en heure locale du client. */
+let clockSkew = 0;                       // (heure serveur) − (heure client)
+function setServerNow(ms){ if(ms) clockSkew = Number(ms) - Date.now(); }
+function toLocal(serverMs){ return Number(serverMs) - clockSkew; }
+
+let lastRewards = [];
+let listTimer = null;
+
+function renderRewards(list, serverNow){
+  setServerNow(serverNow);
+  lastRewards = (list||[]);
+
+  /* Un cadeau consommé il y a plus d'une heure disparaît de la liste. */
+  const shown = lastRewards.filter(g =>
+    !(g.statut==='done' && g.used_at && (Date.now() - toLocal(g.used_at)) > REDEEM_WINDOW_MS));
+
+  if(!shown.length){ $('giftsWrap').style.display='none'; if(listTimer) clearInterval(listTimer); return; }
+  $('giftsWrap').style.display='';
+
+  $('gifts').innerHTML = shown.map(g=>{
+    const done = g.statut==='done';
+    const lib = esc(g.libelle).replace(/'/g,"\\'");
+    return '<div class="gift"><div class="ic">🎁</div>'
+      +'<div class="meta"><div class="n">'+esc(g.libelle)+'</div>'
+      +'<div class="d">'+(g.code?('code '+esc(g.code)):'')+'</div></div>'
+      +(done
+        /* Validé : on garde le bouton actif — le client doit pouvoir le rouvrir
+           en grand devant le vendeur, et voir le temps qu'il lui reste. */
+        ? '<button class="st done live" data-left="'+(g.used_at||0)+'" '
+          +'onclick="showUsed(\''+esc(g.code)+'\',\''+lib+'\','+(g.used_at||0)+')">'
+          +'<span class="ok">✓ Validé</span><span class="cd" id="cd_'+esc(g.code)+'">—</span></button>'
+        : '<button class="st use" onclick="askUse(\''+esc(g.code)+'\',\''+lib+'\')">Utiliser</button>')
+      +'</div>';
+  }).join('');
+
+  /* Les compte-à-rebours de la liste tournent en continu. */
+  if(listTimer) clearInterval(listTimer);
+  const tickList = ()=>{
+    let encore = false;
+    shown.forEach(g=>{
+      if(g.statut!=='done' || !g.used_at) return;
+      const el = document.getElementById('cd_'+g.code);
+      if(!el) return;
+      const reste = REDEEM_WINDOW_MS - (Date.now() - toLocal(g.used_at));
+      if(reste <= 0){ el.textContent = 'expiré'; return; }
+      encore = true;
+      const m = Math.floor(reste/60000), s = Math.floor(reste%60000/1000);
+      el.textContent = m+' min '+String(s).padStart(2,'0');
+    });
+    if(!encore) clearInterval(listTimer);
+  };
+  tickList(); listTimer = setInterval(tickList, 1000);
+}
+
+function loadRewards(){
+  api('fid_rewards',{card_id:cardId}, true)
+    .then(d=>{ if(d.status==='ok') renderRewards(d.rewards, d.now); })
+    .catch(()=>{});
+}
+
+/* Rouvre l'écran de validation en grand — c'est ce qu'on montre au vendeur. */
+window.showUsed = function(code, libelle, usedAt){
+  $('useLib').textContent = libelle; $('useLib2').textContent = libelle;
+  $('useCode').textContent = code;
+  $('useModal').dataset.code = code;
+  $('useStep1').style.display = 'none';
+  $('useStep2').style.display = '';
+  $('useModal').classList.add('on');
+  startUseClock(toLocal(usedAt) || Date.now());
+};
+
+
+/* ─── 🎟️ Utiliser un cadeau — devant le vendeur ──────────────────────────
+   Le disclaimer arrive AVANT le tap, jamais après : découvrir qu'on avait une
+   heure une fois le compteur lancé serait une mauvaise surprise. */
+window.askUse = function(code, libelle){
+  $('useLib').textContent = libelle; $('useLib2').textContent = libelle;
+  $('useCode').textContent = code;
+  $('useModal').dataset.code = code;
+  $('useStep1').style.display = '';
+  $('useStep2').style.display = 'none';
+  $('useModal').classList.add('on');
+}
+window.closeUse = function(){ $("useModal").classList.remove("on"); if(useTimer) clearInterval(useTimer); };
+
+let useTimer = null;/* Horloge de l'ecran de validation. Ancree sur l'heure LOCALE du client :   l'heure qui defile doit correspondre a celle du telephone que le vendeur   regarde, pas a celle du serveur Google (9 h d'ecart constate). */function startUseClock(startLocalMs){  const tick = ()=>{    const n = new Date();    $('useClock').textContent = n.toLocaleTimeString('fr-FR');    const reste = Math.max(0, REDEEM_WINDOW_MS - (n.getTime() - startLocalMs));    const m = Math.floor(reste/60000), s = Math.floor(reste%60000/1000);    $('useLeft').textContent = reste > 0      ? 'Valable encore ' + m + ' min ' + String(s).padStart(2,'0')      : 'Ce cadeau a expire';  };  tick(); if(useTimer) clearInterval(useTimer); useTimer = setInterval(tick, 1000);}
+window.confirmUse = function(btn){
+  const code = $('useModal').dataset.code;
+  btn.disabled = true; btn.textContent = 'Validation…';
+  api('fid_use', {card_id:cardId, code:code}).then(d=>{
+    btn.disabled = false; btn.textContent = 'Oui, je suis en caisse';
+    if(d.status !== 'ok' && d.status !== 'already'){
+      toast(d.status === 'not_yours' ? "Ce cadeau n'est pas sur ta carte." : "Impossible de valider.");
+      return;
+    }
+    $('useStep1').style.display = 'none';
+    $('useStep2').style.display = '';
+    setServerNow(d.now);
+    startUseClock(toLocal(Number(d.used_at)) || Date.now());
+    loadRewards();
+  }).catch(()=>{ btn.disabled=false; btn.textContent='Oui, je suis en caisse'; toast('Connexion impossible.'); });
+}
+
+/* 🎟️ Activation d'une offre promo reçue par email (?promo=CAMP) → cadeau en attente + animation redeem */
+function claimPromo(camp){
+  api('fid_promo_claim',{card_id:cardId, promo:camp}).then(d=>{
+    if(d.status==='ok'){
+      loadRewards();
+      showConfirm({badge:'🎁 Offre activée !', emoji:'🎉', title:'Offre activée !', lib:d.libelle, code:d.code,
+        note:'Montre ce code en caisse pour profiter de ton offre. Il est aussi dans « Mes cadeaux ».'});
+    } else if(d.status==='already'){
+      loadRewards();
+      showConfirm({badge:'✅ Déjà activée', emoji:'🎁', title:'Offre déjà activée', lib:d.libelle, code:d.code,
+        note:'Cette offre est déjà dans « Mes cadeaux ». Montre le code en caisse.'});
+    } else { toast('Offre indisponible.'); }
+    try{ var q=new URLSearchParams(location.search); q.delete('promo'); history.replaceState(null,'',location.pathname+(q.toString()?('?'+q.toString()):'')); }catch(e){}   // retire ?promo= (garde id/type)
+  }).catch(()=>toast('Connexion impossible.'));
+}
+
+/* 🥖 Paniers anti-gaspi du jour (alerte) */
+function eurC(n){ return (Number(n)||0).toFixed(2).replace('.',',')+' €'; }
+function agEmoji(lib){ lib=(lib||'').toLowerCase(); if(lib.indexOf('vienn')>=0)return '🥐'; if(lib.indexOf('pain')>=0)return '🥖'; if(lib.indexOf('sandw')>=0)return '🥪'; if(lib.indexOf('atis')>=0)return '🍰'; return '🎁'; }
+function agImg(lib){ lib=(lib||'').toLowerCase(); if(lib.indexOf('vienn')>=0)return 'viennoiserie.png'; if(lib.indexOf('pain')>=0)return 'baguette.png'; if(lib.indexOf('sandw')>=0)return 'sandwich.png'; if(lib.indexOf('atis')>=0)return 'patisserie.png'; return 'gateau.png'; }
+function renderPaniers(list){
+  const el = $('agBanner');
+  if(!list || !list.length){ el.style.display='none'; el.innerHTML=''; return; }
+  el.style.display='';
+  el.innerHTML = '<div class="agb-h">🥖 Paniers anti-gaspi<span class="tag">Aujourd\'hui</span></div>'
+    + '<div class="agb-sub">À récupérer en boutique avant la fermeture — premier arrivé, premier servi&nbsp;!</div>'
+    + list.map(p => '<div class="agb-item">'+(p.emoji ? '<div class="agb-emoji" style="font-size:24px;display:grid;place-items:center">'+p.emoji+'</div>' : '<div class="agb-emoji" style="background-image:url(assets/'+agImg(p.libelle)+')"></div>')
+        + '<div class="agb-meta"><div class="n">'+esc(p.libelle)+'</div><div class="d">'+(p.retrait_avant?('Retrait avant '+esc(p.retrait_avant)+' · '):'')+'<span class="agb-qty">'+p.qty+' dispo</span></div></div>'
+        + '<div class="agb-price"><div class="pr">'+eurC(p.prix_reduit)+'</div>'+(p.prix_origine?('<div class="or">'+eurC(p.prix_origine)+'</div>'):'')+'</div></div>').join('');
+}
+
+/* ROUTAGE */
+if(DEMO){
+  const m={prenom:'Camille',nom:'',points_solde:7,points_statut:18,points_mois:4,niveau:'Fidèle',tickets_mois:1,tier:'Argent',tier_key:'argent',tier_gift:(CATALOGUE[1]?CATALOGUE[1].libelle:''),tier_next:'Or',tier_reste_eur:60,cout_ticket:5,tickets_achetables:1,prochain_ticket:3,email_opt_in:'on'};
+  render(m); show('stateActive');
+  renderPaniers([{libelle:'Panier surprise du jour',qty:3,prix_reduit:4.9,prix_origine:12,retrait_avant:'18h00',emoji:(P.fl&&P.fl[0])||'🎁'}]);
+}
+else if(!cardId){
+  /* Aucune carte : ni dans l'URL, ni en mémoire. C'est un nouveau client qui
+     vient de taper le présentoir → on l'envoie s'inscrire, pas sur une erreur. */
+  $('avisLink').href = AVIS_URL + '?type=' + encodeURIComponent(COMMERCE_TYPE);
+  show('stateNew');
+}
+else{
+  $('avisLink').href = AVIS_URL + '?id=' + encodeURIComponent(cardId);
+  api('fid_open',{card_id:cardId, source:'scan'}, true).then(d=>{
+    if(d.status==='active'){
+      rememberCard(cardId);          // reconnu → on retient pour les prochains passages
+      render(d.client); show('stateActive'); renderRewards(d.rewards, d.now); renderPaniers(d.paniers); applyActions(d.actions);
+      var _promo=(params.get('promo')||'').trim();
+      if(_promo){ claimPromo(_promo); }           // activation d'une offre reçue par email (prioritaire)
+      else if(d.anniv){
+        showConfirm({badge:'🎂 Joyeux anniversaire !', emoji:'🎂', title:'Joyeux anniversaire '+((d.client.prenom||'').trim())+' !',
+          lib:'Cadeau offert : '+d.anniv.libelle, code:d.anniv.code, note:'Montre ce code en caisse pour récupérer ton cadeau d\'anniversaire 🎂'});
+      } else if(d.passage){ toast('🎉 +'+d.passage.points_delta+' points pour ton passage !'); }
+    }
+    else if(d.status==='new'){ show('stateNew'); }
+    else {
+      /* Carte inconnue du serveur. Si elle venait de la mémoire locale, elle est
+         périmée (carte supprimée, base réinitialisée) : on l'oublie et on propose
+         l'inscription, plutôt que de laisser le client coincé sur une erreur. */
+      forgetCard();
+      if(urlId){ show('stateUnknown'); }
+      else{ $('avisLink').href = AVIS_URL + '?type=' + encodeURIComponent(COMMERCE_TYPE); show('stateNew'); }
+    }
+  }).catch(()=>show('stateError'));
+}
+})();
+</script>
+</body>
+</html>
