@@ -1,0 +1,78 @@
+{
+  "_lisez_moi": [
+    "REGISTRE DES COMMERCES — la source unique de vérité.",
+    "",
+    "Ajouter un commerce = UNE entrée ici, et rien d'autre. Avant ce fichier, il",
+    "fallait toucher 7 endroits (3 fronts, l'espace boulanger, une variable Vercel,",
+    "theme.js et les coordonnées GPS de buildPass.js), et chaque oubli faisait",
+    "pointer un commerçant vers les données d'un autre.",
+    "",
+    "LA DISTINCTION QUI COMPTE :",
+    "  metier  = l'apparence (thème, lots de la roue, catalogue par défaut).",
+    "            Plusieurs commerces peuvent partager le même métier.",
+    "  cle     = LE COMMERCE lui-même (son Apps Script, son nom, sa boutique).",
+    "Avant, les deux étaient confondus dans ?type= — d'où l'impossibilité d'avoir",
+    "deux boulangeries.",
+    "",
+    "ROUTAGE : les fronts lisent ?c=<cle>. ?type=<metier> reste accepté et résolu",
+    "via alias_metier — les cartes Wallet DÉJÀ dans les téléphones des clients",
+    "contiennent card.html?id=…&type=boulangerie. Cet alias ne doit jamais",
+    "disparaître.",
+    "",
+    "PRÉFIXE : les numéros de carte portent le commerce (FAL-3K9P2A). C est la SEULE",
+    "piste dont dispose le service Wallet quand iOS vient rafraîchir une carte : il",
+    "n envoie que le numéro de série, jamais le commerce. Un préfixe par commerce,",
+    "donc, et jamais deux fois le même.",
+    "",
+    "Servi par Vercel avec Access-Control-Allow-Origin: * (voir vercel.json) : il",
+    "est lu par le site client, l'espace boulanger, le kiosque et le service Wallet."
+  ],
+
+  "version": 1,
+
+  "commerces": {
+    "falman": {
+      "nom": "Falman Emmanuelle & Flavien",
+      "nom_court": "Falman",
+      "metier": "boulangerie",
+      "prefixe": "FAL",
+      "apps_script": "https://script.google.com/macros/s/AKfycbx0N4dLSGtyUMgA_lA8N9O-B3rleX7zHgTFAXZyiV7hEf5ioXAcVI245hHdi4CMKuCn/exec",
+      "lat": 46.034167,
+      "lng": 6.105472,
+      "rayon_m": 200,
+      "place_id": "ChIJq6qas52Hi0cRMtoyv9EFxDI",
+      "instagram": "",
+      "facebook": "",
+      "trustpilot": "",
+      "actif": true
+    },
+
+    "jardin-de-rose": {
+      "nom": "Au Jardin de Rose",
+      "nom_court": "Jardin de Rose",
+      "metier": "fleuriste",
+      "prefixe": "JDR",
+      "apps_script": "https://script.google.com/macros/s/AKfycbygyQrhmSBzSEFA3LJ65pbbpP1oXZIO44LXG0EnZFYZT0xsx1lIJcoyt5Lmy-8q3NXV/exec",
+      "lat": null,
+      "lng": null,
+      "rayon_m": 200,
+      "place_id": "",
+      "instagram": "",
+      "facebook": "",
+      "trustpilot": "",
+      "actif": false
+    }
+  },
+
+  "alias_prefixe": {
+    "FAL": "falman",
+    "JDR": "jardin-de-rose"
+  },
+
+  "alias_metier": {
+    "boulangerie": "falman",
+    "fleuriste": "jardin-de-rose"
+  },
+
+  "defaut": "falman"
+}
