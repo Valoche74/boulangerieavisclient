@@ -278,7 +278,13 @@ body::after{
 .already-wrap{text-align:center;max-width:280px}
 .already-emoji{font-size:50px;display:block;margin-bottom:14px}
 .already-title{font-family:'Playfair Display',serif;font-size:22px;font-weight:700;color:var(--cream);margin-bottom:10px}
-.already-desc{font-size:14px;color:rgba(245,237,216,.56);line-height:1.7}
+/* .78 et non .56 : à .56 sur le fond du site, le texte passait sous le seuil de
+   lisibilité une fois l'écran au soleil, dehors, devant le présentoir. */
+.already-desc{font-size:14.5px;color:rgba(245,237,216,.78);line-height:1.65}
+.already-cta{display:inline-block;margin-top:22px;padding:14px 28px;border-radius:999px;
+  background:var(--gold);color:#1a1206;font-weight:700;font-size:15px;text-decoration:none;
+  box-shadow:0 8px 22px rgba(200,150,62,.32)}
+.already-cta:active{transform:scale(.97)}
 
 .particle{position:fixed;pointer-events:none;border-radius:50%;animation:pfly 1.4s ease-out forwards;z-index:999}
 @keyframes pfly{0%{transform:translate(0,0) scale(1);opacity:1}100%{transform:translate(var(--tx),var(--ty)) scale(0);opacity:0}}
@@ -453,13 +459,20 @@ body::after{
 </div>
 </div>
 
-<!-- ══ ALREADY ══ -->
+<!-- ══ ALREADY — la roue a déjà été jouée sur cette carte ══
+     08/09 : n'était JAMAIS affiché (code mort). Il sert maintenant au garde-fou
+     « une roue par carte ».
+     ⚠️ Ce n'est PAS un cul-de-sac : le client repart vers SA carte, où l'attend
+     son tampon du jour. Le mettre dans une impasse après l'avoir fait scanner
+     serait la deuxième pire option — la pire étant de le laisser tourner la roue
+     pour lui retirer le lot ensuite. -->
 <div class="screen" id="screenAlready">
 <div class="screen-inner">
 <div class="already-wrap">
   <span class="already-emoji">🎫</span>
-  <div class="already-title">Déjà participé !</div>
-  <div class="already-desc">Vous avez déjà récupéré votre cadeau. Un seul gain par personne. Merci !</div>
+  <div class="already-title">Votre carte vous attend</div>
+  <div class="already-desc" id="alreadyDesc">Vous avez déjà reçu votre cadeau de bienvenue. Ouvrez votre carte pour votre tampon du jour.</div>
+  <a class="already-cta" id="alreadyCta" href="#">Ouvrir ma carte →</a>
 </div>
 </div>
 </div>
@@ -605,6 +618,56 @@ const fidCardId = (function(){
   } catch (e) { return ""; }        // navigation privee, stockage bloque
 })();
 
+/* ═══ 🎡 LA ROUE UNE FOIS PAR CARTE ══════════════════════════════════════
+   Décision du 08/09 : un habitué qui rescanne le présentoir chaque matin
+   repartait avec un croissant offert chaque matin.
+
+   ⚠️ Ce garde-fou-ci n'est QUE du confort d'affichage. Le vrai verrou est côté
+   serveur (walletStart + saveCode refusent le cadeau) : le localStorage se vide
+   en navigation privée, donc on ne lui fait pas confiance pour protéger l'argent
+   du commerçant. Ici, on évite juste au client de tourner une roue pour rien.
+
+   ⏱️ Le coût : un aller-retour Apps Script, mesuré à 1,9–6,0 s même à vide.
+   On le lance donc DÈS LE CHARGEMENT, pendant que le client lit l'écran d'avis
+   (il y reste 15 s au minimum — c'est le délai du bouton « passer »). Quand il
+   arrive à la roue, la réponse est là depuis longtemps. Zéro attente ajoutée.
+
+   Ne part que si une carte est connue : un nouveau client ne paie rien. */
+let roueJouee   = false;
+let carteUrl    = null;
+const roueCheck = (function(){
+  if(!fidCardId) return Promise.resolve(false);
+  return apiGet({ action:'fid_client', card_id:fidCardId })
+    .then(function(d){
+      roueJouee = !!(d && d.roue_jouee);
+      return roueJouee;
+    })
+    .catch(function(){ return false; });    // backend muet → on laisse jouer, le serveur tranchera
+})();
+
+/* Le lien vers la carte du client. Les deux paramètres sont émis exprès :
+   ?c= porte le backend, ?type= porte l'apparence (cf. le registre). */
+function majLienCarte(){
+  if(!fidCardId) return;
+  BA.pret().then(function(com){
+    carteUrl = 'card.html?id=' + encodeURIComponent(fidCardId)
+             + '&c='    + encodeURIComponent(com.cle || 'falman')
+             + '&type=' + encodeURIComponent(TYPE_PARAM);
+    const a = document.getElementById('alreadyCta');
+    if(a) a.href = carteUrl;
+  });
+}
+
+/* Point d'entrée unique vers la roue : c'est ici, et nulle part ailleurs, qu'on
+   décide si le client a droit à un tour. */
+function allerVersRoue(){
+  hideSkipReviewButton();
+  roueCheck.then(function(deja){
+    if(deja){ majLienCarte(); showScreen('screenAlready'); return; }
+    showScreen('screen2');
+  });
+}
+
 /* ─── Nav ─── */
 function showScreen(id){
   document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
@@ -653,9 +716,9 @@ function openGoogle(e){
   btn.style.opacity=".6";btn.style.pointerEvents="none";
   document.getElementById("unlockMsg").classList.add("show");
   spawnParticles();
-  setTimeout(()=>showScreen("screen2"),1400);
+  setTimeout(allerVersRoue,1400);      // 🎡 passe par le garde-fou, plus jamais direct
 }
-function goToWheel(){ hideSkipReviewButton(); showScreen("screen2"); }
+function goToWheel(){ allerVersRoue(); }
 
 /* ═══════════════════════════════════════════
    THREE.JS — VIEWER 3D (inchangé)
@@ -984,6 +1047,18 @@ function walletViaStart(){
   if(fidCardId) p.card_id = fidCardId;
 
   return apiGet(p).then(function(r){
+    /* 🎡 `roue_jouee` : le serveur a refusé le CADEAU mais rend quand même la
+       carte installable. Ça n'arrive que si le contrôle au chargement n'a pas pu
+       jouer (stockage vidé, ?id= dans l'URL d'un autre téléphone…). On bascule
+       alors honnêtement vers l'écran « votre carte vous attend » plutôt que
+       d'annoncer un lot qui n'existe pas. */
+    if(r && r.status === 'roue_jouee'){
+      roueJouee = true;
+      if(r.card_id) rememberCard(r.card_id);
+      majLienCarte();
+      showScreen('screenAlready');
+      return r.url;
+    }
     if(!r || r.status !== 'ok' || !r.url){
       throw new Error((r && (r.message || r.etape)) || 'lien indisponible');
     }
@@ -992,30 +1067,18 @@ function walletViaStart(){
   });
 }
 
-/* ⏳ REPLI : l'ancien enchainement en trois appels.
-   Il ne sert que si le Code.gs deploye ne connait pas encore `wallet_start` —
-   sans lui, un front deploye avant le backend casserait l'ajout de carte pour de
-   vrais clients. A SUPPRIMER une fois la nouvelle version d'Apps Script en place
-   depuis quelques jours. */
-function walletViaLegacy(){
-  return apiGet({ action:'save', code:claimCode, gain:wonPrize.name, prenom:'', email:'', emoji:wonPrize.emoji })
-    .then(function(){
-      var p = { action:'fid_activate', gain:wonPrize.name, code:claimCode };
-      if(fidCardId) p.card_id = fidCardId;
-      return apiGet(p);
-    })
-    .then(function(act){
-      if(!act || !act.card_id) throw new Error('carte non creee');
-      rememberCard(act.card_id);
-      return apiGet({ action:'wallet_link', card_id:act.card_id, type:TYPE_PARAM });
-    })
-    .then(function(lnk){
-      if(!lnk || lnk.status !== 'ok' || !lnk.url){
-        throw new Error((lnk && lnk.message) || 'lien indisponible');
-      }
-      return lnk.url;
-    });
-}
+/* 🗑️ walletViaLegacy() RETIRÉ le 08/09.
+   C'était le filet de la bascule vers `wallet_start` (save → fid_activate →
+   wallet_link en trois appels), à retirer « une fois la nouvelle version d'Apps
+   Script en place depuis quelques jours ».
+
+   Deux raisons de le retirer maintenant, pas une :
+   1. Il est PROUVÉ mort — `wallet_start` a été appelé en production le 08/09 et
+      répond `status:"ok"` avec une URL signée. Le repli ne se déclenchait plus.
+   2. Il TROUAIT le garde-fou de la roue : il appelait `save` SANS card_id, donc
+      le contrôle « cette carte a déjà joué » (qui se fait sur le card_id) ne
+      pouvait pas s'y appliquer. Un client passé par ce chemin aurait continué de
+      fabriquer des coupons valides. */
 
 function prepareWallet(){
   if(walletReady) return walletReady;
@@ -1025,14 +1088,6 @@ function prepareWallet(){
   claimCode = claimCode || generateCode();
 
   walletReady = walletViaStart()
-    .catch(function(err){
-      /* Seul le cas « backend pas encore a jour » declenche le repli : toute autre
-         erreur (reseau, carte refusee) doit remonter, sinon on la masquerait
-         derriere trois appels supplementaires qui echoueraient pareil. */
-      if(!/action inconnue/i.test(String((err && err.message) || ''))) throw err;
-      console.warn('[wallet] wallet_start absent du backend — repli sur l\'ancien enchainement');
-      return walletViaLegacy();
-    })
     .catch(function(err){
       walletReady = null;             // on autorise un nouvel essai au tap suivant
       throw err;
@@ -1108,6 +1163,11 @@ async function submitForm(){
     +"&nom="+encodeURIComponent(nom)
     +"&email="+encodeURIComponent(email)
     +"&emoji="+encodeURIComponent(gainEmoji)
+    /* 🎡 08/09 — le card_id part AVEC le save. Sans lui, le serveur ne peut pas
+       savoir que cette carte a déjà joué : ce parcours crée le coupon AVANT
+       fid_activate, donc gater fid_activate seul laissait passer un coupon
+       valide, que le kiosque aurait honoré. */
+    +(fidCardId ? "&card_id="+encodeURIComponent(fidCardId) : "")
     +"&commerce="+encodeURIComponent("Falman Emmanuelle et Flavien");
 
   console.log("[BoostAvis] Appel Apps Script — action=save, code="+code);
@@ -1125,6 +1185,13 @@ async function submitForm(){
     try{
       const data=JSON.parse(xhr.responseText);
       console.log("[BoostAvis] Réponse JSON:",JSON.stringify(data));
+      /* 🎡 Cette carte a déjà eu son cadeau : pas d'alerte d'erreur — on l'envoie
+         vers sa carte, comme sur le chemin Wallet. */
+      if(data.status==="roue_jouee"){
+        roueJouee = true; majLienCarte(); showScreen("screenAlready");
+        btn.textContent=btnOriginal; btn.disabled=false;
+        return;
+      }
       if(data.status==="saved"||data.status==="duplicate"){
         showScreen("screen4");
         document.getElementById("s4code").textContent=code;
