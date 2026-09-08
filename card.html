@@ -27,8 +27,28 @@
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 :root{
   --cream:#FBF7EF;--cream2:#F4ECDC;--card:#FFFFFF;
-  --ink:#2A2418;--muted:#8A7E68;--muted2:#B3A88E;
+  /* 🔎 08/09 — LISIBILITÉ. Contrastes mesurés sur le fond réel (--cream #FBF7EF),
+     pas estimés à l'œil : 7 zones de texte sur 8 échouaient au seuil WCAG AA de
+     4,5:1. Cette carte se lit dans une boutique, souvent dehors, à bout de bras —
+     c'est le pire contexte possible pour du texte pâle en 10 px.
+       avant → après (sur crème)
+       --muted   #8A7E68  3,73:1  →  #6A5F4B  5,86:1
+       --muted2  #B3A88E  2,21:1  →  #776B55  4,89:1
+     Les anciennes valeurs restent en commentaire : ce sont elles, la référence,
+     si quelqu'un trouve un jour la nouvelle palette « trop foncée ». */
+  --ink:#2A2418;--muted:#6A5F4B;--muted2:#776B55;
   --gold:#C8963E;--gold2:#E2B25A;--gold3:#F5D07A;
+  /* ⚠️ --gold est une couleur de REMPLISSAGE (boutons, tampons, le gros chiffre),
+     pas une couleur de TEXTE : en texte sur crème il tombe à 2,49:1. On ne
+     l'assombrit donc pas — la marque garde son or — on ajoute une variante encre
+     réservée au texte doré. */
+  --gold-ink:#8B6220;   /* 5,08:1 sur crème · 5,43:1 sur blanc */
+  /* Même règle pour les deux autres accents. Un balayage de TOUS les nœuds de
+     texte (et non d'une liste de sélecteurs choisis à la main, qui laissait
+     passer 12 échecs) a montré que --green et --trust servaient aussi de couleur
+     de texte : le ★ Trustpilot tombait à 2,47:1. */
+  --green-ink:#2F6022;  /* 6,98:1 sur crème */
+  --trust-ink:#00875A;  /* 4,26:1 — icône 24 px, seuil 3:1 */
   --gold-soft:rgba(200,150,62,.10);--gold-line:rgba(200,150,62,.28);
   --green:#3F7D2E;--green-soft:rgba(63,125,46,.12);--trust:#00B67A;
   --line:rgba(42,36,24,.08);
@@ -61,10 +81,10 @@ body{font-family:var(--font-ui);-webkit-font-smoothing:antialiased;color:var(--i
 
 /* header */
 .head{display:flex;align-items:center;justify-content:space-between}
-.head .eyebrow{font-size:10px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin-bottom:4px}
+.head .eyebrow{font-size:11px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--gold-ink);margin-bottom:4px}
 .head .bakery{font-family:var(--font-display);font-size:24px;font-weight:700;font-style:italic;color:var(--ink);line-height:1}
 .head .greet{font-size:13px;color:var(--muted);margin-top:5px}
-.avatar{width:48px;height:48px;border-radius:50%;flex-shrink:0;display:grid;place-items:center;background:linear-gradient(135deg,var(--gold),var(--gold2) 55%,var(--gold3));font-family:var(--font-display);font-size:21px;font-weight:700;color:#fff;box-shadow:0 6px 16px rgba(200,150,62,.4)}
+.avatar{width:48px;height:48px;border-radius:50%;flex-shrink:0;display:grid;place-items:center;background:linear-gradient(135deg,var(--gold),var(--gold2) 55%,var(--gold3));font-family:var(--font-display);font-size:21px;font-weight:800;color:var(--ink);box-shadow:0 6px 16px rgba(200,150,62,.4)}
 
 /* solde */
 .hero{background:var(--card);border-radius:24px;padding:22px 22px 20px;box-shadow:var(--shadow);border:1px solid var(--line);position:relative;overflow:hidden}
@@ -81,7 +101,7 @@ body{font-family:var(--font-ui);-webkit-font-smoothing:antialiased;color:var(--i
 /* progression */
 .prog{background:var(--card);border-radius:20px;padding:16px 18px;box-shadow:var(--shadow);border:1px solid var(--line)}
 .prog-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;font-size:13px}
-.prog-top .l{color:var(--ink);font-weight:600}.prog-top .l b{color:var(--gold);font-weight:700}
+.prog-top .l{color:var(--ink);font-weight:600}.prog-top .l b{color:var(--gold-ink);font-weight:700}
 .prog-top .r{font-size:12px;color:var(--muted);font-weight:600}
 .bar{height:11px;border-radius:99px;background:var(--cream2);overflow:hidden;border:1px solid var(--line)}
 .bar i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,var(--gold),var(--gold2),var(--gold3));transition:width .6s cubic-bezier(.16,1,.3,1);box-shadow:0 1px 4px rgba(200,150,62,.4)}
@@ -97,7 +117,7 @@ body{font-family:var(--font-ui);-webkit-font-smoothing:antialiased;color:var(--i
 /* cadeau validé : reste cliquable pour être rouvert en grand devant le vendeur */
 .st.done.live{border:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;
   background:var(--green-soft);border-radius:14px;padding:7px 13px;font-family:var(--font-ui)}
-.st.done.live .ok{font-size:12px;font-weight:700;color:var(--green)}
+.st.done.live .ok{font-size:12px;font-weight:700;color:var(--green-ink)}
 .st.done.live .cd{font-size:10.5px;color:var(--muted);font-variant-numeric:tabular-nums}
 .st.done.live:active{transform:scale(.96)}
 
@@ -139,7 +159,7 @@ body{font-family:var(--font-ui);-webkit-font-smoothing:antialiased;color:var(--i
 
 .sec-h{display:flex;align-items:baseline;justify-content:space-between;margin:8px 2px 0}
 .sec-h .t{font-family:var(--font-display);font-size:21px;font-weight:700;color:var(--ink)}
-.sec-h .a{font-size:11.5px;font-weight:600;color:var(--muted2)}
+.sec-h .a{font-size:12px;font-weight:600;color:var(--muted)}
 
 /* catalogue carrousel */
 .cat{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;padding:4px 18px 8px;margin:0 -18px;-webkit-overflow-scrolling:touch;scrollbar-width:none;overscroll-behavior-x:contain}
@@ -151,12 +171,12 @@ body{font-family:var(--font-ui);-webkit-font-smoothing:antialiased;color:var(--i
 /* commerces thémés : photos legacy encore avec fond -> on garde l'ancien rendu (cover + multiply) */
 .themed-photos .rw .ph-img{object-fit:cover;padding:0;mix-blend-mode:multiply;border-radius:18px}
 .rw .nm{font-size:14px;font-weight:600;color:var(--ink);line-height:1.2;min-height:34px;display:flex;align-items:center}
-.rw .cost{font-size:13px;font-weight:700;color:var(--gold);margin:7px 0 11px;display:inline-flex;align-items:center;gap:5px}
+.rw .cost{font-size:13px;font-weight:700;color:var(--gold-ink);margin:7px 0 11px;display:inline-flex;align-items:center;gap:5px}
 .rw .cost::before{content:'';width:7px;height:7px;border-radius:50%;background:var(--gold)}
 .rw .btn{width:100%;padding:11px;border:none;border-radius:12px;font-family:var(--font-ui);font-size:13px;font-weight:700;cursor:pointer;transition:transform .12s}
 .rw .btn.go{background:linear-gradient(135deg,var(--gold),var(--gold2));color:#3a2705;box-shadow:0 5px 14px rgba(200,150,62,.36)}
 .rw .btn.go:active{transform:scale(.96)}
-.rw .btn.lock{background:var(--cream2);color:var(--muted2);cursor:default;font-size:11.5px;font-weight:700}
+.rw .btn.lock{background:var(--cream2);color:var(--muted);cursor:default;font-size:11.5px;font-weight:700}
 .rw .btn:disabled{opacity:.5;cursor:default}
 .rw.locked .ph{filter:grayscale(.3) opacity(.85)}
 
@@ -174,9 +194,9 @@ body{font-family:var(--font-ui);-webkit-font-smoothing:antialiased;color:var(--i
 /* bonus */
 .bonus{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:4px}
 .bn{background:var(--card);border-radius:18px;padding:15px 8px;box-shadow:var(--shadow);border:1px solid var(--line);text-align:center}
-.bn .ic{font-size:24px;line-height:1}.bn .ic.trust{color:var(--trust)}
+.bn .ic{font-size:24px;line-height:1}.bn .ic.trust{color:var(--trust-ink)}
 .bn .t{font-size:11.5px;font-weight:600;color:var(--ink);margin-top:7px;line-height:1.25}
-.bn .s{font-size:10.5px;color:var(--gold);font-weight:700;margin-top:3px}.bn.green .s{color:var(--green)}
+.bn .s{font-size:11.5px;color:var(--gold-ink);font-weight:700;margin-top:3px}.bn.green .s{color:var(--green-ink)}
 
 /* mes cadeaux */
 .gifts{background:var(--card);border-radius:20px;box-shadow:var(--shadow);border:1px solid var(--line);overflow:hidden}
@@ -184,11 +204,11 @@ body{font-family:var(--font-ui);-webkit-font-smoothing:antialiased;color:var(--i
 .gift .ic{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;font-size:21px;background:var(--gold-soft);flex-shrink:0}
 .gift .meta{flex:1;min-width:0}.gift .meta .n{font-size:14px;font-weight:600;color:var(--ink)}.gift .meta .d{font-size:11.5px;color:var(--muted);margin-top:2px}
 .gift .st{font-size:11px;font-weight:700;padding:5px 10px;border-radius:99px;white-space:nowrap}
-.gift .st.todo{background:var(--gold-soft);color:var(--gold)}.gift .st.done{background:var(--green-soft);color:var(--green)}
+.gift .st.todo{background:var(--gold-soft);color:var(--gold-ink)}.gift .st.done{background:var(--green-soft);color:var(--green-ink)}
 
 .foot{text-align:center;margin-top:6px}.foot .ty{font-size:12px;color:var(--muted)}
-.foot .bk{font-family:var(--font-display);font-style:italic;color:var(--gold);font-weight:700}
-.cardno{margin-top:10px;font-size:10px;letter-spacing:.12em;color:var(--muted2)}.cardno b{color:var(--muted);font-weight:700}
+.foot .bk{font-family:var(--font-display);font-style:italic;color:var(--gold-ink);font-weight:700}
+.cardno{margin-top:10px;font-size:11.5px;letter-spacing:.1em;color:var(--muted)}.cardno b{color:var(--muted);font-weight:700}
 
 .toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,16px);background:var(--ink);color:#fff;padding:14px 20px;border-radius:14px;font-size:13.5px;font-weight:600;box-shadow:0 12px 34px rgba(0,0,0,.3);z-index:99;opacity:0;pointer-events:none;transition:opacity .25s,transform .25s;max-width:340px;text-align:center}
 .toast.show{opacity:1;transform:translate(-50%,0)}
@@ -199,18 +219,18 @@ body{font-family:var(--font-ui);-webkit-font-smoothing:antialiased;color:var(--i
 .cm-card{background:var(--card);border-radius:26px;padding:30px 24px 24px;max-width:330px;width:100%;text-align:center;box-shadow:0 30px 70px rgba(0,0,0,.35);border:1px solid var(--gold-line);transform:scale(.6) translateY(20px);opacity:0}
 .cm-overlay.show .cm-card{animation:cmPop .55s cubic-bezier(.34,1.56,.64,1) forwards}
 @keyframes cmPop{to{transform:scale(1) translateY(0);opacity:1}}
-.cm-badge{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--green);background:var(--green-soft);border-radius:99px;padding:6px 14px;display:inline-block;margin-bottom:14px}
+.cm-badge{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--green-ink);background:var(--green-soft);border-radius:99px;padding:6px 14px;display:inline-block;margin-bottom:14px}
 .cm-ph{width:120px;height:120px;border-radius:50%;margin:0 auto 16px;background:var(--cream2);background-size:cover;background-position:center;display:grid;place-items:center;font-size:58px;border:3px solid var(--gold-line);box-shadow:0 8px 22px rgba(200,150,62,.3)}
 .cm-title{font-family:var(--font-display);font-size:24px;font-weight:700;color:var(--ink);margin-bottom:4px}
 .cm-lib{font-size:14px;color:var(--muted);margin-bottom:18px}
 .cm-codebox{background:var(--cream);border:1px dashed var(--gold-line);border-radius:16px;padding:14px}
 .cm-codelbl{font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--muted2);margin-bottom:6px}
-.cm-code{font-family:var(--font-ui);font-size:38px;font-weight:800;letter-spacing:.1em;color:var(--gold);line-height:1}
+.cm-code{font-family:var(--font-ui);font-size:38px;font-weight:800;letter-spacing:.1em;color:var(--gold-ink);line-height:1}
 .cm-note{font-size:12px;color:var(--muted);margin:12px 0 18px;line-height:1.5}
 .cm-btn{width:100%;padding:14px;border:none;border-radius:14px;background:linear-gradient(135deg,var(--gold),var(--gold2));color:#3a2705;font-family:var(--font-ui);font-size:15px;font-weight:700;cursor:pointer}
 /* réseaux sociaux */
 .social{background:var(--card);border-radius:20px;padding:15px 18px;box-shadow:var(--shadow);border:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:12px}
-.social-txt{font-size:12.5px;color:var(--ink);line-height:1.45}.social-txt b{color:var(--gold);font-weight:700}
+.social-txt{font-size:12.5px;color:var(--ink);line-height:1.45}.social-txt b{color:var(--gold-ink);font-weight:700}
 .social-links{display:flex;gap:10px;flex-shrink:0}
 .slink{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;text-decoration:none;box-shadow:0 4px 12px rgba(0,0,0,.16);transition:transform .12s}
 .slink:active{transform:scale(.93)}
@@ -230,7 +250,7 @@ body{font-family:var(--font-ui);-webkit-font-smoothing:antialiased;color:var(--i
 
 /* bandeau anti-gaspi (alerte paniers du jour) */
 .agb{background:linear-gradient(135deg,rgba(63,125,46,.10),rgba(245,208,122,.13));border:1px solid rgba(63,125,46,.22);border-radius:20px;padding:15px 16px;box-shadow:var(--shadow)}
-.agb-h{display:flex;align-items:center;gap:8px;font-family:var(--font-display);font-size:18px;font-weight:700;color:var(--green)}
+.agb-h{display:flex;align-items:center;gap:8px;font-family:var(--font-display);font-size:18px;font-weight:700;color:var(--green-ink)}
 .agb-h .tag{margin-left:auto;font-family:var(--font-ui);font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;color:#2a6b1f;background:rgba(63,125,46,.16);border:1px solid rgba(63,125,46,.3);border-radius:99px;padding:3px 9px}
 .agb-sub{font-size:12px;color:var(--muted);margin:3px 0 4px}
 .agb-item{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:11px 13px;margin-top:8px}
@@ -238,7 +258,7 @@ body{font-family:var(--font-ui);-webkit-font-smoothing:antialiased;color:var(--i
 .agb-meta{flex:1;min-width:0}.agb-meta .n{font-size:14px;font-weight:700;color:var(--ink)}.agb-meta .d{font-size:11.5px;color:var(--muted);margin-top:2px}
 .agb-qty{font-weight:800;color:#2a6b1f}
 .agb-price{text-align:right;flex-shrink:0}
-.agb-price .pr{font-size:18px;font-weight:800;color:var(--green)}
+.agb-price .pr{font-size:18px;font-weight:800;color:var(--green-ink)}
 .agb-price .or{font-size:11px;color:var(--muted2);text-decoration:line-through}
 /* toggle alertes email (opt-in) */
 .optrow{display:flex;align-items:center;gap:13px;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:15px 16px;box-shadow:var(--shadow)}
@@ -349,11 +369,18 @@ body{font-family:var(--font-ui);-webkit-font-smoothing:antialiased;color:var(--i
   <div class="bonus">
     <a class="bn" id="lkTrust" href="#" target="_blank" rel="noopener" style="text-decoration:none" onclick="claimAction('trustpilot')"><div class="ic trust">★</div><div class="t">Avis Trustpilot</div><div class="s">+3 tampons</div></a>
     <div class="bn green"><div class="ic">🎂</div><div class="t">Anniversaire</div><div class="s" id="annivGift">Cadeau le jour J</div></div>
-    <div class="bn"><div class="ic">📱</div><div class="t">Giveaway du mois</div><div class="s">Suis-nous !</div></div>
+    <!-- 🗑️ 08/09 — « Giveaway du mois » retiré.
+         C'était un <div> mort : aucun clic, aucun appel serveur, rien derrière.
+         Et il annonçait un tirage mensuel supprimé avec la tombola le 07/09.
+         Promettre à un client un tirage que personne n'organise, c'est le genre
+         de détail qui se paie le jour où il demande s'il a gagné.
+         Le bénéfice RÉEL des réseaux (+2 tampons, câblé par claimAction) est
+         conservé — c'est lui qu'on met en avant. -->
+    <div class="bn"><div class="ic">📱</div><div class="t">Réseaux sociaux</div><div class="s">+2 tampons</div></div>
   </div>
 
   <div class="social">
-    <div class="social-txt">Suis-nous : <b>+2 tampons</b> par réseau ! Et chaque mois, <b>un abonné</b> est tiré au sort 🎁</div>
+    <div class="social-txt">Suis-nous et gagne <b>+2 tampons</b> par réseau — sur Instagram comme sur Facebook 🎁</div>
     <div class="social-links">
       <a class="slink ig" id="lkIg" href="#" target="_blank" rel="noopener" aria-label="Instagram" onclick="claimAction('insta')"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#fff" stroke-width="2"><rect x="2.5" y="2.5" width="19" height="19" rx="5.5"/><circle cx="12" cy="12" r="4.3"/><circle cx="17.6" cy="6.4" r="1.3" fill="#fff" stroke="none"/></svg></a>
       <a class="slink fb" id="lkFb" href="#" target="_blank" rel="noopener" aria-label="Facebook" onclick="claimAction('facebook')"><svg viewBox="0 0 24 24" width="22" height="22" fill="#fff"><path d="M13.5 21v-8h2.7l.4-3.1h-3.1V7.9c0-.9.25-1.5 1.55-1.5H17V3.6c-.3-.04-1.3-.13-2.46-.13-2.43 0-4.1 1.48-4.1 4.21v2.35H7.7V13h2.74v8h3.06z"/></svg></a>
@@ -702,7 +729,11 @@ function render(c){
      (« 50 € d'achats pour passer Argent ») fondee sur des montants que le
      commercant ne saisit jamais : elle affichait donc du faux.
      Le tampon est desormais la seule mesure. */
-  if(c.tier_gift && $('annivGift')) $('annivGift').textContent = c.tier_gift+' offert·e';
+  /* « offert·e » venait d'une concaténation générique : le cadeau change selon le
+     palier, donc le genre aussi, d'où le point médian de secours. Ça se lisait
+     comme un bug de gabarit. On tourne la phrase pour n'avoir aucun accord à
+     faire — ça marche pour « Boisson chaude » comme pour « Croissant ». */
+  if(c.tier_gift && $('annivGift')) $('annivGift').textContent = c.tier_gift+' le jour J';
   // prochaine récompense
   /* Le prochain palier = le MOINS CHER encore hors de portée, pas le premier du
      tableau : le catalogue n'est pas trié par prix, et on proposait la Boisson
