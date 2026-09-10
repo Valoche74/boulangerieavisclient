@@ -283,6 +283,20 @@ body{font-family:var(--font-ui);-webkit-font-smoothing:antialiased;color:var(--i
 .agb-price .pr{font-size:18px;font-weight:800;color:var(--green-ink)}
 .agb-price .or{font-size:11px;color:var(--muted2);text-decoration:line-through}
 /* toggle alertes email (opt-in) */
+/* Réinstaller sa carte dans le portefeuille du téléphone.
+   Le lien .pkpass n'est signé que pour une heure : on ne peut donc pas le poser
+   en dur dans la page, il faut le demander au moment du clic. */
+.wal-row{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:15px 16px;box-shadow:var(--shadow);text-align:center}
+.wal-t{font-size:14.5px;font-weight:700;color:var(--ink);margin-bottom:3px}
+.wal-d{font-size:12.5px;color:var(--muted);line-height:1.45;margin-bottom:12px}
+.wal-btn{display:inline-flex;align-items:center;justify-content:center;gap:9px;width:100%;
+  padding:14px 18px;border:0;border-radius:14px;background:#000;color:#fff;
+  font-family:var(--font-ui);font-size:14.5px;font-weight:600;cursor:pointer}
+.wal-btn:active{transform:scale(.98)}
+.wal-btn:disabled{opacity:.55}
+.wal-btn svg{flex-shrink:0}
+.wal-hint{font-size:12px;color:var(--muted);margin-top:10px;line-height:1.45}
+
 .optrow{display:flex;align-items:center;gap:13px;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:15px 16px;box-shadow:var(--shadow)}
 .optrow .oi{font-size:24px;flex-shrink:0}
 .optrow .ot{flex:1;min-width:0}
@@ -413,6 +427,19 @@ body{font-family:var(--font-ui);-webkit-font-smoothing:antialiased;color:var(--i
     <div class="sec-h"><span class="t">Mes cadeaux</span></div>
     <div class="use-warn">⏱️ Un cadeau validé reste valable <b>1 heure</b>. Ne le valide qu'au moment de le récupérer, devant le vendeur.</div>
     <div class="gifts" id="gifts"></div>
+  </div>
+
+  <!-- Réinstaller sa carte : téléphone changé, carte supprimée par erreur. Ajouté le 10/09. -->
+  <div class="wal-row">
+    <div class="wal-t">Ta carte dans ton téléphone</div>
+    <div class="wal-d">Change de téléphone ou supprime ta carte par erreur : tu la retrouves ici, avec tes tampons.</div>
+    <button class="wal-btn" type="button" onclick="ajouterAuWallet(this)">
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <rect x="2.5" y="5.5" width="19" height="14" rx="3"/><path d="M2.5 10.5h19"/><path d="M17 15.5h2"/>
+      </svg>
+      Ajouter à Apple Wallet
+    </button>
+    <div class="wal-hint" id="walHint"></div>
   </div>
 
   <div class="optrow">
@@ -810,6 +837,40 @@ function render(c){
 // Encart +30 pts : visible tant que l'opt-in n'est pas explicitement 'on' (= bonus pas encore pris)
 function refreshOptinHero(oi){ const h=$('optinHero'); if(h) h.style.display = (String(oi).toLowerCase()==='on') ? 'none' : 'flex'; }
 window.optinFromHero = function(){ const h=$('optinHero'); if(h) h.style.display='none'; setOptin(true); };
+
+/* ── Réinstaller sa carte dans le portefeuille ───────────────────────────────
+   Le lien .pkpass est signé et n'est valable qu'UNE HEURE (cf. walletLink dans
+   Code.gs) : impossible de le poser en dur dans la page, il se demande au clic.
+
+   Sur iOS, le type application/vnd.apple.pkpass fait ouvrir Wallet directement.
+   Ailleurs, le fichier se télécharge sans rien pouvoir en faire — on le dit
+   avant le clic plutôt que de laisser le client devant un fichier inutile. */
+const EST_IOS = /iP(hone|ad|od)/.test(navigator.userAgent)
+             || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
+document.addEventListener('DOMContentLoaded', function(){
+  const h = $('walHint');
+  if (h && !EST_IOS) h.textContent = "Depuis un iPhone. Sur Android, la carte arrivera plus tard.";
+});
+
+window.ajouterAuWallet = function(btn){
+  const initial = btn.innerHTML;
+  btn.disabled = true; btn.textContent = 'Préparation…';
+  const rendre = () => { btn.disabled = false; btn.innerHTML = initial; };
+
+  api('wallet_link', { card_id: cardId, type: COMMERCE_TYPE }).then(d=>{
+    /* ⚠️ Apps Script répond HTTP 200 même quand il refuse : c'est le `status`
+       du corps qui fait foi, jamais le code HTTP. */
+    if (d && d.status === 'ok' && d.url) {
+      location.href = d.url;
+      setTimeout(rendre, 4000);   // le client revient sur la page après Wallet
+    } else if (d && d.status === 'not_configured') {
+      rendre(); toast('Service indisponible — préviens le commerçant');
+    } else {
+      rendre(); toast("Ta carte n'a pas pu être préparée");
+    }
+  }).catch(()=>{ rendre(); toast('Hors ligne — réessaie dans un instant'); });
+};
 
 /* ── Mes données — RGPD art. 13 (information) et art. 17 (effacement) ────────
    ⚠️ IIFE : ces fonctions sont appelées depuis des onclick, elles DOIVENT être
