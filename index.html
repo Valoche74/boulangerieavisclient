@@ -48,6 +48,13 @@ body::after{
    S1 — ACCUEIL (inchangé)
 ══════════════════════════════════ */
 .s1-wrap{width:100%;max-width:380px;display:flex;flex-direction:column;align-items:center}
+/* Logo de marque, en tête d'écran — c'est l'emplacement où viendra celui du
+   commerçant. Le fichier est blanc sur transparent : sur ce fond vert il se pose
+   tel quel, sans filtre. L'ombre portée le décolle du dégradé. */
+.marque{display:block;height:62px;width:auto;max-width:78%;margin:0 auto 18px;
+  filter:drop-shadow(0 3px 14px rgba(0,0,0,.38));user-select:none}
+@media(max-height:700px){.marque{height:50px;margin-bottom:12px}}
+
 .viewer-block{position:relative;width:100%;max-width:320px;margin:0 auto 0;display:flex;flex-direction:column;align-items:center}
 .viewer-glow{position:absolute;width:260px;height:200px;top:50%;left:50%;transform:translate(-50%,-52%);border-radius:50%;background:radial-gradient(circle,rgba(226,178,90,.32) 0%,transparent 68%);pointer-events:none;animation:glowPulse 3.5s ease-in-out infinite}
 @keyframes glowPulse{0%,100%{opacity:.5;transform:translate(-50%,-52%) scale(1)}50%{opacity:1;transform:translate(-50%,-52%) scale(1.12)}}
@@ -301,6 +308,7 @@ body::after{
 <div class="screen active" id="screen1">
 <div class="screen-inner">
 <div class="s1-wrap">
+  <img class="marque" src="assets/perify-logo.png" alt="Perify" width="359" height="156">
   <div class="viewer-block">
     <div class="viewer-glow"></div>
     <canvas id="threeCanvas"></canvas>
