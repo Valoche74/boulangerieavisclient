@@ -646,14 +646,18 @@ const roueCheck = (function(){
 
 /* Le lien vers la carte du client. Les deux paramètres sont émis exprès :
    ?c= porte le backend, ?type= porte l'apparence (cf. le registre). */
+/* Renvoie une promesse sur l'URL construite — le routage d'ouverture (plus bas) en a
+   besoin pour rediriger dès qu'elle est connue. Les appels qui ignorent la valeur de
+   retour continuent de fonctionner à l'identique. */
 function majLienCarte(){
-  if(!fidCardId) return;
-  BA.pret().then(function(com){
+  if(!fidCardId) return Promise.resolve(null);
+  return BA.pret().then(function(com){
     carteUrl = 'card.html?id=' + encodeURIComponent(fidCardId)
              + '&c='    + encodeURIComponent(com.cle || 'falman')
              + '&type=' + encodeURIComponent(TYPE_PARAM);
     const a = document.getElementById('alreadyCta');
     if(a) a.href = carteUrl;
+    return carteUrl;
   });
 }
 
@@ -674,11 +678,42 @@ function showScreen(id){
   window.scrollTo(0,0);
 }
 window.addEventListener("load",()=>{
-  showScreen("screen1");
+  /* 🎫 10/09 — UN PORTEUR DE CARTE NE REPASSE PLUS PAR L'ÉCRAN D'AVIS.
+     Signalé depuis un iPhone : scanner le présentoir avec une carte déjà enregistrée
+     redemandait un avis avant de donner accès à la fidélité.
+
+     La cause : `roue_jouee` n'était consulté qu'à l'ENTRÉE de la roue (allerVersRoue),
+     donc après l'écran d'avis. Un client déjà inscrit devait le traverser en entier —
+     et attendre les 15 s d'apparition de « Continuer sans laisser d'avis » — pour
+     atteindre sa carte. Le contrôle serveur était bon ; c'est le moment de la décision
+     qui était mauvais.
+
+     Pourquoi on n'attend pas la réponse du serveur pour choisir l'écran : un aller-retour
+     Apps Script coûte 1,9 à 6,0 s, et personne ne fixe un écran vide six secondes après
+     avoir scanné un QR.
+
+     Un card_id en mémoire locale suffit donc à décider : il n'y est écrit qu'APRÈS la
+     création du profil, donc après le tour de roue. Et sur cette page il ne peut venir
+     que de là — le QR du présentoir ne porte aucun identifiant, et une carte NFC, elle,
+     mène directement à card.html.
+
+     ⚠️ Ceci ne protège RIEN et n'a pas à le faire : le garde-fou du cadeau reste côté
+     serveur, dans walletStart et saveCode. On épargne un détour au client, c'est tout. */
+  if (fidCardId) {
+    showScreen("screenAlready");            // affiché tout de suite : jamais d'écran vide
+    majLienCarte().then(function(url){
+      if (!url) return;                     // sans URL, le bouton « Ouvrir ma carte » prend le relais
+      /* `replace` et non `href` : avec `href`, le bouton retour du téléphone ramènerait
+         ici, qui redirigerait encore — le client serait pris dans une boucle. */
+      if (document.getElementById("screenAlready")?.classList.contains("active")) location.replace(url);
+    }).catch(function(){});                 // le repli est déjà à l'écran
+  } else {
+    showScreen("screen1");
+    scheduleSkipReviewButton();
+  }
   drawPrize();
   buildWheel();
   initThree();
-  scheduleSkipReviewButton();
 });
 
 /* ─── Tirage ─── */
