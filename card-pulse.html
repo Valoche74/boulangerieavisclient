@@ -205,6 +205,22 @@ body{font-family:var(--font-ui);-webkit-font-smoothing:antialiased;color:var(--i
 .foot .bk{font-family:var(--font-display);font-style:italic;color:var(--gold-ink);font-weight:700}
 .cardno{margin-top:10px;font-size:11.5px;letter-spacing:.1em;color:var(--muted)}.cardno b{color:var(--muted);font-weight:700}
 
+/* Mes données — information (RGPD art. 13) et effacement (art. 17).
+   ⚠️ Texte en var(--ink), jamais en var(--gold) : l'or en TEXTE tombe à 2,49:1. */
+.plink{margin-top:13px;background:none;border:0;padding:7px 10px;font-family:var(--font-ui);font-size:11.5px;color:var(--muted);text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+.plink:active{opacity:.6}
+.pv-card{text-align:left}
+.pv-t{font-family:var(--font-display);font-size:20px;font-weight:700;color:var(--ink);margin-bottom:13px;text-align:center}
+.pv-p{font-size:13.5px;line-height:1.6;color:var(--ink);opacity:.86;margin:0 0 11px}
+.pv-p b{opacity:1;font-weight:700}
+.pv-list{margin:0 0 13px;padding-left:18px;font-size:13px;line-height:1.6;color:var(--ink);opacity:.86}
+.pv-list li{margin-bottom:4px}
+.pv-warn{background:var(--gold-soft);border:1px solid var(--gold-line);border-radius:12px;padding:11px 13px;font-size:13px;line-height:1.55;color:var(--ink);margin-bottom:13px}
+.pv-danger{width:100%;padding:13px;border:1px solid var(--gold-line);border-radius:14px;background:transparent;color:var(--ink);font-family:var(--font-ui);font-size:14px;font-weight:700;cursor:pointer}
+.pv-danger.armed{background:#8C2F2A;border-color:#8C2F2A;color:#fff}
+.pv-danger:disabled{opacity:.6}
+.pv-close{width:100%;margin-top:9px;padding:12px;border:0;border-radius:14px;background:var(--gold-soft);color:var(--ink);font-family:var(--font-ui);font-size:14px;font-weight:700;cursor:pointer}
+
 .toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,16px);background:var(--ink);color:#fff;padding:14px 20px;border-radius:14px;font-size:13.5px;font-weight:600;box-shadow:0 12px 34px rgba(0,0,0,.3);z-index:99;opacity:0;pointer-events:none;transition:opacity .25s,transform .25s;max-width:340px;text-align:center}
 .toast.show{opacity:1;transform:translate(-50%,0)}
 
@@ -484,6 +500,7 @@ p,.oh-d,.res-desc,.gs{line-height:1.55!important;color:var(--muted)}
     <div class="ty">Merci pour ta fidélité 🙏</div>
     <div class="bk" id="cFoot">Falman — Emmanuelle &amp; Flavien</div>
     <div class="cardno">N° de carte · <b id="cardNo">—</b></div>
+    <button class="plink" type="button" onclick="openPrivacy()">Mes données personnelles</button>
   </div>
 </div></div>
 
@@ -499,6 +516,24 @@ p,.oh-d,.res-desc,.gs{line-height:1.55!important;color:var(--muted)}
     <div class="cm-codebox" id="cmCodebox"><div class="cm-codelbl">Code à présenter en caisse</div><div class="cm-code" id="cmCode">000000</div></div>
     <div class="cm-note" id="cmNote">—</div>
     <button class="cm-btn" onclick="closeRewardModal()">Super, merci !</button>
+  </div>
+</div>
+
+<!-- Mes données : information (art. 13) et effacement (art. 17). Ajouté le 10/09/2026 —
+     avant, un client n'avait aucun moyen de savoir ce qu'on gardait, ni de le faire effacer. -->
+<div class="cm-overlay" id="pvOverlay" onclick="if(event.target===this)closePrivacy()">
+  <div class="cm-card pv-card">
+    <div class="pv-t">Tes données</div>
+    <p class="pv-p">Ta carte garde seulement ce qu'il faut pour fonctionner :</p>
+    <ul class="pv-list">
+      <li>ton <b>numéro de carte</b>, tes tampons et tes cadeaux</li>
+      <li>la <b>date de tes passages</b> en boutique</li>
+      <li>ton <b>prénom</b>, ton <b>email</b> et ta <b>date de naissance</b> — seulement si tu les as donnés, ils sont facultatifs</li>
+    </ul>
+    <p class="pv-p">Rien n'est vendu ni transmis à qui que ce soit. Tout est <b>effacé automatiquement 3 ans</b> après ton dernier passage.</p>
+    <div class="pv-warn" id="pvWarn" style="display:none">Tes informations personnelles vont être effacées. <b>Ta carte et tes tampons, eux, restent.</b> Touche à nouveau pour confirmer.</div>
+    <button class="pv-danger" id="pvBtn" type="button" onclick="askForget()">Effacer mes informations</button>
+    <button class="pv-close" type="button" onclick="closePrivacy()">Fermer</button>
   </div>
 </div>
 
@@ -849,6 +884,54 @@ function render(c){
 // Encart +30 pts : visible tant que l'opt-in n'est pas explicitement 'on' (= bonus pas encore pris)
 function refreshOptinHero(oi){ const h=$('optinHero'); if(h) h.style.display = (String(oi).toLowerCase()==='on') ? 'none' : 'flex'; }
 window.optinFromHero = function(){ const h=$('optinHero'); if(h) h.style.display='none'; setOptin(true); };
+
+/* ── Mes données — RGPD art. 13 (information) et art. 17 (effacement) ────────
+   ⚠️ IIFE : ces fonctions sont appelées depuis des onclick, elles DOIVENT être
+   posées sur window — sinon « fonction non définie » au premier appui.
+
+   Le bouton s'arme au premier appui et n'agit qu'au second. Sur un téléphone tenu
+   d'une main, un bouton destructeur à un seul appui finit par être touché sans le
+   vouloir — et l'effacement, lui, ne se rattrape pas. */
+let pvArme = false;
+
+window.openPrivacy = function(){
+  pvArme = false;
+  const b = $('pvBtn'), w = $('pvWarn');
+  if(b){ b.disabled = false; b.classList.remove('armed'); b.textContent = 'Effacer mes informations'; }
+  if(w) w.style.display = 'none';
+  $('pvOverlay').classList.add('show');
+};
+
+window.closePrivacy = function(){ $('pvOverlay').classList.remove('show'); };
+
+window.askForget = function(){
+  const b = $('pvBtn'), w = $('pvWarn');
+  if(!pvArme){                       // 1er appui : on arme et on explique
+    pvArme = true;
+    if(w) w.style.display = 'block';
+    b.classList.add('armed');
+    b.textContent = 'Oui, effacer mes informations';
+    return;
+  }
+  b.disabled = true; b.textContent = 'Effacement…';
+  api('fid_forget', {card_id: cardId}).then(d=>{
+    /* ⚠️ Apps Script répond HTTP 200 même quand il refuse : on lit le `status`
+       du corps, jamais le code HTTP. */
+    if(d && d.status === 'ok'){
+      closePrivacy();
+      toast('Tes informations ont été effacées');
+      /* Rechargement : le prénom affiché en haut de carte vient du serveur et
+         serait resté à l'écran sans ça. */
+      setTimeout(()=>location.reload(), 1400);
+    } else {
+      b.disabled = false; b.textContent = 'Réessayer';
+      toast("L'effacement n'a pas abouti");
+    }
+  }).catch(()=>{
+    b.disabled = false; b.textContent = 'Réessayer';
+    toast('Hors ligne — réessaie dans un instant');
+  });
+};
 
 window.redeem = function(item, btn){
   const r = CATALOGUE.find(x=>x.item===item); if(!r) return;
