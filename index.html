@@ -16,20 +16,29 @@
   --gold-border:rgba(200,150,62,.35);
   --ink:#1a1a14;--muted:#6b6045;--muted2:#9a8c6e;
   --green-dk:#2d5a12;
+  /* ⚠️ 11/09 — le fond était écrit EN DUR en sept endroits : l'écran d'accueil
+     restait vert boulangerie chez tous les commerces, alors que la carte, elle, se
+     re-colorait déjà. Passé en variables pour qu'un commerce puisse l'habiller
+     (cf. le bloc « habillage par commerce » plus bas). Valeurs boulangerie inchangées. */
+  --bg:#3e7a1a;
+  --bg-a:rgba(120,200,45,.48);
+  --bg-b:rgba(25,85,6,.55);
+  --bg-c:rgba(48,108,14,.42);
+  --bg-d:rgba(68,138,18,.32);
 }
-html{background:#3e7a1a;min-height:100%}
+html{background:var(--bg);min-height:100%}
 body{
   font-family:'Inter',sans-serif;-webkit-font-smoothing:antialiased;
-  background:#3e7a1a;min-height:100vh;
+  background:var(--bg);min-height:100vh;
   overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;
 }
 body::before{
   content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
   background:
-    radial-gradient(ellipse 70% 55% at 22% 28%,rgba(120,200,45,.48) 0%,transparent 58%),
-    radial-gradient(ellipse 50% 65% at 82% 72%,rgba(25,85,6,.55) 0%,transparent 52%),
-    radial-gradient(ellipse 75% 38% at 50% 88%,rgba(48,108,14,.42) 0%,transparent 58%),
-    radial-gradient(ellipse 55% 55% at 12% 78%,rgba(68,138,18,.32) 0%,transparent 48%);
+    radial-gradient(ellipse 70% 55% at 22% 28%,var(--bg-a) 0%,transparent 58%),
+    radial-gradient(ellipse 50% 65% at 82% 72%,var(--bg-b) 0%,transparent 52%),
+    radial-gradient(ellipse 75% 38% at 50% 88%,var(--bg-c) 0%,transparent 58%),
+    radial-gradient(ellipse 55% 55% at 12% 78%,var(--bg-d) 0%,transparent 48%);
 }
 body::after{
   content:'';position:fixed;inset:0;z-index:1;pointer-events:none;opacity:.52;
@@ -516,13 +525,43 @@ let PRIZES = [
   {name:"Baguette Tradition",  emoji:"🥖", prob:.98},
   {name:"Pâtisserie du Jour",  emoji:"🍰", prob:1}
 ];
+/* ── Habillage par commerce (?type=) ───────────────────────────────────────────
+   Le fond et l'or de cet écran étaient en dur : un vendeur de burgers héritait du
+   vert boulangerie. On surcharge ici les variables posées dans :root.
+   Un type absent de cette table garde l'habillage boulangerie — aucun risque de
+   casser un commerce existant. */
+(function(){
+  var HABILLAGE = {
+    baps: { bg:'#16130F',
+            a:'rgba(244,164,96,.22)', b:'rgba(0,0,0,.55)',
+            c:'rgba(201,118,31,.20)', d:'rgba(244,164,96,.12)',
+            gold:'#F4A460', gold2:'#E08A33', gold3:'#F7C48F',
+            border:'rgba(244,164,96,.38)', theme:'#16130F' }
+  };
+  var t = HABILLAGE[(new URLSearchParams(location.search).get('type')||'').toLowerCase()];
+  if(!t) return;
+  var r = document.documentElement.style;
+  r.setProperty('--bg',t.bg);
+  r.setProperty('--bg-a',t.a); r.setProperty('--bg-b',t.b);
+  r.setProperty('--bg-c',t.c); r.setProperty('--bg-d',t.d);
+  r.setProperty('--gold',t.gold); r.setProperty('--gold2',t.gold2); r.setProperty('--gold3',t.gold3);
+  r.setProperty('--gold-border',t.border);
+  var m = document.querySelector('meta[name="theme-color"]');
+  if(m && t.theme) m.setAttribute('content', t.theme);
+})();
+
 /* Lots thémés par commerce (?type=) — boulangerie inchangée */
 (function(){ var PT={
   fleuriste:[{name:"Fleur du jour",emoji:"🌷",prob:.5},{name:"Petit bouquet",emoji:"💐",prob:.98},{name:"Plante surprise",emoji:"🪴",prob:1}],
   pizzeria:[{name:"Part de pizza",emoji:"🍕",prob:.5},{name:"Boisson offerte",emoji:"🥤",prob:.98},{name:"Dessert maison",emoji:"🍰",prob:1}],
   vape:[{name:"E-liquide offert",emoji:"🧪",prob:.5},{name:"Résistance offerte",emoji:"🔩",prob:.98},{name:"Accessoire surprise",emoji:"🎁",prob:1}],
   restaurant:[{name:"Café gourmand",emoji:"☕",prob:.5},{name:"Apéritif offert",emoji:"🍷",prob:.98},{name:"Dessert maison",emoji:"🍰",prob:1}],
-  primeur:[{name:"Fruits de saison",emoji:"🍎",prob:.5},{name:"Botte de légumes",emoji:"🥕",prob:.98},{name:"Jus pressé",emoji:"🧃",prob:1}]
+  primeur:[{name:"Fruits de saison",emoji:"🍎",prob:.5},{name:"Botte de légumes",emoji:"🥕",prob:.98},{name:"Jus pressé",emoji:"🧃",prob:1}],
+  /* Le Bap's — 80 % boisson, 18 % frites, 2 % tacos (seuils cumulés).
+     `img` : visuel réel du produit, `emoji` reste le repli si l'image ne charge pas. */
+  baps:[{name:"Boisson",emoji:"🥤",img:"assets/baps/boisson.png",prob:.80},
+        {name:"Frites",emoji:"🍟",img:"assets/baps/frites.png",prob:.98},
+        {name:"Tacos",emoji:"🌯",img:"assets/baps/tacos.png",prob:1}]
 }; var _t=(new URLSearchParams(location.search).get('type')||'').toLowerCase(); if(PT[_t]) PRIZES=PT[_t]; })();
 // "Sheets dashboard" — stockage Sheets + déclenchement email. Un backend PAR commerce → route par ?type=
 const SHEETS_URLS = {
@@ -726,9 +765,29 @@ window.addEventListener("load",()=>{
 
 /* ─── Tirage ─── */
 /* ─── Tirage (probas inchangées : 50 % / 48 % / 2 %) ─── */
+/* Pose le visuel d'un lot : l'image reelle du produit si le commerce en fournit
+   une, l'emoji sinon. Un seul endroit, parce que trois ecrans l'affichent. */
+function poserVisuelLot(el, prize, taille){
+  if(!el) return;
+  if (prize && prize.img) {
+    el.innerHTML = '<img src="' + prize.img + '" alt="" style="width:' + taille
+      + 'px;height:' + taille + 'px;object-fit:contain;display:block;margin:0 auto;'
+      + 'filter:drop-shadow(0 6px 12px rgba(0,0,0,.18))">';
+  } else {
+    el.textContent = (prize && prize.emoji) || '🎁';
+  }
+}
+
+/* ⚠️ 11/09 — LES SEUILS ÉTAIENT ÉCRITS EN DUR (.5 et .98). Chaque jeu de lots
+   déclare pourtant son propre `prob`, et celui-ci n'était jamais lu : tous les
+   commerces tiraient donc en 50/48/2, quoi qu'ils aient déclaré. Découvert en
+   voulant régler Le Bap's sur 80/18/2.
+
+   `prob` est un seuil CUMULÉ, pas une probabilité isolée : 0.80 / 0.98 / 1 donne
+   bien 80 %, 18 %, 2 %. La boulangerie (.5 / .98 / 1) est inchangée. */
 function drawPrize(){
-  const r=Math.random();
-  wonPrize = r<.5?PRIZES[0]:r<.98?PRIZES[1]:PRIZES[2];
+  const r = Math.random();
+  wonPrize = PRIZES.find(p => r < Number(p.prob)) || PRIZES[PRIZES.length - 1];
 }
 
 /* ─── S1 ─── */
@@ -853,7 +912,12 @@ function buildWheel(){
     const l1    = words[0] || "";
     const l2    = words.slice(1).join(" ");
     out += '<g transform="rotate('+rot+' '+CX+' '+CY+')">'
-         + '<text x="'+CX+'" y="'+yEmo+'" text-anchor="middle" font-size="26">'+svgEsc(prize.emoji)+'</text>'
+         /* Visuel réel du produit quand le commerce en fournit un, emoji sinon.
+            `href` et non `xlink:href` : la forme héritée est dépréciée, et Safari
+            accepte les deux depuis longtemps. */
+         + (prize.img
+             ? '<image x="'+(CX-19)+'" y="'+(yEmo-30)+'" width="38" height="38" href="'+svgEsc(prize.img)+'" preserveAspectRatio="xMidYMid meet"/>'
+             : '<text x="'+CX+'" y="'+yEmo+'" text-anchor="middle" font-size="26">'+svgEsc(prize.emoji)+'</text>')
          + '<text x="'+CX+'" y="'+yTxt+'" text-anchor="middle" fill="'+ink+'"'
          + ' font-family="Inter,sans-serif" font-size="10.5" font-weight="700">'+svgEsc(l1)
          + (l2 ? '<tspan x="'+CX+'" dy="'+dy+'">'+svgEsc(l2)+'</tspan>' : '')
@@ -952,7 +1016,7 @@ function onWheelStop(){
   hub.classList.add("done");
   hub.textContent = "🎉";
 
-  document.getElementById("wrEmoji").textContent = wonPrize.emoji;
+  poserVisuelLot(document.getElementById("wrEmoji"), wonPrize, 62);
   document.getElementById("wrName").textContent  = wonPrize.name;
   document.getElementById("wheelResult").classList.add("show");
 
@@ -1096,7 +1160,7 @@ function prepareWallet(){
 /* Apres la roue : Wallet sur iPhone, formulaire partout ailleurs. */
 function afterWheel(){
   if(!IS_IOS || DEMO){ goToForm(); return; }
-  document.getElementById('swEmoji').textContent = wonPrize ? wonPrize.emoji : '🎁';
+  poserVisuelLot(document.getElementById('swEmoji'), wonPrize, 48);
   document.getElementById('swName').textContent  = wonPrize ? wonPrize.name  : 'Votre cadeau';
   showScreen('screenWallet');
   prepareWallet().catch(function(){});    // en tache de fond, l'erreur est traitee au tap
@@ -1128,7 +1192,7 @@ function addToWallet(){
 function goToForm(){
   showScreen("screen3");
   if(wonPrize){
-    document.getElementById("s3Emoji").textContent     = wonPrize.emoji;
+    poserVisuelLot(document.getElementById("s3Emoji"), wonPrize, 76);
     document.getElementById("s3PrizeLabel").textContent = "Vous avez gagné : " + wonPrize.name;
   }
 }
