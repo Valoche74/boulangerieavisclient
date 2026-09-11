@@ -25,7 +25,15 @@
     "donc, et jamais deux fois le même.",
     "",
     "Servi par Vercel avec Access-Control-Allow-Origin: * (voir vercel.json) : il",
-    "est lu par le site client, l'espace boulanger, le kiosque et le service Wallet."
+    "est lu par le site client, l'espace boulanger, le kiosque et le service Wallet.",
+    "",
+    "LOGO_BLANC : la version CLAIRE du logo du commerce, en URL absolue. Elle sert",
+    "aux surfaces SOMBRES — aujourd'hui l'en-tete de l'espace commercant, qui est",
+    "noir. Un logo sombre y disparaitrait. Facultatif : sans lui, l'en-tete retombe",
+    "sur le monogramme du commerce, jamais sur une image cassee.",
+    "Le logo pour fond CLAIR reste dans PRESETS de card.html : ne pas le dupliquer",
+    "ici tant que rien ne le lit — sur ce projet, ce qui est ecrit deux fois finit",
+    "par diverger (le catalogue l'a fait deux fois)."
   ],
   "version": 1,
   "commerces": {
@@ -64,6 +72,7 @@
       "nom_court": "Le Bap's",
       "metier": "baps",
       "prefixe": "BAP",
+      "logo_blanc": "https://boulangerieavisclient.vercel.app/assets/baps/logo-blanc.png",
       "apps_script": "https://script.google.com/macros/s/AKfycbymDQKlKRl57G_4X0Qdf8db0RdEIurWNwWwTQu4QdB0NNXakfx2ar7BoyMLj4DHDXwg/exec",
       "lat": 45.9009711,
       "lng": 6.1196393,
