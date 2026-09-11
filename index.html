@@ -734,7 +734,26 @@ function showScreen(id){
   document.getElementById(id).classList.add("active");
   window.scrollTo(0,0);
 }
+/* ⚠️ 11/09 — LE LIEN D'AVIS ÉTAIT ÉCRIT EN DUR vers la fiche Google de la
+   boulangerie. Chez tout autre commerce, le client était envoyé noter Falman.
+   Découvert en préparant la démo du Bap's ; ça aurait envoyé ses clients chez un
+   concurrent pendant le rendez-vous.
+
+   Le `place_id` vit dans le registre des commerces, une seule source de vérité.
+   Si le registre n'en fournit pas, on laisse le lien d'origine plutôt que de
+   produire une adresse cassée — mais on le signale dans la console. */
+function brancherLienAvis(){
+  var a = document.getElementById('googleBtn');
+  if(!a || typeof BA === 'undefined') return;
+  BA.pret().then(function(com){
+    var pid = com && String(com.place_id || '').trim();
+    if(!pid){ console.warn('[avis] aucun place_id dans le registre pour ce commerce — lien inchangé'); return; }
+    a.href = 'https://search.google.com/local/writereview?placeid=' + encodeURIComponent(pid);
+  }).catch(function(){});
+}
+
 window.addEventListener("load",()=>{
+  brancherLienAvis();
   /* 🎫 10/09 — UN PORTEUR DE CARTE NE REPASSE PLUS PAR L'ÉCRAN D'AVIS.
      Signalé depuis un iPhone : scanner le présentoir avec une carte déjà enregistrée
      redemandait un avis avant de donner accès à la fidélité.
