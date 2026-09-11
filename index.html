@@ -616,10 +616,19 @@ var BA = (function(){
     if (!k && metier && reg.alias_metier && reg.alias_metier[metier]) k = reg.alias_metier[metier];
     if (!k) k = reg.defaut;
     var c = reg.commerces && reg.commerces[k];
-    if (!c || !c.apps_script) return BA_REPLI;
+    if (!c) return BA_REPLI;
     /* copie : on ne veut pas que la page modifie le registre en mémoire */
     var out = {}; for (var p in c) out[p] = c[p];
     out.cle = k;
+    /* ⚠️ 11/09 — le repli ne porte QUE sur le backend, plus sur l'identité.
+       Avant, un commerce sans apps_script renvoyait ENTIEREMENT le repli : son nom,
+       son place_id et ses coordonnées devenaient ceux de la boulangerie. Un commerce
+       pas encore branché envoyait donc ses clients noter un autre commerce.
+       Son identité est valide même sans backend ; seul l'appel API a besoin d'un repli. */
+    if (!out.apps_script) {
+      console.warn("[BA] " + k + " n a pas encore de backend — API repliee sur " + (BA_REPLI.cle || "defaut"));
+      out.apps_script = BA_REPLI.apps_script;
+    }
     return out;
   }
 
