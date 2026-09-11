@@ -736,6 +736,24 @@ const PRESETS = {
       {item:'r4',libelle:'Dessert',cout:28,img:'assets/restaurant/dessert.png',emoji:'🍰'},
       {item:'r5',libelle:'Menu complet',cout:80,img:'assets/restaurant/menu.png',emoji:'🍽️'}
     ]},
+  /* Le Bap's — Annecy. Démo du 11/09/2026.
+     ⚠️ Leur identité est NOIRE avec un accent orange-sable (#F4A460, relevé sur
+     lebaps.com). On ne bascule pas la carte en sombre pour autant : tout le système
+     de couleurs de cette page suppose un fond clair et une encre sombre, et
+     l'inverser casserait les contrastes partout — sept zones de texte sur huit
+     échouaient déjà avant l'audit du 08/09. On garde donc un fond clair et on prend
+     leur orange en accent, assombri en `gold` pour rester utilisable en bouton.
+     Le PASS, lui, est bien noir : PassKit gère le fond et le texte séparément. */
+  baps:{ name:"Le Bap's", foot:"Le Bap's — Burgers, Tacos, Annecy", eyebrow:'✦ Ma fidélité',
+    fl:['🍔','🌯','🍟','🥤','🧀','🌮'],
+    theme:{cream:'#FBF7F2',cream2:'#EFE4D8',gold:'#C9761F',gold2:'#E08A33',gold3:'#F4A460',green:'#3F7D2E',ink:'#241F1B'},
+    catalogue:[
+      {item:'b1',libelle:'Boisson',     cout:6,  img:'assets/baps/boisson.png',     emoji:'🥤'},
+      {item:'b2',libelle:'Frites',      cout:10, img:'assets/baps/frites.png',      emoji:'🍟'},
+      {item:'b3',libelle:'Mozzasticks', cout:12, img:'assets/baps/mozzasticks.png', emoji:'🧀'},
+      {item:'b4',libelle:'Toast',       cout:15, img:'assets/baps/toast.png',       emoji:'🥪'},
+      {item:'b5',libelle:'Tacos',       cout:20, img:'assets/baps/tacos.png',       emoji:'🌯'}
+    ]},
   primeur:{ name:'Le Panier Frais', foot:'Le Panier Frais — Primeur', eyebrow:'✦ Ma fidélité',
     fl:['🍎','🥕','🍓','🥦','🍊','🍇'],
     theme:{cream:'#F5FBF2',cream2:'#E2F0DC',gold:'#E0892E',gold2:'#F0A94E',gold3:'#F8C87C',green:'#4FA03F',ink:'#26301F'},
