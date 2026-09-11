@@ -93,9 +93,12 @@ body{font-family:var(--font-ui);-webkit-font-smoothing:antialiased;color:var(--i
 .loc-row{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:15px 16px;box-shadow:var(--shadow)}
 .loc-t{font-size:14.5px;font-weight:700;color:var(--ink);margin-bottom:3px}
 .loc-d{font-size:12.5px;color:var(--muted);line-height:1.45;margin-bottom:12px}
-.loc-map{position:relative;width:100%;max-width:240px;aspect-ratio:1/1;margin:0 auto;border-radius:14px;overflow:hidden;border:1px solid var(--line);background:var(--gold-soft)}
+/* ⚠️ Carré, mais pleine largeur. À 240 px, la mention légale d'OpenStreetMap —
+   obligatoire sous licence ODbL, donc impossible à masquer — s'étalait sur cinq
+   lignes et recouvrait la moitié du plan. Sur toute la largeur elle tient sur deux. */
+.loc-map{position:relative;width:100%;aspect-ratio:1/1;margin:0 auto;border-radius:14px;overflow:hidden;border:1px solid var(--line);background:var(--gold-soft)}
 .loc-map iframe{position:absolute;inset:0;width:100%;height:100%;border:0;display:block}
-.loc-btn{display:block;margin:12px auto 0;max-width:240px;padding:12px;text-align:center;border-radius:13px;background:var(--gold-soft);border:1px solid var(--gold-line);color:var(--ink);font-family:var(--font-ui);font-size:14px;font-weight:700;text-decoration:none}
+.loc-btn{display:block;margin:12px auto 0;padding:12px;text-align:center;border-radius:13px;background:var(--gold-soft);border:1px solid var(--gold-line);color:var(--ink);font-family:var(--font-ui);font-size:14px;font-weight:700;text-decoration:none}
 .loc-btn:active{transform:scale(.98)}
 
 /* solde */
@@ -880,10 +883,16 @@ function placerLeCommerce(com){
   const lat = Number(com && com.lat), lng = Number(com && com.lng);
   if (!isFinite(lat) || !isFinite(lng) || (lat === 0 && lng === 0)) return;
 
-  const d = 0.0032;                                   // ~350 m de part et d'autre
+  /* ⚠️ Un degré de longitude ne vaut pas un degré de latitude. À la latitude de la
+     Haute-Savoie (46°), un degré de longitude fait ~77 km contre ~111 km pour la
+     latitude. Avec le même écart des deux côtés, la zone demandée est bien plus
+     large que haute en distance réelle : OpenStreetMap la recadre pour l'ajuster
+     au cadre, et le marqueur se retrouve décalé. On corrige par le cosinus. */
+  const dLat = 0.0030;                                        // ~330 m nord-sud
+  const dLng = dLat / Math.cos(lat * Math.PI / 180);           // autant est-ouest
   const f = $('locFrame');
   if (f) f.src = 'https://www.openstreetmap.org/export/embed.html?bbox='
-    + (lng - d) + ',' + (lat - d) + ',' + (lng + d) + ',' + (lat + d)
+    + (lng - dLng) + ',' + (lat - dLat) + ',' + (lng + dLng) + ',' + (lat + dLat)
     + '&layer=mapnik&marker=' + lat + ',' + lng;
 
   const libelle = String(com.nom || com.nom_court || '').trim();
