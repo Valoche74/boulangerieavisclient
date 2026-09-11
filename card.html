@@ -538,7 +538,7 @@ body{font-family:var(--font-ui);-webkit-font-smoothing:antialiased;color:var(--i
     <div class="wal-hint" id="walHint"></div>
   </div>
 
-  <div class="optrow">
+  <div class="optrow" id="optRow">
     <div class="oi">🔔</div>
     <div class="ot"><div class="n">Alertes anti-gaspi</div><div class="d">Reçois un email quand un panier invendu est dispo</div></div>
     <label class="switch"><input type="checkbox" id="optMail" onchange="setOptin(this.checked)"><span class="sl"></span></label>
@@ -664,6 +664,8 @@ const PRESETS = {
      leur orange en accent, assombri en `gold` pour rester utilisable en bouton.
      Le PASS, lui, est bien noir : PassKit gère le fond et le texte séparément. */
   baps:{ name:"Le Bap's", foot:"Le Bap's — Burgers, Tacos, Annecy", eyebrow:'✦ Ma fidélité',
+    logo:'assets/baps/logo.png',      /* remplace le nom ecrit en haut de carte */
+    antigaspi:false,                  /* Le Bap's ne prend pas le module invendus */
     fl:['🍔','🌯','🍟','🥤','🧀','🌮'],
     theme:{cream:'#FBF7F2',cream2:'#EFE4D8',gold:'#C9761F',gold2:'#E08A33',gold3:'#F4A460',green:'#3F7D2E',ink:'#241F1B'},
     catalogue:[
@@ -798,7 +800,27 @@ function applyPreset(p){
     if(t.green){ r.setProperty('--green-soft',hexA(t.green,.12)); }
     document.querySelector('meta[name="theme-color"]') && document.querySelector('meta[name="theme-color"]').setAttribute('content', t.cream||'#FBF7EF');
   }
-  const bk=$('cBakery'); if(bk) bk.textContent = p.name;
+  /* L'enseigne : son logo quand le commerce en fournit un, son nom sinon.
+     Le nom reste dans l'attribut `title` et dans l'alternative de l'image — un
+     logo qui ne charge pas ne doit pas laisser un blanc à la place de l'enseigne. */
+  const bk=$('cBakery');
+  if(bk){
+    if(p.logo){
+      bk.innerHTML = '<img src="'+p.logo+'" alt="'+String(p.name).replace(/"/g,'&quot;')+'" '
+                   + 'style="height:44px;width:auto;display:block;object-fit:contain">';
+      bk.title = p.name;
+    } else {
+      bk.textContent = p.name;
+    }
+  }
+
+  /* Anti-gaspi : module optionnel. Un commerce qui ne vend pas d'invendus ne doit
+     voir ni le bandeau, ni le réglage d'alerte — proposer un réglage qui ne sert à
+     rien est pire que de ne rien proposer. */
+  if (p.antigaspi === false) {
+    const ag=$('agBanner'); if(ag){ ag.style.display='none'; ag.innerHTML=''; }
+    const or=$('optRow');   if(or) or.style.display='none';
+  }
   const ft=$('cFoot'); if(ft) ft.textContent = p.foot;
   const eb=document.querySelector('.eyebrow'); if(eb) eb.textContent = DEMO ? '✦ Démo fidélité' : (p.eyebrow||'✦ Ma fidélité');
   const fzone=$('floaties'); if(fzone && p.fl) fzone.innerHTML = p.fl.map((e,i)=>'<span class="fl fl'+(i+1)+'">'+e+'</span>').join('');
@@ -1267,6 +1289,14 @@ function agEmoji(lib){ lib=(lib||'').toLowerCase(); if(lib.indexOf('vienn')>=0)r
 function agImg(lib){ lib=(lib||'').toLowerCase(); if(lib.indexOf('vienn')>=0)return 'viennoiserie.png'; if(lib.indexOf('pain')>=0)return 'baguette.png'; if(lib.indexOf('sandw')>=0)return 'sandwich.png'; if(lib.indexOf('atis')>=0)return 'patisserie.png'; return 'gateau.png'; }
 function renderPaniers(list){
   const el = $('agBanner');
+  /* Garde-fou : le backend peut très bien renvoyer des paniers (la feuille existe
+     chez tous les commerces) — ce n'est pas une raison pour les afficher chez un
+     commerce qui n'a pas pris le module. Masquer le bloc à l'ouverture ne suffit
+     pas : c'est ici que la donnée arrive. */
+  if (typeof P !== 'undefined' && P && P.antigaspi === false){
+    if(el){ el.style.display='none'; el.innerHTML=''; }
+    return;
+  }
   if(!list || !list.length){ el.style.display='none'; el.innerHTML=''; return; }
   el.style.display='';
   el.innerHTML = '<div class="agb-h">🥖 Paniers anti-gaspi<span class="tag">Aujourd\'hui</span></div>'
