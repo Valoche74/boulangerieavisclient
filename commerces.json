@@ -64,7 +64,7 @@
       "nom_court": "Le Bap's",
       "metier": "baps",
       "prefixe": "BAP",
-      "apps_script": "",
+      "apps_script": "https://script.google.com/macros/s/AKfycbymDQKlKRl57G_4X0Qdf8db0RdEIurWNwWwTQu4QdB0NNXakfx2ar7BoyMLj4DHDXwg/exec",
       "lat": 45.9009711,
       "lng": 6.1196393,
       "rayon_m": 200,
@@ -72,7 +72,7 @@
       "instagram": "",
       "facebook": "",
       "trustpilot": "",
-      "actif": false
+      "actif": true
     }
   },
   "alias_prefixe": {
