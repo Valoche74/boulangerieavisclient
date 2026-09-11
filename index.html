@@ -512,7 +512,10 @@ body::after{
     var fb=document.getElementById('croissantFallback');
     if(fb){
       /* Un commerce peut fournir un vrai visuel plutot qu'un emoji. */
-      if(/^assets//.test(E[t])) fb.innerHTML='<img src="'+E[t]+'" alt="" style="width:150px;height:150px;object-fit:contain;display:block;filter:drop-shadow(0 14px 26px rgba(0,0,0,.45))">';
+      /* Pas de regex ici : la barre oblique d'un chemin y demande un echappement,
+         et un echappement perdu referme l'expression trop tot — c'est exactement
+         ce qui a casse tout le script la premiere fois. indexOf ne peut pas. */
+      if(String(E[t]).indexOf('assets/') === 0) fb.innerHTML='<img src="'+E[t]+'" alt="" style="width:150px;height:150px;object-fit:contain;display:block;filter:drop-shadow(0 14px 26px rgba(0,0,0,.45))">';
       else fb.textContent=E[t];
       fb.classList.add('show');
     }
