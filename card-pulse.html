@@ -232,10 +232,26 @@ body{font-family:var(--font-ui);-webkit-font-smoothing:antialiased;color:var(--i
 /* catalogue carrousel */
 .cat{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;padding:4px 18px 8px;margin:0 -18px;-webkit-overflow-scrolling:touch;scrollbar-width:none;overscroll-behavior-x:contain}
 .cat::-webkit-scrollbar{display:none}
-.rw{flex:0 0 152px;scroll-snap-align:start;background:var(--card);border-radius:20px;padding:15px 13px 13px;box-shadow:var(--shadow);border:1px solid var(--line);display:flex;flex-direction:column;align-items:center;text-align:center}
-.rw .ph{width:104px;height:92px;border-radius:18px;margin-bottom:10px;background:var(--cream2);background-size:cover;background-position:center;box-shadow:inset 0 2px 8px rgba(200,150,62,.10)}
-.rw .ph-emoji{display:grid;place-items:center;font-size:46px;background:var(--gold-soft)}
-.rw .ph-img{width:100%;height:100%;object-fit:contain;border-radius:18px;padding:4px}
+/* ── Tuile de récompense ────────────────────────────────────────────────────
+   Relief inspiré de « serious-penguin-95 » d'adamgiebl sur uiverse.io, MIT.
+   https://uiverse.io/adamgiebl/serious-penguin-95
+
+   ⚠️ RÉCHAUFFÉ ET ADOUCI. L'original pose deux ombres INTERNES bleutées
+   (rgba(50,50,93,.25)) très marquées, pensées pour un gris neutre. Sur du crème
+   elles virent au gris sale, et surtout elles assombrissent le HAUT de la tuile —
+   exactement là où se trouve le produit. Les teintes passent donc au brun chaud et
+   les opacités sont divisées par deux : on garde le creux, pas la salissure. */
+.rw{flex:0 0 152px;scroll-snap-align:start;background:var(--card);border-radius:26px;padding:15px 13px 13px;
+  box-shadow:inset 0 26px 44px -18px rgba(140,105,45,.13), inset 0 16px 24px -20px rgba(90,65,25,.16), var(--shadow);
+  border:1px solid var(--line);display:flex;flex-direction:column;align-items:center;text-align:center}
+
+/* ⚠️ AUCUN FOND derrière le produit — il est détourné et doit le rester, comme
+   dans l'application McDonald's. Vérifié le 11/09 : les sept images ont bien leurs
+   quatre coins à alpha 0. Ce qui les décolle n'est donc pas un cadre, c'est une
+   ombre PORTÉE, qui épouse la forme réelle du produit au lieu d'un rectangle. */
+.rw .ph{width:104px;height:92px;margin-bottom:10px;display:grid;place-items:center}
+.rw .ph-emoji{display:grid;place-items:center;font-size:46px}
+.rw .ph-img{width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 7px 9px rgba(90,65,25,.26))}
 /* commerces thémés : photos legacy encore avec fond -> on garde l'ancien rendu (cover + multiply) */
 .themed-photos .rw .ph-img{object-fit:cover;padding:0;mix-blend-mode:multiply;border-radius:18px}
 .rw .nm{font-size:14px;font-weight:600;color:var(--ink);line-height:1.2;min-height:34px;display:flex;align-items:center}
