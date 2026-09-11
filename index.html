@@ -497,9 +497,9 @@ body::after{
 <!-- Theming multi-commerce (?type=) — boulangerie inchangée si absent -->
 <script>
 (function(){
-  var T={fleuriste:['#C8568E','#E084B0','#F4B6D2'],pizzeria:['#C8442E','#E2664E','#F2A07E'],vape:['#6D5AE0','#8A7AF0','#B6ABFF'],restaurant:['#9A3F4C','#B85A68','#D78F99'],primeur:['#E0892E','#F0A94E','#F8C87C']};
-  var N={fleuriste:'Au Jardin de Rose',pizzeria:'Bella Napoli',vape:'VapoStore',restaurant:'Le Bistrot',primeur:'Le Panier Frais'};
-  var E={fleuriste:'🌷',pizzeria:'🍕',vape:'💨',restaurant:'🍽️',primeur:'🥕'};
+  var T={baps:['#F4A460','#E08A33','#F7C48F'],fleuriste:['#C8568E','#E084B0','#F4B6D2'],pizzeria:['#C8442E','#E2664E','#F2A07E'],vape:['#6D5AE0','#8A7AF0','#B6ABFF'],restaurant:['#9A3F4C','#B85A68','#D78F99'],primeur:['#E0892E','#F0A94E','#F8C87C']};
+  var N={baps:"Le Bap's",fleuriste:'Au Jardin de Rose',pizzeria:'Bella Napoli',vape:'VapoStore',restaurant:'Le Bistrot',primeur:'Le Panier Frais'};
+  var E={baps:'assets/baps/logo-blanc.png',fleuriste:'🌷',pizzeria:'🍕',vape:'💨',restaurant:'🍽️',primeur:'🥕'};
   var t=(new URLSearchParams(location.search).get('type')||'').toLowerCase();
   if(!T[t]) return;
   function hx(h,a){h=h.replace('#','');var n=parseInt(h,16);return 'rgba('+((n>>16)&255)+','+((n>>8)&255)+','+(n&255)+','+a+')';}
@@ -509,7 +509,13 @@ body::after{
     var vn=document.querySelector('.viewer-name'); if(vn) vn.textContent=N[t];
     var cv=document.getElementById('threeCanvas'); if(cv) cv.style.setProperty('display','none','important');
     var vl=document.getElementById('viewerLoading'); if(vl) vl.classList.add('gone');
-    var fb=document.getElementById('croissantFallback'); if(fb){ fb.textContent=E[t]; fb.classList.add('show'); }
+    var fb=document.getElementById('croissantFallback');
+    if(fb){
+      /* Un commerce peut fournir un vrai visuel plutot qu'un emoji. */
+      if(/^assets//.test(E[t])) fb.innerHTML='<img src="'+E[t]+'" alt="" style="width:150px;height:150px;object-fit:contain;display:block;filter:drop-shadow(0 14px 26px rgba(0,0,0,.45))">';
+      else fb.textContent=E[t];
+      fb.classList.add('show');
+    }
     document.title=N[t];
   });
 })();
@@ -544,8 +550,9 @@ let PRIZES = [
   r.setProperty('--bg',t.bg);
   r.setProperty('--bg-a',t.a); r.setProperty('--bg-b',t.b);
   r.setProperty('--bg-c',t.c); r.setProperty('--bg-d',t.d);
-  r.setProperty('--gold',t.gold); r.setProperty('--gold2',t.gold2); r.setProperty('--gold3',t.gold3);
-  r.setProperty('--gold-border',t.border);
+  /* L'or est deja pose par le bloc de theming plus haut (tables T/N/E) : on ne
+     le redefinit PAS ici, deux sources de verite pour une meme couleur finissent
+     toujours par diverger. Ce bloc ne s'occupe que du FOND. */
   var m = document.querySelector('meta[name="theme-color"]');
   if(m && t.theme) m.setAttribute('content', t.theme);
 })();
