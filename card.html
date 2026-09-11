@@ -85,6 +85,18 @@ body{font-family:var(--font-ui);-webkit-font-smoothing:antialiased;color:var(--i
 .head .bakery{font-family:var(--font-display);font-size:24px;font-weight:700;font-style:italic;color:var(--ink);line-height:1}
 .head .greet{font-size:13px;color:var(--muted);margin-top:5px}
 .avatar{width:48px;height:48px;border-radius:50%;flex-shrink:0;display:grid;place-items:center;background:linear-gradient(135deg,var(--gold),var(--gold2) 55%,var(--gold3));font-family:var(--font-display);font-size:21px;font-weight:800;color:var(--ink);box-shadow:0 6px 16px rgba(200,150,62,.4)}
+/* Avatar de repli : un emoji a besoin de plus de place qu'une initiale, et la
+   police à empattements ne lui sert à rien. */
+.avatar.is-avatar{font-family:var(--font-ui);font-size:25px;line-height:1}
+
+/* Où nous trouver — plan OpenStreetMap, sans clé d'API ni quota. */
+.loc-row{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:15px 16px;box-shadow:var(--shadow)}
+.loc-t{font-size:14.5px;font-weight:700;color:var(--ink);margin-bottom:3px}
+.loc-d{font-size:12.5px;color:var(--muted);line-height:1.45;margin-bottom:12px}
+.loc-map{position:relative;width:100%;max-width:240px;aspect-ratio:1/1;margin:0 auto;border-radius:14px;overflow:hidden;border:1px solid var(--line);background:var(--gold-soft)}
+.loc-map iframe{position:absolute;inset:0;width:100%;height:100%;border:0;display:block}
+.loc-btn{display:block;margin:12px auto 0;max-width:240px;padding:12px;text-align:center;border-radius:13px;background:var(--gold-soft);border:1px solid var(--gold-line);color:var(--ink);font-family:var(--font-ui);font-size:14px;font-weight:700;text-decoration:none}
+.loc-btn:active{transform:scale(.98)}
 
 /* solde */
 .hero{background:var(--card);border-radius:24px;padding:22px 22px 20px;box-shadow:var(--shadow);border:1px solid var(--line);position:relative;overflow:hidden}
@@ -180,16 +192,7 @@ body{font-family:var(--font-ui);-webkit-font-smoothing:antialiased;color:var(--i
 .rw .btn:disabled{opacity:.5;cursor:default}
 .rw.locked .ph{filter:grayscale(.3) opacity(.85)}
 
-/* encart opt-in +2 tampons (haut de page) */
-.optin-hero{display:flex;align-items:center;gap:13px;width:100%;margin:0 0 14px;padding:14px 16px;border:0;border-radius:18px;text-align:left;cursor:pointer;font-family:inherit;
-  background:linear-gradient(135deg,var(--gold),var(--gold2));color:#1a1206;box-shadow:0 12px 28px var(--gold-soft);transition:transform .12s,filter .15s}
-.optin-hero:active{transform:scale(.985)}
-.optin-hero .oh-ic{font-size:30px;line-height:1;flex-shrink:0}
-.optin-hero .oh-txt{flex:1;min-width:0}
-.optin-hero .oh-t{font-size:15px;font-weight:800;line-height:1.2}
-.optin-hero .oh-d{font-size:12.5px;line-height:1.4;margin-top:3px;opacity:.82}
-.optin-hero .oh-go{flex-shrink:0;align-self:center;background:#1a1206;color:#fff;font-weight:800;font-size:12.5px;padding:10px 14px;border-radius:999px;white-space:nowrap}
-@media(max-width:380px){.optin-hero .oh-go{display:none}}
+
 
 /* bonus */
 .bonus{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:4px}
@@ -380,14 +383,6 @@ body{font-family:var(--font-ui);-webkit-font-smoothing:antialiased;color:var(--i
   </div>
 
   <!-- Encart conversion : active les emails = +2 tampons (masqué si déjà activé) -->
-  <button class="optin-hero" id="optinHero" style="display:none" onclick="optinFromHero(this)">
-    <div class="oh-ic">🎁</div>
-    <div class="oh-txt">
-      <div class="oh-t">Active les emails · <b>+2 tampons offerts</b></div>
-      <div class="oh-d">Reçois en avant-première les <b>produits gratuits</b>, offres flash et <b>alertes anti-gaspi</b>.</div>
-    </div>
-    <span class="oh-go">Activer →</span>
-  </button>
 
   <div class="prog">
     <div class="prog-top"><span class="l" id="progL">—</span><span class="r" id="progR"></span></div>
@@ -427,6 +422,17 @@ body{font-family:var(--font-ui);-webkit-font-smoothing:antialiased;color:var(--i
     <div class="sec-h"><span class="t">Mes cadeaux</span></div>
     <div class="use-warn">⏱️ Un cadeau validé reste valable <b>1 heure</b>. Ne le valide qu'au moment de le récupérer, devant le vendeur.</div>
     <div class="gifts" id="gifts"></div>
+  </div>
+
+  <!-- Où nous trouver. Masqué par défaut : révélé seulement si le registre porte
+       des coordonnées pour ce commerce (cf. placerLeCommerce). -->
+  <div class="loc-row" id="locRow" style="display:none">
+    <div class="loc-t">Où nous trouver</div>
+    <div class="loc-d" id="locNom">—</div>
+    <div class="loc-map">
+      <iframe id="locFrame" loading="lazy" title="Plan de la boutique" referrerpolicy="no-referrer-when-downgrade"></iframe>
+    </div>
+    <a class="loc-btn" id="locBtn" href="#" target="_blank" rel="noopener">Ouvrir dans Plans →</a>
   </div>
 
   <!-- Réinstaller sa carte : téléphone changé, carte supprimée par erreur. Ajouté le 10/09. -->
@@ -791,7 +797,15 @@ function applySolde(n){
 function render(c){
   solde = c.points_solde;
   $('cName').textContent = (c.prenom||'').trim() || 'gourmand';
-  $('cAv').textContent = (c.prenom||'?').trim().charAt(0).toUpperCase();
+  /* 11/09 — un client sans prénom voyait « ? » en haut de sa carte, ce qui donnait
+     l'impression que la page n'avait pas fini de charger. À la place, un avatar.
+
+     ⚠️ Il est TIRÉ DU NUMÉRO DE CARTE, pas au hasard à chaque affichage : un avatar
+     qui changerait à chaque ouverture se lirait comme un bug. Là, il est stable —
+     c'est « son » animal, et il le retrouve à chaque passage. */
+  const _p = String(c.prenom || '').trim();
+  $('cAv').textContent = _p ? _p.charAt(0).toUpperCase() : avatarPour(cardId);
+  $('cAv').classList.toggle('is-avatar', !_p);
   $('cSolde').textContent = c.points_solde;
   /* 🔄 04/09 — SYSTEME DE RANGS RETIRE (niveaux ET tiers).
      Deux echelles de progression coexistaient pour le meme client, dont une
@@ -832,11 +846,8 @@ function render(c){
   $('cardNo').textContent = cardId;
   const oi = String(c.email_opt_in||'').toLowerCase();
   if($('optMail')) $('optMail').checked = !(oi==='off'||oi==='non'||oi==='no'||oi==='0'||oi==='false');
-  refreshOptinHero(oi);
 }
 // Encart +30 pts : visible tant que l'opt-in n'est pas explicitement 'on' (= bonus pas encore pris)
-function refreshOptinHero(oi){ const h=$('optinHero'); if(h) h.style.display = (String(oi).toLowerCase()==='on') ? 'none' : 'flex'; }
-window.optinFromHero = function(){ const h=$('optinHero'); if(h) h.style.display='none'; setOptin(true); };
 
 /* ── Réinstaller sa carte dans le portefeuille ───────────────────────────────
    Le lien .pkpass est signé et n'est valable qu'UNE HEURE (cf. walletLink dans
@@ -848,9 +859,55 @@ window.optinFromHero = function(){ const h=$('optinHero'); if(h) h.style.display
 const EST_IOS = /iP(hone|ad|od)/.test(navigator.userAgent)
              || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 
+/* ── Avatar de repli, quand le client n'a pas donné son prénom ──────────────
+   Déterministe : le même numéro de carte donne toujours le même animal. */
+const AVATARS = ['🦊','🐻','🦉','🐼','🐨','🦁','🐯','🐸','🐙','🦄','🐝','🦋','🐧','🐰','🦅','🐬'];
+function avatarPour(id){
+  let h = 0;
+  const s = String(id || '');
+  for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0;
+  return AVATARS[h % AVATARS.length];
+}
+
+/* ── Où nous trouver ────────────────────────────────────────────────────────
+   Les coordonnées viennent du registre des commerces, pas d'une saisie : un
+   commerce sans latitude n'affiche simplement pas le bloc, plutôt qu'un plan
+   pointant sur l'océan.
+
+   Le plan est une carte OpenStreetMap : pas de clé d'API à gérer, pas de quota,
+   et rien à payer quand sept boutiques tourneront. */
+function placerLeCommerce(com){
+  const lat = Number(com && com.lat), lng = Number(com && com.lng);
+  if (!isFinite(lat) || !isFinite(lng) || (lat === 0 && lng === 0)) return;
+
+  const d = 0.0032;                                   // ~350 m de part et d'autre
+  const f = $('locFrame');
+  if (f) f.src = 'https://www.openstreetmap.org/export/embed.html?bbox='
+    + (lng - d) + ',' + (lat - d) + ',' + (lng + d) + ',' + (lat + d)
+    + '&layer=mapnik&marker=' + lat + ',' + lng;
+
+  const libelle = String(com.nom || com.nom_court || '').trim();
+  const dn = $('locNom');
+  if (dn) dn.textContent = libelle || 'Ta boutique';
+
+  const nom = encodeURIComponent(libelle);
+  const b = $('locBtn');
+  if (b) b.href = EST_IOS
+    ? 'https://maps.apple.com/?ll=' + lat + ',' + lng + '&q=' + (nom || 'Commerce')
+    : 'https://www.google.com/maps/search/?api=1&query=' + lat + ',' + lng;
+
+  const r = $('locRow');
+  if (r) r.style.display = 'block';
+}
+
 document.addEventListener('DOMContentLoaded', function(){
   const h = $('walHint');
   if (h && !EST_IOS) h.textContent = "Depuis un iPhone. Sur Android, la carte arrivera plus tard.";
+
+  /* Le registre des commerces se résout de façon asynchrone : on attend qu'il ait
+     rendu le commerce avant de placer le plan. En cas d'échec, le bloc reste
+     simplement masqué — mieux vaut pas de plan qu'un plan faux. */
+  BA.pret().then(placerLeCommerce).catch(function(){});
 });
 
 window.ajouterAuWallet = function(btn){
@@ -937,7 +994,7 @@ window.setOptin = function(on){
     if(d.status==='ok'){
       if(d.bonus>0){ applySolde(solde + d.bonus); showConfirm({badge:'🎉 +'+d.bonus+' tampons !', emoji:'🔔', title:'Alertes activées !', lib:'+'+d.bonus+' tampons offerts', note:'Tu seras prévenu des produits gratuits, offres flash et paniers anti-gaspi 🥐'}); }
       else toast(on?'🔔 Alertes activées':'Alertes désactivées');
-      const el=$('optMail'); if(el) el.checked=on; refreshOptinHero(on?'on':'off');
+      const el=$('optMail'); if(el) el.checked=on; 
     }
     else { toast('Action impossible.'); const el=$('optMail'); if(el) el.checked=!on; }
   }).catch(()=>{ toast('Connexion impossible.'); const el=$('optMail'); if(el) el.checked=!on; });
