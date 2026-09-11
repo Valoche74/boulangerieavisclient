@@ -33,7 +33,14 @@
     "sur le monogramme du commerce, jamais sur une image cassee.",
     "Le logo pour fond CLAIR reste dans PRESETS de card.html : ne pas le dupliquer",
     "ici tant que rien ne le lit — sur ce projet, ce qui est ecrit deux fois finit",
-    "par diverger (le catalogue l'a fait deux fois)."
+    "par diverger (le catalogue l'a fait deux fois).",
+    "",
+    "ANTIGASPI : false = le commerce n'a pas pris le module invendus. Absent = il",
+    "l'a. Lu par le formulaire d'enrolement, qui ne doit pas faire consentir un",
+    "client a des « alertes anti-gaspi » chez un vendeur de tacos. card.html garde",
+    "la meme cle dans PRESETS : c'est son repli hors ligne, il doit dire pareil.",
+    "⚠️ Ce drapeau ne commande PAS la case d'inscription aux e-mails : elle vaut",
+    "pour tout commerce depuis les campagnes promo (12/09)."
   ],
   "version": 1,
   "commerces": {
@@ -73,6 +80,7 @@
       "metier": "baps",
       "prefixe": "BAP",
       "logo_blanc": "https://boulangerieavisclient.vercel.app/assets/baps/logo-blanc.png",
+      "antigaspi": false,
       "apps_script": "https://script.google.com/macros/s/AKfycbymDQKlKRl57G_4X0Qdf8db0RdEIurWNwWwTQu4QdB0NNXakfx2ar7BoyMLj4DHDXwg/exec",
       "lat": 45.9009711,
       "lng": 6.1196393,
