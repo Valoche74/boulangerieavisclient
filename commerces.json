@@ -27,9 +27,7 @@
     "Servi par Vercel avec Access-Control-Allow-Origin: * (voir vercel.json) : il",
     "est lu par le site client, l'espace boulanger, le kiosque et le service Wallet."
   ],
-
   "version": 1,
-
   "commerces": {
     "falman": {
       "nom": "Falman Emmanuelle & Flavien",
@@ -46,7 +44,6 @@
       "trustpilot": "",
       "actif": true
     },
-
     "jardin-de-rose": {
       "nom": "Au Jardin de Rose",
       "nom_court": "Jardin de Rose",
@@ -61,18 +58,32 @@
       "facebook": "",
       "trustpilot": "",
       "actif": false
+    },
+    "baps": {
+      "nom": "Le Bap's",
+      "nom_court": "Le Bap's",
+      "metier": "baps",
+      "prefixe": "BAP",
+      "apps_script": "",
+      "lat": 45.9009711,
+      "lng": 6.1196393,
+      "rayon_m": 200,
+      "place_id": "ChIJpf6MwleFi0cR-VO_2uB-Dx4",
+      "instagram": "",
+      "facebook": "",
+      "trustpilot": "",
+      "actif": false
     }
   },
-
   "alias_prefixe": {
     "FAL": "falman",
-    "JDR": "jardin-de-rose"
+    "JDR": "jardin-de-rose",
+    "BAP": "baps"
   },
-
   "alias_metier": {
     "boulangerie": "falman",
-    "fleuriste": "jardin-de-rose"
+    "fleuriste": "jardin-de-rose",
+    "baps": "baps"
   },
-
   "defaut": "falman"
 }
