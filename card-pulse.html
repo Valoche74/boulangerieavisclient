@@ -72,6 +72,64 @@ body{font-family:var(--font-ui);-webkit-font-smoothing:antialiased;color:var(--i
 .msg p{font-size:14px;color:var(--muted);line-height:1.6;margin-bottom:22px}
 .msg .cta{display:inline-block;padding:15px 28px;border:none;border-radius:14px;background:linear-gradient(135deg,var(--gold),var(--gold2));color:#3a2705;font-family:var(--font-ui);font-size:15px;font-weight:700;cursor:pointer;text-decoration:none;box-shadow:0 6px 18px rgba(200,150,62,.36)}
 .spin{width:32px;height:32px;border:3px solid var(--cream2);border-top-color:var(--gold);border-radius:50%;animation:rot .8s linear infinite}
+
+/* ── Chargement de la carte ─────────────────────────────────────────────────
+   Loader « young-goat-78 » de Nawsome sur uiverse.io, licence MIT.
+   https://uiverse.io/Nawsome/young-goat-78
+
+   ⚠️ RECOLORE. L'original a quatre couleurs vives (rouge, orange, bleu, rose) qui
+   n'ont rien a voir avec la charte et qui, pire, ne suivraient pas le commerce :
+   cette carte se re-colore par metier. Les quatre anneaux passent donc par les
+   variables de theme — ils deviennent verts chez un primeur sans qu'on y retouche.
+
+   Il gagne sa place ici : l'attente n'est pas decorative, un aller-retour Apps
+   Script coute 1,9 a 6,0 s et c'est le premier ecran que voit le client. */
+.pl{width:5em;height:5em}
+.pl__ring{animation:ringA 2s linear infinite}
+.pl__ring--a{stroke:var(--gold)}
+.pl__ring--b{animation-name:ringB;stroke:var(--gold3)}
+.pl__ring--c{animation-name:ringC;stroke:var(--gold2)}
+.pl__ring--d{animation-name:ringD;stroke:var(--green)}
+
+@keyframes ringA{
+  from,4%{stroke-dasharray:0 660;stroke-width:20;stroke-dashoffset:-330}
+  12%{stroke-dasharray:60 600;stroke-width:30;stroke-dashoffset:-335}
+  32%{stroke-dasharray:60 600;stroke-width:30;stroke-dashoffset:-595}
+  40%,54%{stroke-dasharray:0 660;stroke-width:20;stroke-dashoffset:-660}
+  62%{stroke-dasharray:60 600;stroke-width:30;stroke-dashoffset:-665}
+  82%{stroke-dasharray:60 600;stroke-width:30;stroke-dashoffset:-925}
+  90%,to{stroke-dasharray:0 660;stroke-width:20;stroke-dashoffset:-990}
+}
+@keyframes ringB{
+  from,12%{stroke-dasharray:0 220;stroke-width:20;stroke-dashoffset:-110}
+  20%{stroke-dasharray:20 200;stroke-width:30;stroke-dashoffset:-115}
+  40%{stroke-dasharray:20 200;stroke-width:30;stroke-dashoffset:-195}
+  48%,62%{stroke-dasharray:0 220;stroke-width:20;stroke-dashoffset:-220}
+  70%{stroke-dasharray:20 200;stroke-width:30;stroke-dashoffset:-225}
+  90%{stroke-dasharray:20 200;stroke-width:30;stroke-dashoffset:-305}
+  98%,to{stroke-dasharray:0 220;stroke-width:20;stroke-dashoffset:-330}
+}
+@keyframes ringC{
+  from{stroke-dasharray:0 440;stroke-width:20;stroke-dashoffset:0}
+  8%{stroke-dasharray:40 400;stroke-width:30;stroke-dashoffset:-5}
+  28%{stroke-dasharray:40 400;stroke-width:30;stroke-dashoffset:-175}
+  36%,58%{stroke-dasharray:0 440;stroke-width:20;stroke-dashoffset:-220}
+  66%{stroke-dasharray:40 400;stroke-width:30;stroke-dashoffset:-225}
+  86%{stroke-dasharray:40 400;stroke-width:30;stroke-dashoffset:-395}
+  94%,to{stroke-dasharray:0 440;stroke-width:20;stroke-dashoffset:-440}
+}
+@keyframes ringD{
+  from,8%{stroke-dasharray:0 440;stroke-width:20;stroke-dashoffset:0}
+  16%{stroke-dasharray:40 400;stroke-width:30;stroke-dashoffset:-5}
+  36%{stroke-dasharray:40 400;stroke-width:30;stroke-dashoffset:-175}
+  44%,50%{stroke-dasharray:0 440;stroke-width:20;stroke-dashoffset:-220}
+  58%{stroke-dasharray:40 400;stroke-width:30;stroke-dashoffset:-225}
+  78%{stroke-dasharray:40 400;stroke-width:30;stroke-dashoffset:-395}
+  86%,to{stroke-dasharray:0 440;stroke-width:20;stroke-dashoffset:-440}
+}
+/* ⚠️ On RALENTIT au lieu de figer : un indicateur de chargement immobile fait
+   croire que la page a plante, ce qui est pire que le mouvement qu'on evite. */
+@media(prefers-reduced-motion:reduce){.pl__ring{animation-duration:6s}}
 @keyframes rot{to{transform:rotate(360deg)}}
 
 /* header */
@@ -406,7 +464,15 @@ p,.oh-d,.res-desc,.gs{line-height:1.55!important;color:var(--muted)}
 </div>
 
 <!-- CHARGEMENT -->
-<div class="screen on" id="loading"><div class="msg"><div class="spin"></div><p style="margin-top:18px">Chargement de ta fidélité…</p></div></div>
+<div class="screen on" id="loading"><div class="msg">
+  <svg class="pl" viewBox="0 0 240 240" aria-hidden="true">
+    <circle class="pl__ring pl__ring--a" cx="120" cy="120" r="105" fill="none" stroke-width="20" stroke-dasharray="0 660" stroke-dashoffset="-330" stroke-linecap="round"/>
+    <circle class="pl__ring pl__ring--b" cx="120" cy="120" r="35"  fill="none" stroke-width="20" stroke-dasharray="0 220" stroke-dashoffset="-110" stroke-linecap="round"/>
+    <circle class="pl__ring pl__ring--c" cx="85"  cy="120" r="70"  fill="none" stroke-width="20" stroke-dasharray="0 440" stroke-linecap="round"/>
+    <circle class="pl__ring pl__ring--d" cx="155" cy="120" r="70"  fill="none" stroke-width="20" stroke-dasharray="0 440" stroke-linecap="round"/>
+  </svg>
+  <p style="margin-top:18px">Chargement de ta fidélité…</p>
+</div></div>
 
 <!-- NOUVELLE CARTE -->
 <div class="screen" id="stateNew"><div class="msg">
