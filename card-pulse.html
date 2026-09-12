@@ -619,9 +619,11 @@ p,.oh-d,.res-desc,.gs{line-height:1.55!important;color:var(--muted)}
     <div class="wal-hint" id="walHint"></div>
   </div>
 
+  <!-- Le libellé est posé par applyPreset() : chez un commerce sans module
+       invendus, parler de paniers n'aurait aucun sens. -->
   <div class="optrow" id="optRow">
     <div class="oi">🔔</div>
-    <div class="ot"><div class="n">Alertes anti-gaspi</div><div class="d">Reçois un email quand un panier invendu est dispo</div></div>
+    <div class="ot"><div class="n" id="optTitre">Offres et bons plans</div><div class="d" id="optSous">Reçois un email quand la boutique lance une offre</div></div>
     <label class="switch"><input type="checkbox" id="optMail" onchange="setOptin(this.checked)"><span class="sl"></span></label>
   </div>
 
@@ -905,12 +907,22 @@ function applyPreset(p){
   }
 
   /* Anti-gaspi : module optionnel. Un commerce qui ne vend pas d'invendus ne doit
-     voir ni le bandeau, ni le réglage d'alerte — proposer un réglage qui ne sert à
-     rien est pire que de ne rien proposer. */
-  if (p.antigaspi === false) {
+     pas voir le bandeau des paniers.
+
+     ⚠️ 12/09 — la case d'inscription aux e-mails était masquée EN MÊME TEMPS que
+     le bandeau. C'était juste tant que le seul e-mail envoyé était l'alerte
+     invendus ; ça ne l'est plus depuis les campagnes promo. Résultat chez Le
+     Bap's : aucun client ne pouvait s'inscrire, donc zéro destinataire, donc une
+     campagne impossible à envoyer. La case reste, seul son LIBELLÉ s'adapte. */
+  const avecAg = p.antigaspi !== false;
+  if (!avecAg) {
     const ag=$('agBanner'); if(ag){ ag.style.display='none'; ag.innerHTML=''; }
-    const or=$('optRow');   if(or) or.style.display='none';
   }
+  const ot=$('optTitre'), os=$('optSous');
+  if(ot) ot.textContent = avecAg ? 'Offres et alertes anti-gaspi' : 'Offres et bons plans';
+  if(os) os.textContent = avecAg
+    ? 'Reçois un email pour les offres et les paniers invendus'
+    : 'Reçois un email quand ' + (p.name || 'la boutique') + ' lance une offre';
   const ft=$('cFoot'); if(ft) ft.textContent = p.foot;
   const eb=document.querySelector('.eyebrow'); if(eb) eb.textContent = DEMO ? '✦ Démo fidélité' : (p.eyebrow||'✦ Ma fidélité');
   const fzone=$('floaties'); if(fzone && p.fl) fzone.innerHTML = p.fl.map((e,i)=>'<span class="fl fl'+(i+1)+'">'+e+'</span>').join('');
@@ -1218,7 +1230,12 @@ window.redeem = function(item, btn){
 window.setOptin = function(on){
   api('fid_optin',{card_id:cardId, value:on?'on':'off'}).then(d=>{
     if(d.status==='ok'){
-      if(d.bonus>0){ applySolde(solde + d.bonus); showConfirm({badge:'🎉 +'+d.bonus+' tampons !', emoji:'🔔', title:'Alertes activées !', lib:'+'+d.bonus+' tampons offerts', note:'Tu seras prévenu des produits gratuits, offres flash et paniers anti-gaspi 🥐'}); }
+      /* la promesse dépend du commerce : pas de paniers invendus chez qui n'a
+         pas pris le module, et pas de croissant chez un vendeur de tacos. */
+      const promesse = (typeof P !== 'undefined' && P && P.antigaspi === false)
+        ? 'Tu seras prévenu des produits gratuits et des offres flash 🎉'
+        : 'Tu seras prévenu des produits gratuits, offres flash et paniers anti-gaspi 🥐';
+      if(d.bonus>0){ applySolde(solde + d.bonus); showConfirm({badge:'🎉 +'+d.bonus+' tampons !', emoji:'🔔', title:'Alertes activées !', lib:'+'+d.bonus+' tampons offerts', note:promesse}); }
       else toast(on?'🔔 Alertes activées':'Alertes désactivées');
       const el=$('optMail'); if(el) el.checked=on; 
     }
