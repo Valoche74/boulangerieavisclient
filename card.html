@@ -1018,13 +1018,37 @@ function api(action, extra, retry){
       const x = new XMLHttpRequest();
       x.open('GET', url, true); x.timeout = 20000;
       const fail = (err)=>{ if(left>0) setTimeout(()=>attempt(left-1), 700); else reject(err); };
-      x.onload = ()=>{ try{ resolve(JSON.parse(x.responseText)); }catch(e){ fail(e); } };
-      x.onerror = ()=>fail(new Error('net'));
+      x.onload = ()=>{
+        /* ⚠️ 12/09 — APPS SCRIPT RENVOIE PARFOIS UNE PAGE HTML AU LIEU DU JSON.
+           Constaté en production le jour même : un appel a répondu
+           « <!DOCTYPE html>… » avec un code 200. `JSON.parse` lève, et le client
+           voyait « Connexion impossible » alors que sa connexion allait très
+           bien. On distingue donc les deux cas, et on RÉESSAIE quand l'action le
+           permet : le serveur a répondu, il a juste mal répondu. */
+        try{ resolve(JSON.parse(x.responseText)); }
+        catch(e){ fail(new Error('reponse_illisible')); }
+      };
+      x.onerror = ()=>fail(new Error('reseau'));
       x.ontimeout = ()=>fail(new Error('timeout'));
       x.send();
     };
-    attempt(retry?1:0);   // retry=true → 1 réessai (uniquement sur les lectures, jamais les écritures)
+    /* `retry` : nombre de RÉESSAIS supplémentaires (true = 1, pour l'ancien appel).
+       ⚠️ À ne donner qu'aux actions IDEMPOTENTES — celles qu'on peut rejouer sans
+       conséquence : poser un drapeau, enregistrer une adresse, créditer une action
+       déjà protégée par son historique. JAMAIS à `fid_redeem`, qui brûle des
+       tampons et crée un coupon : le rejouer en donnerait deux. */
+    attempt(typeof retry === 'number' ? retry : (retry ? 1 : 0));
   }));
+}
+/* Traduit l'échec d'api() en une phrase juste. 'reponse_illisible' = le serveur
+   a répondu, mais pas du JSON (Apps Script sert parfois une page HTML) : ce
+   n'est PAS un problème de connexion, et le dire au client l'enverrait vérifier
+   son wifi pour rien. */
+function messageEchec(err){
+  const m = String((err && err.message) || err || '');
+  if(m === 'reponse_illisible') return 'Le serveur a mal répondu — réessaie dans un instant.';
+  if(m === 'timeout')           return 'Le serveur met trop de temps — réessaie dans un instant.';
+  return 'Pas de connexion — vérifie ton réseau.';
 }
 function show(id){ ['loading','stateNew','stateUnknown','stateError','stateActive'].forEach(s=>$(s).classList.toggle('on', s===id)); }
 function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
@@ -1345,7 +1369,7 @@ window.redeem = function(item, btn){
     if(d.status==='ok'){ render(d.client); loadRewards(); showConfirm({badge:'✓ Cadeau confirmé', img:r.img, title:'Bravo 🎉', lib:d.libelle, code:d.code, note:"Un email de confirmation t'a été envoyé. Montre ce code en caisse 🥐"}); }
     else if(d.status==='insufficient'){ toast('Il te manque '+d.manque+' tampons.'); restore(); }
     else { toast('Action impossible pour le moment.'); restore(); }
-  }).catch(()=>{ toast('Connexion impossible.'); restore(); });
+  }).catch(e=>{ toast(messageEchec(e)); restore(); });
 };
 
 /* ── ✉️ L'ADRESSE E-MAIL DU CLIENT ────────────────────────────────────────
@@ -1405,7 +1429,7 @@ window.enregistrerEmail = function(){
   }
   champ.classList.remove('bad'); note.classList.remove('bad');
   btn.disabled = true; btn.textContent = '…';
-  api('fid_activate', { card_id: cardId, email: v, email_opt_in: 'on' }).then(function(d){
+  api('fid_activate', { card_id: cardId, email: v, email_opt_in: 'on' }, 2).then(function(d){
     btn.disabled = false; btn.textContent = 'Valider';
     if(d.status !== 'ok'){ note.classList.add('bad'); note.textContent = 'Enregistrement impossible, réessaie dans un instant.'; return; }
     emailClient = v;
@@ -1418,7 +1442,7 @@ window.enregistrerEmail = function(){
        Cocher une case sans laisser d'adresse ne donne rien à la boutique :
        ça ne doit rien rapporter. `fid_action` est idempotent par carte, donc
        un client qui coupe puis rallume ne le gagne pas deux fois. */
-    api('fid_action', { card_id: cardId, key: 'optin_email' }).then(function(r){
+    api('fid_action', { card_id: cardId, key: 'optin_email' }, 2).then(function(r){
       if(r && r.status === 'ok' && r.points_delta > 0){
         applySolde(solde + r.points_delta);
         actionsState.optin_email = true;
@@ -1430,14 +1454,17 @@ window.enregistrerEmail = function(){
         toast('✉️ C\'est noté, tu recevras les offres');
       }
     }).catch(function(){ toast('✉️ C\'est noté, tu recevras les offres'); });
-  }).catch(function(){
+  }).catch(function(e){
     btn.disabled = false; btn.textContent = 'Valider';
-    note.classList.add('bad'); note.textContent = 'Connexion impossible — réessaie dans un instant.';
+    note.classList.add('bad'); note.textContent = messageEchec(e);
   });
 };
 
 window.setOptin = function(on){
-  api('fid_optin',{card_id:cardId, value:on?'on':'off'}).then(d=>{
+  /* 2 réessais : poser un drapeau est rejouable sans conséquence, et c'est
+     l'action que le client déclenche le plus souvent au moment où Apps Script
+     est le plus lent (juste après l'ouverture de la carte). */
+  api('fid_optin',{card_id:cardId, value:on?'on':'off'}, 2).then(d=>{
     if(d.status==='ok'){
       /* la promesse dépend du commerce : pas de paniers invendus chez qui n'a
          pas pris le module, et pas de croissant chez un vendeur de tacos. */
@@ -1460,7 +1487,7 @@ window.setOptin = function(on){
       if(!on){ demandeEmail = false; montrerSaisieEmail(false); }
     }
     else { toast('Action impossible.'); const el=$('optMail'); if(el) el.checked=!on; }
-  }).catch(()=>{ toast('Connexion impossible.'); const el=$('optMail'); if(el) el.checked=!on; });
+  }).catch(e=>{ toast(messageEchec(e)); const el=$('optMail'); if(el) el.checked=!on; });
 };
 
 /* 🏅 Actions récompensées (1×/carte) — le clic ouvre le lien ET déclare l'action */
@@ -1471,7 +1498,7 @@ function applyActions(st){
 }
 window.claimAction = function(key){
   if(!cardId || actionsState[key]) return;   // pas de carte ou déjà récompensé
-  api('fid_action',{card_id:cardId, key:key}).then(d=>{
+  api('fid_action',{card_id:cardId, key:key}, 2).then(d=>{
     if(d.status==='ok'){ actionsState[key]=true; applySolde(solde + d.points_delta); toast('🎉 +'+d.points_delta+' tampon'+(d.points_delta>1?'s':'')+', merci !'); applyActions(actionsState); }
     else if(d.status==='already'){ actionsState[key]=true; applyActions(actionsState); }
   }).catch(()=>{});
@@ -1591,7 +1618,7 @@ window.confirmUse = function(btn){
     setServerNow(d.now);
     startUseClock(toLocal(Number(d.used_at)) || Date.now());
     loadRewards();
-  }).catch(()=>{ btn.disabled=false; btn.textContent='Oui, je suis en caisse'; toast('Connexion impossible.'); });
+  }).catch(e=>{ btn.disabled=false; btn.textContent='Oui, je suis en caisse'; toast(messageEchec(e)); });
 }
 
 /* 🎟️ Activation d'une offre promo reçue par email (?promo=CAMP) → cadeau en attente + animation redeem */
@@ -1607,7 +1634,7 @@ function claimPromo(camp){
         note:'Cette offre est déjà dans « Mes cadeaux ». Montre le code en caisse.'});
     } else { toast('Offre indisponible.'); }
     try{ var q=new URLSearchParams(location.search); q.delete('promo'); history.replaceState(null,'',location.pathname+(q.toString()?('?'+q.toString()):'')); }catch(e){}   // retire ?promo= (garde id/type)
-  }).catch(()=>toast('Connexion impossible.'));
+  }).catch(e=>toast(messageEchec(e)));
 }
 
 /* 🥖 Paniers anti-gaspi du jour (alerte) */
