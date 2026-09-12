@@ -388,10 +388,12 @@ body{font-family:var(--font-ui);-webkit-font-smoothing:antialiased;color:var(--i
 .wal-btn svg{flex-shrink:0}
 .wal-hint{font-size:12px;color:var(--muted);margin-top:10px;line-height:1.45}
 
-.optrow{display:flex;align-items:center;gap:13px;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:15px 16px;box-shadow:var(--shadow)}
-/* La saisie d'e-mail, sous l'interrupteur. Même carte, même encre : c'est la
-   suite de la même phrase, pas un nouveau réglage. */
-.optmail{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:15px 16px;box-shadow:var(--shadow);margin-top:10px}
+/* UNE seule carte : l'interrupteur en haut, la saisie d'e-mail qui s'ouvre en
+   dessous quand on le coche. Deux cartes séparées se lisaient comme deux
+   réglages indépendants — c'en est un seul, en deux temps. */
+.optcard{background:var(--card);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);overflow:hidden}
+.optrow{display:flex;align-items:center;gap:13px;padding:15px 16px}
+.optmail{padding:0 16px 15px;border-top:1px solid var(--line);margin-top:2px;padding-top:14px}
 .om-t{font-size:14px;font-weight:600;color:var(--ink);margin-bottom:10px}
 .om-row{display:flex;gap:8px}
 .om-input{flex:1;min-width:0;padding:12px 14px;border-radius:12px;border:1.5px solid var(--line);
@@ -580,11 +582,17 @@ body{font-family:var(--font-ui);-webkit-font-smoothing:antialiased;color:var(--i
 
   <!-- Le libellé est posé par applyPreset() : chez un commerce sans module
        invendus, parler de paniers n'aurait aucun sens. -->
-  <div class="optrow" id="optRow">
-    <div class="oi">🔔</div>
-    <div class="ot"><div class="n" id="optTitre">Offres et bons plans</div><div class="d" id="optSous">Reçois un email quand la boutique lance une offre</div></div>
-    <label class="switch"><input type="checkbox" id="optMail" onchange="setOptin(this.checked)"><span class="sl"></span></label>
-  </div>
+  <!-- ⚠️ UN SEUL BLOC, pas deux réglages distincts (demande du 12/09).
+       Cocher l'interrupteur ouvre la saisie d'e-mail DANS la même carte : c'est
+       une seule décision du client, pas deux. Et le tampon n'est crédité qu'au
+       « Valider » — cocher une case sans laisser d'adresse ne vaut rien à la
+       boutique, ça ne doit donc rien rapporter. -->
+  <div class="optcard" id="optRow">
+    <div class="optrow">
+      <div class="oi">🔔</div>
+      <div class="ot"><div class="n" id="optTitre">Offres et bons plans</div><div class="d" id="optSous">Reçois un email quand la boutique lance une offre</div></div>
+      <label class="switch"><input type="checkbox" id="optMail" onchange="setOptin(this.checked)"><span class="sl"></span></label>
+    </div>
 
   <!-- ⚠️ 12/09 — IL N'Y AVAIT NULLE PART OÙ DONNER SON E-MAIL.
        L'interrupteur ci-dessus n'écrit qu'un drapeau (colonne email_opt_in).
@@ -593,15 +601,16 @@ body{font-family:var(--font-ui);-webkit-font-smoothing:antialiased;color:var(--i
        avait pas d'adresse à qui écrire. C'est aussi pour ça que le compteur de
        destinataires de l'onglet Promo affichait zéro.
        Ce bloc n'apparaît QUE si la fiche n'a pas d'adresse. -->
-  <div class="optmail" id="optMailRow" hidden>
-    <div class="om-t" id="omTitre">Ton e-mail pour recevoir les offres</div>
-    <div class="om-row">
-      <input class="om-input" id="omInput" type="email" inputmode="email" autocomplete="email"
-             placeholder="prenom@exemple.fr" enterkeyhint="done"
-             onkeydown="if(event.key==='Enter')enregistrerEmail()">
-      <button class="om-btn" id="omBtn" onclick="enregistrerEmail()">Valider</button>
+    <div class="optmail" id="optMailRow" hidden>
+      <div class="om-t" id="omTitre">Ton e-mail — <b>+1 tampon</b> une fois validé</div>
+      <div class="om-row">
+        <input class="om-input" id="omInput" type="email" inputmode="email" autocomplete="email"
+               placeholder="prenom@exemple.fr" enterkeyhint="done"
+               onkeydown="if(event.key==='Enter')enregistrerEmail()">
+        <button class="om-btn" id="omBtn" onclick="enregistrerEmail()">Valider</button>
+      </div>
+      <div class="om-note" id="omNote">Uniquement pour les offres de la boutique. Jamais revendu, et tu peux couper quand tu veux.</div>
     </div>
-    <div class="om-note" id="omNote">Uniquement pour les offres de la boutique. Jamais revendu, et tu peux couper quand tu veux.</div>
   </div>
 
   <div class="foot">
@@ -1344,7 +1353,23 @@ window.enregistrerEmail = function(){
     marquerEmailDonne(cardId);        // pour ne pas reposer la question à la prochaine ouverture
     const el = $('optMail'); if(el) el.checked = true;
     montrerSaisieEmail(false);
-    toast('✉️ C\'est noté, tu recevras les offres');
+
+    /* ⚠️ LE TAMPON EST CRÉDITÉ ICI, PAS AU CLIC SUR L'INTERRUPTEUR.
+       Cocher une case sans laisser d'adresse ne donne rien à la boutique :
+       ça ne doit rien rapporter. `fid_action` est idempotent par carte, donc
+       un client qui coupe puis rallume ne le gagne pas deux fois. */
+    api('fid_action', { card_id: cardId, key: 'optin_email' }).then(function(r){
+      if(r && r.status === 'ok' && r.points_delta > 0){
+        applySolde(solde + r.points_delta);
+        actionsState.optin_email = true;
+        showConfirm({ badge:'🎉 +' + r.points_delta + ' tampon' + (r.points_delta > 1 ? 's' : '') + ' !',
+                      emoji:'🔔', title:'C’est noté !',
+                      lib:'+' + r.points_delta + ' tampon' + (r.points_delta > 1 ? 's' : '') + ' offert' + (r.points_delta > 1 ? 's' : ''),
+                      note:'Tu seras prévenu des offres de la boutique 🎉' });
+      } else {
+        toast('✉️ C\'est noté, tu recevras les offres');
+      }
+    }).catch(function(){ toast('✉️ C\'est noté, tu recevras les offres'); });
   }).catch(function(){
     btn.disabled = false; btn.textContent = 'Valider';
     note.classList.add('bad'); note.textContent = 'Connexion impossible — réessaie dans un instant.';
@@ -1359,7 +1384,10 @@ window.setOptin = function(on){
       const promesse = (typeof P !== 'undefined' && P && P.antigaspi === false)
         ? 'Tu seras prévenu des produits gratuits et des offres flash 🎉'
         : 'Tu seras prévenu des produits gratuits, offres flash et paniers anti-gaspi 🥐';
-      if(d.bonus>0){ applySolde(solde + d.bonus); showConfirm({badge:'🎉 +'+d.bonus+' tampons !', emoji:'🔔', title:'Alertes activées !', lib:'+'+d.bonus+' tampons offerts', note:promesse}); }
+      /* `d.bonus` ne vaut plus que pour un client qui a DÉJÀ son adresse en
+         fiche : le backend ne crédite plus à la coche seule (12/09). Pour les
+         autres, le tampon tombe au « Valider » de l'e-mail. */
+      if(d.bonus>0){ applySolde(solde + d.bonus); showConfirm({badge:'🎉 +'+d.bonus+' tampon'+(d.bonus>1?'s':'')+' !', emoji:'🔔', title:'Alertes activées !', lib:'+'+d.bonus+' tampon'+(d.bonus>1?'s':'')+' offert'+(d.bonus>1?'s':''), note:promesse}); }
       else toast(on?'🔔 Alertes activées':'Alertes désactivées');
       const el=$('optMail'); if(el) el.checked=on;
       /* Activer sans adresse en fiche, c'est cocher une case qui n'enverra
