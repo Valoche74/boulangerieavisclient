@@ -397,7 +397,11 @@ body{font-family:var(--font-ui);-webkit-font-smoothing:antialiased;color:var(--i
 /* UNE seule carte : l'interrupteur en haut, la saisie d'e-mail qui s'ouvre en
    dessous quand on le coche. Deux cartes séparées se lisaient comme deux
    réglages indépendants — c'en est un seul, en deux temps. */
-.optcard{background:var(--card);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);overflow:hidden}
+.optcard{background:var(--card);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);overflow:hidden;transition:border-color .2s,box-shadow .2s}
+/* Le client a dit oui : la carte s'allume aux couleurs du commerce et la saisie
+   s'ouvre dessous. Sans ce changement visible, cocher n'avait l'air de rien. */
+.optcard.ouverte{border-color:var(--gold);box-shadow:0 0 0 3px var(--gold-soft,rgba(200,150,62,.14)),var(--shadow)}
+.optcard.ouverte .om-t{color:var(--gold-ink)}
 .optrow{display:flex;align-items:center;gap:13px;padding:15px 16px}
 .optmail{padding:0 16px 15px;border-top:1px solid var(--line);margin-top:2px;padding-top:14px}
 .om-t{font-size:14px;font-weight:600;color:var(--ink);margin-bottom:10px}
@@ -692,9 +696,8 @@ p,.oh-d,.res-desc,.gs{line-height:1.55!important;color:var(--muted)}
        destinataires de l'onglet Promo affichait zéro.
        Ce bloc n'apparaît QUE si la fiche n'a pas d'adresse. -->
     <div class="optmail" id="optMailRow" hidden>
-      <div class="om-t" id="omTitre">Ton e-mail — <b>+1 tampon</b> une fois validé</div>
-      <!-- « +1 » doit rester d'accord avec FID_ACTIONS.optin_email dans Code.gs,
-           contrôlé par _outils/controle-commerce.mjs. -->
+      <!-- texte posé par montrerSaisieEmail(), depuis TAMPONS -->
+      <div class="om-t" id="omTitre">Ton e-mail</div>
       <div class="om-row">
         <input class="om-input" id="omInput" type="email" inputmode="email" autocomplete="email"
                placeholder="prenom@exemple.fr" enterkeyhint="done"
@@ -968,6 +971,15 @@ let solde = 0;
    avis Trustpilot » à un commerçant qui n'a pas de page Trustpilot, c'est offrir
    des tampons contre rien.
    → Pour les faire réapparaître : remplir le champ dans commerces.json. */
+/* ⚠️ LES MONTANTS DE TAMPONS VIENNENT D'ICI, ET DE NULLE PART AILLEURS.
+   Ils doivent refléter FID_ACTIONS (Code.gs) : c'est le BACKEND qui crédite, le
+   front ne fait qu'annoncer. Écrire « +2 » dans une phrase et « 1 » dans le
+   backend, c'est promettre au client ce qu'il ne recevra pas — et il compte ses
+   tampons. `_outils/controle-commerce.mjs` compare les deux et échoue s'ils
+   divergent (éprouvé en introduisant volontairement un écart). */
+const TAMPONS = { optin_email:1, tripadvisor:2, trustpilot:2, reseau:1 };
+const tampon = function(n){ return '+' + n + ' tampon' + (n > 1 ? 's' : ''); };
+
 function brancherLiens(com){
   com = com || {};
   const pose = function(idLien, url, idBloc){
@@ -983,13 +995,6 @@ function brancherLiens(com){
   const fb = pose('lkFb',  com.facebook);
   const tt = pose('lkTt',  com.tiktok);
 
-  /* ⚠️ Les montants viennent d'ICI et de nulle part ailleurs dans cette page.
-     Ils doivent refléter FID_ACTIONS (Code.gs) : c'est le backend qui crédite,
-     le front ne fait qu'annoncer. Écrire « +2 » en dur dans une phrase et « 1 »
-     dans le backend, c'est promettre au client ce qu'il ne recevra pas.
-     `_outils/controle-commerce.mjs` compare les deux et échoue s'ils divergent. */
-  const TAMPONS = { tripadvisor:2, trustpilot:3, reseau:1 };
-
   const reseaux = [ig && 'Instagram', fb && 'Facebook', tt && 'TikTok'].filter(Boolean);
   const bloc = $('socialBlock');
   if(bloc) bloc.hidden = !reseaux.length;
@@ -998,16 +1003,15 @@ function brancherLiens(com){
     const liste = reseaux.length > 1
       ? reseaux.slice(0, -1).join(', ') + ' et ' + reseaux[reseaux.length - 1]
       : reseaux[0];
-    txt.innerHTML = 'Suis-nous sur ' + liste + ' et gagne <b>+' + TAMPONS.reseau + ' tampon'
-      + (TAMPONS.reseau > 1 ? 's' : '') + '</b>' + (reseaux.length > 1 ? ' par réseau 🎁' : ' 🎁');
+    txt.innerHTML = 'Suis-nous sur ' + liste + ' et gagne <b>' + tampon(TAMPONS.reseau) + '</b>'
+      + (reseaux.length > 1 ? ' par réseau 🎁' : ' 🎁');
   }
 
   /* Les deux plateformes d'avis, chacune dans sa rangée. */
   const rangee = function(idBloc, idTexte, visible, nom, pts){
     const b = $(idBloc); if(b) b.hidden = !visible;
     const t = $(idTexte);
-    if(t && visible) t.innerHTML = 'Laisse un avis sur <b>' + nom + '</b> et gagne <b>+'
-      + pts + ' tampon' + (pts > 1 ? 's' : '') + '</b> 🎁';
+    if(t && visible) t.innerHTML = 'Laisse un avis sur <b>' + nom + '</b> et gagne <b>' + tampon(pts) + '</b> 🎁';
   };
   rangee('tripaBlock', 'tripaTxt', ta, 'TripAdvisor', TAMPONS.tripadvisor);
   rangee('trustBlock', 'trustTxt', tp, 'Trustpilot',  TAMPONS.trustpilot);
@@ -1062,11 +1066,14 @@ function applyPreset(p){
   if (!avecAg) {
     const ag=$('agBanner'); if(ag){ ag.style.display='none'; ag.innerHTML=''; }
   }
+  /* ⚠️ LA RÉCOMPENSE EST ANNONCÉE AVANT LE CLIC, pas découverte après.
+     « Active les e-mails » ne dit rien au client : ce qu'il veut savoir, c'est
+     ce qu'il gagne (un tampon) et ce qu'il recevra (un produit offert, une
+     réduction réservée). Les deux sont donc écrits noir sur blanc. */
   const ot=$('optTitre'), os=$('optSous');
-  if(ot) ot.textContent = avecAg ? 'Offres et alertes anti-gaspi' : 'Offres et bons plans';
-  if(os) os.textContent = avecAg
-    ? 'Reçois un email pour les offres et les paniers invendus'
-    : 'Reçois un email quand ' + (p.name || 'la boutique') + ' lance une offre';
+  if(ot) ot.innerHTML = 'Gagne <b>' + tampon(TAMPONS.optin_email) + '</b> en activant les e-mails';
+  if(os) os.textContent = 'Reçois nos offres fidélité : produit offert, réduction exclusive'
+    + (avecAg ? ', paniers invendus' : '');
   const ft=$('cFoot'); if(ft) ft.textContent = p.foot;
   const eb=document.querySelector('.eyebrow'); if(eb) eb.textContent = DEMO ? '✦ Démo fidélité' : (p.eyebrow||'✦ Ma fidélité');
   const fzone=$('floaties'); if(fzone && p.fl) fzone.innerHTML = p.fl.map((e,i)=>'<span class="fl fl'+(i+1)+'">'+e+'</span>').join('');
@@ -1259,7 +1266,12 @@ function render(c){
                 || !!String(c.email || '').trim()
                 || emailDejaDonne(cardId);
   emailClient = aUnEmail ? '(en fiche)' : '';
-  montrerSaisieEmail(!aUnEmail && !refuse);
+  /* ⚠️ La saisie ne s'ouvre QUE si le client a accepté et n'a pas encore donné
+     d'adresse. Elle s'affichait dès l'ouverture de la carte, avant tout accord :
+     on réclamait une adresse à quelqu'un qui n'avait rien demandé, et la carte
+     était déjà allumée comme s'il avait dit oui. Le bon ordre est : il coche,
+     PUIS on demande. (setOptin ouvre la saisie au moment de la coche.) */
+  montrerSaisieEmail(demandeEmail || (accepte && !aUnEmail));
 }
 // Encart +30 pts : visible tant que l'opt-in n'est pas explicitement 'on' (= bonus pas encore pris)
 
@@ -1430,6 +1442,12 @@ window.redeem = function(item, btn){
    Le repli n'est pas parfait — changer de téléphone fait reposer la question —
    mais redonner la même adresse est sans effet : elle est simplement réécrite. */
 let emailClient = '';
+/* ⚠️ COURSE : `creditPassage()` répond quelques secondes après le chargement et
+   rappelle render() avec les données lues AVANT. Si le client a coché entre les
+   deux, ce render tardif refermait la saisie d'e-mail qu'il venait d'ouvrir —
+   et le remettait devant une case cochée sans rien à faire. Ce drapeau porte
+   l'INTENTION du client, que render() respecte au lieu de l'écraser. */
+let demandeEmail = false;
 const CLE_EMAIL = 'perify_email_donne_';
 function emailDejaDonne(id){ try{ return localStorage.getItem(CLE_EMAIL + id) === '1'; }catch(e){ return false; } }
 function marquerEmailDonne(id){ try{ localStorage.setItem(CLE_EMAIL + id, '1'); }catch(e){} }
@@ -1437,6 +1455,11 @@ function marquerEmailDonne(id){ try{ localStorage.setItem(CLE_EMAIL + id, '1'); 
 function montrerSaisieEmail(afficher, motif){
   const bloc = $('optMailRow'); if(!bloc) return;
   bloc.hidden = !afficher;
+  /* La carte entière change d'état quand la saisie s'ouvre : le client doit voir
+     qu'il s'est passé quelque chose, pas seulement qu'un champ est apparu. */
+  const carte = $('optRow'); if(carte) carte.classList.toggle('ouverte', !!afficher);
+  const t = $('omTitre');
+  if(t) t.innerHTML = 'Ton e-mail — <b>' + tampon(TAMPONS.optin_email) + '</b> une fois validé';
   const n = $('omNote');
   if(n && motif){ n.textContent = motif; n.classList.remove('bad'); }
 }
@@ -1459,6 +1482,7 @@ window.enregistrerEmail = function(){
     btn.disabled = false; btn.textContent = 'Valider';
     if(d.status !== 'ok'){ note.classList.add('bad'); note.textContent = 'Enregistrement impossible, réessaie dans un instant.'; return; }
     emailClient = v;
+    demandeEmail = false;             // la demande est satisfaite
     marquerEmailDonne(cardId);        // pour ne pas reposer la question à la prochaine ouverture
     const el = $('optMail'); if(el) el.checked = true;
     montrerSaisieEmail(false);
@@ -1502,10 +1526,11 @@ window.setOptin = function(on){
       /* Activer sans adresse en fiche, c'est cocher une case qui n'enverra
          jamais rien. On demande l'adresse dans la foulée, en disant pourquoi. */
       if(on && !emailClient){
+        demandeEmail = true;
         montrerSaisieEmail(true, 'Il manque ton adresse : sans elle, la boutique n’a nulle part où t’écrire.');
         const c = $('omInput'); if(c) c.focus();
       }
-      if(!on) montrerSaisieEmail(false);
+      if(!on){ demandeEmail = false; montrerSaisieEmail(false); }
     }
     else { toast('Action impossible.'); const el=$('optMail'); if(el) el.checked=!on; }
   }).catch(()=>{ toast('Connexion impossible.'); const el=$('optMail'); if(el) el.checked=!on; });
@@ -1527,7 +1552,7 @@ window.claimAction = function(key){
 
 function creditPassage(){
   api('fid_passage',{card_id:cardId, source:'scan'}).then(d=>{
-    if(d.status==='ok'){ render(d.client); toast('🎉 +'+d.points_delta+' points pour ton passage !'); }
+    if(d.status==='ok'){ render(d.client); toast('🎉 '+tampon(d.points_delta)+' pour ton passage !'); }
     else if(d.status==='cooldown' && d.client){ render(d.client); }
   }).catch(()=>{});
 }
@@ -1704,7 +1729,7 @@ else{
       else if(d.anniv){
         showConfirm({badge:'🎂 Joyeux anniversaire !', emoji:'🎂', title:'Joyeux anniversaire '+((d.client.prenom||'').trim())+' !',
           lib:'Cadeau offert : '+d.anniv.libelle, code:d.anniv.code, note:'Montre ce code en caisse pour récupérer ton cadeau d\'anniversaire 🎂'});
-      } else if(d.passage){ toast('🎉 +'+d.passage.points_delta+' points pour ton passage !'); }
+      } else if(d.passage){ toast('🎉 '+tampon(d.passage.points_delta)+' pour ton passage !'); }
     }
     else if(d.status==='new'){ show('stateNew'); }
     else {
