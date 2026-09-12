@@ -429,6 +429,17 @@ body{font-family:var(--font-ui);-webkit-font-smoothing:antialiased;color:var(--i
 .om-btn:disabled{opacity:.5;cursor:default}
 .om-note{font-size:11.5px;color:var(--muted);line-height:1.5;margin-top:9px}
 .om-note.bad{color:#d14343}
+/* Le champ FIGÉ, une fois l'adresse validée. Il doit rester parfaitement
+   LISIBLE — c'est le seul endroit où le client peut repérer sa propre faute de
+   frappe — donc on ne le grise pas : on le borde de vert et on garde l'encre
+   pleine. Un champ pâli se lit comme « désactivé », pas comme « confirmé ». */
+.om-input.fige{background:rgba(63,125,46,.07);border-color:rgba(63,125,46,.45);
+  color:var(--ink);font-weight:600;cursor:default}
+.om-input.fige:focus{border-color:rgba(63,125,46,.45)}
+/* « Supprimer » : présent et atteignable (le retrait doit être aussi simple que
+   l'accord), mais sans la couleur d'appel du bouton d'action. */
+.om-btn-off{background:transparent;color:var(--muted);border:1.5px solid var(--line);font-weight:600}
+.om-btn-off:active{background:rgba(0,0,0,.04)}
 .optrow .oi{font-size:24px;flex-shrink:0}
 .optrow .ot{flex:1;min-width:0}
 .optrow .ot .n{font-size:14.5px;font-weight:700;color:var(--ink)}
@@ -608,30 +619,46 @@ body{font-family:var(--font-ui);-webkit-font-smoothing:antialiased;color:var(--i
        une seule décision du client, pas deux. Et le tampon n'est crédité qu'au
        « Valider » — cocher une case sans laisser d'adresse ne vaut rien à la
        boutique, ça ne doit donc rien rapporter. -->
+  <!-- ⚠️ 12/09 — PLUS D'INTERRUPTEUR. Cocher une case puis saisir une adresse,
+       c'était deux gestes pour une seule décision, et la case seule ne valait
+       rien : sans adresse, la boutique n'avait nulle part où écrire.
+       Il reste UN geste : l'adresse et « Valider ».
+
+       ⚠️ LE CONSENTEMENT REPOSE MAINTENANT SUR CE BOUTON. C'est un acte positif
+       et sans ambiguïté (RGPD art. 4-11), à condition que la mention juste en
+       dessous dise clairement à quoi on s'engage — d'où sa présence, et d'où le
+       fait qu'elle ne doit pas être raccourcie.
+
+       ⚠️ ET LE RETRAIT DOIT RESTER AUSSI SIMPLE QUE L'ACCORD (art. 7-3) : c'est
+       la raison d'être du lien « Ne plus recevoir » de l'état 2. Ne pas le
+       supprimer pour faire plus propre. -->
   <div class="optcard" id="optRow">
     <div class="optrow">
       <div class="oi">🔔</div>
-      <div class="ot"><div class="n" id="optTitre">Offres et bons plans</div><div class="d" id="optSous">Reçois un email quand la boutique lance une offre</div></div>
-      <label class="switch"><input type="checkbox" id="optMail" onchange="setOptin(this.checked)"><span class="sl"></span></label>
+      <div class="ot"><div class="n" id="optTitre">Reçois nos offres fidélité</div><div class="d" id="optSous">Produit offert, réduction exclusive</div></div>
     </div>
 
-  <!-- ⚠️ 12/09 — IL N'Y AVAIT NULLE PART OÙ DONNER SON E-MAIL.
-       L'interrupteur ci-dessus n'écrit qu'un drapeau (colonne email_opt_in).
-       Un client arrivé par le Wallet n'a jamais saisi d'adresse : il pouvait
-       activer « Offres et bons plans » et ne rien recevoir, parce qu'il n'y
-       avait pas d'adresse à qui écrire. C'est aussi pour ça que le compteur de
-       destinataires de l'onglet Promo affichait zéro.
-       Ce bloc n'apparaît QUE si la fiche n'a pas d'adresse. -->
-    <div class="optmail" id="optMailRow" hidden>
-      <!-- texte posé par montrerSaisieEmail(), depuis TAMPONS -->
+    <!-- ⚠️ UNE SEULE RANGÉE, DEUX ÉTATS — pas deux blocs qui se remplacent :
+         la carte ne saute pas, seuls le champ et le bouton changent.
+           « saisie »  : champ vide et modifiable, bouton « Valider »
+           « inscrit » : l'adresse FIGÉE et relisible, bouton « Supprimer »
+         Figée exprès : une faute de frappe dans une adresse ne se repère nulle
+         part ailleurs, et le client ne recevrait rien sans comprendre pourquoi.
+
+         ⚠️ LE CONSENTEMENT REPOSE SUR « Valider ». C'est un acte positif et sans
+         ambiguïté (RGPD art. 4-11) À CONDITION que la mention en dessous dise à
+         quoi on s'engage : ne pas la raccourcir.
+         ⚠️ Et « Supprimer » est le retrait, qui doit rester aussi simple que
+         l'accord (art. 7-3). Ne pas l'enterrer dans un sous-menu. -->
+    <div class="optmail" id="optMailRow">
       <div class="om-t" id="omTitre">Ton e-mail</div>
       <div class="om-row">
         <input class="om-input" id="omInput" type="email" inputmode="email" autocomplete="email"
                placeholder="prenom@exemple.fr" enterkeyhint="done"
-               onkeydown="if(event.key==='Enter')enregistrerEmail()">
-        <button class="om-btn" id="omBtn" onclick="enregistrerEmail()">Valider</button>
+               onkeydown="if(event.key==='Enter')omAction()">
+        <button class="om-btn" id="omBtn" onclick="omAction()">Valider</button>
       </div>
-      <div class="om-note" id="omNote">Uniquement pour les offres de la boutique. Jamais revendu, et tu peux couper quand tu veux.</div>
+      <div class="om-note" id="omNote">En validant, tu acceptes de recevoir les offres de la boutique par e-mail. Adresse jamais revendue, suppression possible à tout moment.</div>
     </div>
   </div>
 
@@ -1202,27 +1229,18 @@ function render(c){
      (optinOui_), pour que l'affichage et la réalité ne divergent pas. */
   const oi = String(c.email_opt_in||'').trim().toLowerCase();
   const accepte = (oi==='on'||oi==='oui'||oi==='1'||oi==='true');
-  const refuse  = (oi==='off'||oi==='non'||oi==='no'||oi==='0'||oi==='false');
-  if($('optMail')) $('optMail').checked = accepte;
-
-  /* Pas d'adresse en fiche = l'interrupteur ne promet rien. On la demande, sans
-     attendre que le client comprenne tout seul pourquoi il ne reçoit jamais rien.
-     Mais PAS à celui qui a explicitement coupé les alertes : il a répondu, on
-     ne lui repose pas la question à chaque ouverture. S'il rallume, le champ
-     apparaît (cf. setOptin). */
-  /* `c.a_email` d'abord (booléen posé par le backend, survit au caviardage),
-     puis la trace locale. `c.email` reste lu au cas où la réponse vienne d'un
-     contexte non caviardé — il ne le sera jamais depuis la carte du client. */
+  /* `c.a_email` d'abord (booléen posé par le backend, il survit au caviardage),
+     puis la trace locale. `c.email` reste lu au cas où la réponse viendrait d'un
+     contexte non caviardé — elle ne le sera jamais depuis la carte du client. */
   const aUnEmail = (c.a_email === true)
                 || !!String(c.email || '').trim()
                 || emailDejaDonne(cardId);
   emailClient = aUnEmail ? '(en fiche)' : '';
-  /* ⚠️ La saisie ne s'ouvre QUE si le client a accepté et n'a pas encore donné
-     d'adresse. Elle s'affichait dès l'ouverture de la carte, avant tout accord :
-     on réclamait une adresse à quelqu'un qui n'avait rien demandé, et la carte
-     était déjà allumée comme s'il avait dit oui. Le bon ordre est : il coche,
-     PUIS on demande. (setOptin ouvre la saisie au moment de la coche.) */
-  montrerSaisieEmail(demandeEmail || (accepte && !aUnEmail));
+  /* Inscrit = le serveur dit « on » ET une adresse est en fiche. Les deux, pas
+     l'un ou l'autre : un « on » sans adresse n'enverra jamais rien, et une
+     adresse sans « on » ne doit rien recevoir. */
+  const inscrit = accepte && aUnEmail;
+  montrerEtatEmail(demandeEmail ? 'saisie' : (inscrit ? 'inscrit' : 'saisie'));
 }
 // Encart +30 pts : visible tant que l'opt-in n'est pas explicitement 'on' (= bonus pas encore pris)
 
@@ -1399,21 +1417,106 @@ let emailClient = '';
    et le remettait devant une case cochée sans rien à faire. Ce drapeau porte
    l'INTENTION du client, que render() respecte au lieu de l'écraser. */
 let demandeEmail = false;
-const CLE_EMAIL = 'perify_email_donne_';
-function emailDejaDonne(id){ try{ return localStorage.getItem(CLE_EMAIL + id) === '1'; }catch(e){ return false; } }
-function marquerEmailDonne(id){ try{ localStorage.setItem(CLE_EMAIL + id, '1'); }catch(e){} }
+/* ⚠️ ON MÉMORISE L'ADRESSE ELLE-MÊME, PAS SEULEMENT « il en a donné une ».
+   Le client doit pouvoir revenir et RELIRE ce qu'il a saisi : une faute de
+   frappe dans une adresse ne se repère nulle part ailleurs, et il ne recevrait
+   rien sans jamais comprendre pourquoi.
 
-function montrerSaisieEmail(afficher, motif){
-  const bloc = $('optMailRow'); if(!bloc) return;
-  bloc.hidden = !afficher;
-  /* La carte entière change d'état quand la saisie s'ouvre : le client doit voir
-     qu'il s'est passé quelque chose, pas seulement qu'un champ est apparu. */
-  const carte = $('optRow'); if(carte) carte.classList.toggle('ouverte', !!afficher);
+   Pourquoi côté navigateur et pas depuis le serveur : `jsonResponse` caviarde
+   `email` pour toute requête sans secret vendeur, et la carte du client n'en a
+   pas — à raison. Le serveur ne renvoie donc QUE le booléen `a_email`.
+   Conséquence assumée : sur un autre téléphone, l'adresse n'est pas relisible
+   (on affiche alors « adresse enregistrée » sans la montrer). */
+const CLE_EMAIL = 'perify_email_donne_';
+function emailDejaDonne(id){ try{ return !!localStorage.getItem(CLE_EMAIL + id); }catch(e){ return false; } }
+function emailMemorise(id){ try{ const v = localStorage.getItem(CLE_EMAIL + id) || ''; return v === '1' ? '' : v; }catch(e){ return ''; } }
+function marquerEmailDonne(id, adresse){ try{ localStorage.setItem(CLE_EMAIL + id, String(adresse || '1')); }catch(e){} }
+function oublierEmail(id){ try{ localStorage.removeItem(CLE_EMAIL + id); }catch(e){} }
+
+/* Le bloc a DEUX états, et un seul est visible à la fois :
+     « saisie »  — pas encore d'adresse : champ + Valider + mention légale
+     « inscrit » — adresse enregistrée : on la RELIT, avec Modifier / Ne plus recevoir
+   Tout passe par ici, pour qu'aucun chemin ne puisse afficher les deux. */
+/* Le bloc a DEUX états, et UN SEUL point d'entrée pour en changer — sinon un
+   chemin finit par laisser le champ modifiable alors que l'adresse est figée,
+   ou l'inverse.
+     'saisie'  : champ vide/modifiable, bouton « Valider »
+     'inscrit' : adresse relisible et figée, bouton « Supprimer » */
+let etatEmail = 'saisie';
+function montrerEtatEmail(etat, motif){
+  const champ = $('omInput'), bouton = $('omBtn'), carte = $('optRow');
+  if(!champ || !bouton) return;
+  etatEmail = (etat === 'inscrit') ? 'inscrit' : 'saisie';
+  const inscrit = (etatEmail === 'inscrit');
+
+  champ.readOnly = inscrit;
+  champ.classList.toggle('fige', inscrit);
+  champ.classList.remove('bad');
+  bouton.textContent = inscrit ? 'Supprimer' : 'Valider';
+  bouton.classList.toggle('om-btn-off', inscrit);
+  bouton.disabled = false;
+  if(carte) carte.classList.toggle('ouverte', inscrit);
+
   const t = $('omTitre');
-  if(t) t.innerHTML = 'Ton e-mail — <b>' + tampon(TAMPONS.optin_email) + '</b> une fois validé';
+  if(t) t.innerHTML = inscrit
+    ? 'Tu reçois nos offres à cette adresse'
+    : 'Ton e-mail — <b>' + tampon(TAMPONS.optin_email) + '</b> une fois validé';
+
+  /* L'en-tête de la carte suit : promettre « gagne +1 tampon en activant » à
+     quelqu'un qui est déjà inscrit et qui l'a déjà touché, c'est lui proposer
+     une récompense qu'il ne peut plus avoir. */
+  const h = $('optTitre');
+  if(h) h.innerHTML = inscrit
+    ? 'Tes offres fidélité'
+    : 'Gagne <b>' + tampon(TAMPONS.optin_email) + '</b> en activant les e-mails';
+
+  if(inscrit){
+    /* Sur un autre téléphone on n'a pas l'adresse (le serveur la caviarde) :
+       on le dit, plutôt que d'afficher un blanc qui passerait pour un bug. */
+    const m = emailMemorise(cardId);
+    champ.value = m;
+    champ.placeholder = m ? m : 'Adresse enregistrée sur un autre téléphone';
+  }
+
   const n = $('omNote');
-  if(n && motif){ n.textContent = motif; n.classList.remove('bad'); }
+  if(n){
+    n.classList.remove('bad');
+    n.textContent = motif ? motif
+      : (inscrit ? 'Tu peux la supprimer quand tu veux : tu ne recevras plus nos offres, et ton adresse est effacée.'
+                 : 'En validant, tu acceptes de recevoir les offres de la boutique par e-mail. Adresse jamais revendue, suppression possible à tout moment.');
+  }
 }
+
+/* Le bouton fait l'un ou l'autre selon l'état. Un seul bouton, donc aucun risque
+   d'en montrer deux ou de laisser le mauvais actif. */
+window.omAction = function(){
+  if(etatEmail === 'inscrit') supprimerEmail();
+  else enregistrerEmail();
+};
+
+/* ⚠️ RETRAIT DU CONSENTEMENT — obligatoire, et aussi simple à exercer que
+   l'accord (RGPD art. 7-3). C'est ce que remplaçait l'ancien interrupteur.
+   On coupe l'envoi côté serveur ET on oublie l'adresse ici. */
+function supprimerEmail(){
+  const bouton = $('omBtn'), note = $('omNote');
+  bouton.disabled = true; bouton.textContent = '…';
+  api('fid_optin', { card_id: cardId, value: 'off' }, 2).then(function(d){
+    bouton.disabled = false;
+    if(d.status !== 'ok'){
+      montrerEtatEmail('inscrit');
+      note.classList.add('bad'); note.textContent = 'Suppression impossible pour le moment, réessaie.';
+      return;
+    }
+    oublierEmail(cardId);
+    emailClient = ''; demandeEmail = false;
+    const c = $('omInput'); if(c){ c.value = ''; c.placeholder = 'prenom@exemple.fr'; }
+    montrerEtatEmail('saisie', 'C’est fait : tu ne recevras plus nos offres.');
+  }).catch(function(e){
+    bouton.disabled = false; montrerEtatEmail('inscrit');
+    note.classList.add('bad'); note.textContent = messageEchec(e);
+  });
+}
+
 /* Volontairement permissive : on refuse ce qui est évidemment faux, on ne
    prétend pas valider une adresse — seul un envoi le prouve. */
 function emailPlausible(v){ return /^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i.test(String(v||'').trim()); }
@@ -1434,9 +1537,8 @@ window.enregistrerEmail = function(){
     if(d.status !== 'ok'){ note.classList.add('bad'); note.textContent = 'Enregistrement impossible, réessaie dans un instant.'; return; }
     emailClient = v;
     demandeEmail = false;             // la demande est satisfaite
-    marquerEmailDonne(cardId);        // pour ne pas reposer la question à la prochaine ouverture
-    const el = $('optMail'); if(el) el.checked = true;
-    montrerSaisieEmail(false);
+    marquerEmailDonne(cardId, v);     // l'adresse elle-même, pour qu'il puisse la relire
+    montrerEtatEmail('inscrit');
 
     /* ⚠️ LE TAMPON EST CRÉDITÉ ICI, PAS AU CLIC SUR L'INTERRUPTEUR.
        Cocher une case sans laisser d'adresse ne donne rien à la boutique :
@@ -1460,35 +1562,10 @@ window.enregistrerEmail = function(){
   });
 };
 
-window.setOptin = function(on){
-  /* 2 réessais : poser un drapeau est rejouable sans conséquence, et c'est
-     l'action que le client déclenche le plus souvent au moment où Apps Script
-     est le plus lent (juste après l'ouverture de la carte). */
-  api('fid_optin',{card_id:cardId, value:on?'on':'off'}, 2).then(d=>{
-    if(d.status==='ok'){
-      /* la promesse dépend du commerce : pas de paniers invendus chez qui n'a
-         pas pris le module, et pas de croissant chez un vendeur de tacos. */
-      const promesse = (typeof P !== 'undefined' && P && P.antigaspi === false)
-        ? 'Tu seras prévenu des produits gratuits et des offres flash 🎉'
-        : 'Tu seras prévenu des produits gratuits, offres flash et paniers anti-gaspi 🥐';
-      /* `d.bonus` ne vaut plus que pour un client qui a DÉJÀ son adresse en
-         fiche : le backend ne crédite plus à la coche seule (12/09). Pour les
-         autres, le tampon tombe au « Valider » de l'e-mail. */
-      if(d.bonus>0){ applySolde(solde + d.bonus); showConfirm({badge:'🎉 +'+d.bonus+' tampon'+(d.bonus>1?'s':'')+' !', emoji:'🔔', title:'Alertes activées !', lib:'+'+d.bonus+' tampon'+(d.bonus>1?'s':'')+' offert'+(d.bonus>1?'s':''), note:promesse}); }
-      else toast(on?'🔔 Alertes activées':'Alertes désactivées');
-      const el=$('optMail'); if(el) el.checked=on;
-      /* Activer sans adresse en fiche, c'est cocher une case qui n'enverra
-         jamais rien. On demande l'adresse dans la foulée, en disant pourquoi. */
-      if(on && !emailClient){
-        demandeEmail = true;
-        montrerSaisieEmail(true, 'Il manque ton adresse : sans elle, la boutique n’a nulle part où t’écrire.');
-        const c = $('omInput'); if(c) c.focus();
-      }
-      if(!on){ demandeEmail = false; montrerSaisieEmail(false); }
-    }
-    else { toast('Action impossible.'); const el=$('optMail'); if(el) el.checked=!on; }
-  }).catch(e=>{ toast(messageEchec(e)); const el=$('optMail'); if(el) el.checked=!on; });
-};
+/* 🗑️ 12/09 — setOptin() SUPPRIMÉE avec l'interrupteur. Le consentement se
+   donne maintenant par « Valider » (enregistrerEmail) et se retire par
+   « Supprimer » (supprimerEmail) — les deux appellent fid_optin
+   directement. Une fonction de moins entre le geste du client et l'écriture. */
 
 /* 🏅 Actions récompensées (1×/carte) — le clic ouvre le lien ET déclare l'action */
 let actionsState = {};
