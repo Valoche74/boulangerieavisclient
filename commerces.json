@@ -40,7 +40,17 @@
     "client a des « alertes anti-gaspi » chez un vendeur de tacos. card.html garde",
     "la meme cle dans PRESETS : c'est son repli hors ligne, il doit dire pareil.",
     "⚠️ Ce drapeau ne commande PAS la case d'inscription aux e-mails : elle vaut",
-    "pour tout commerce depuis les campagnes promo (12/09)."
+    "pour tout commerce depuis les campagnes promo (12/09).",
+    "",
+    "LIENS ET RECOMPENSES : instagram, facebook, tiktok, trustpilot, tripadvisor.",
+    "Chacun affiche un bouton sur la carte de fidelite, et le clic credite le",
+    "client (2 tampons pour un reseau, 3 pour un avis — cf. FID_ACTIONS dans",
+    "Code.gs). VIDE = le bouton n'apparait pas, et c'est voulu : offrir des",
+    "tampons pour un avis TripAdvisor a un commerce sans page TripAdvisor, c'est",
+    "donner des tampons contre rien.",
+    "⚠️ 12/09 — ces adresses etaient ECRITES EN DUR dans card.html et pointaient",
+    "vers « Du Pain et des Idees » et « Poilane », deux boulangeries parisiennes,",
+    "pour TOUS les commerces. Ne jamais les remettre dans le code."
   ],
   "version": 1,
   "commerces": {
