@@ -25,6 +25,11 @@
      décalerait les index de toutes les autres.
    ════════════════════════════════════════════════════════════════ */
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+/* ⚠️ Sans ce !important, `hidden` ne cache PAS un élément à qui une classe
+   impose un display (.social est en flex) : la règle du navigateur perd contre
+   la classe. Le bloc « réseaux » restait donc visible, masqué en apparence
+   seulement. Vérifié dans le DOM, pas à l'œil. */
+[hidden]{display:none!important}
 :root{
   --cream:#FBF7EF;--cream2:#F4ECDC;--card:#FFFFFF;
   /* 🔎 08/09 — LISIBILITÉ. Contrastes mesurés sur le fond réel (--cream #FBF7EF),
@@ -488,7 +493,7 @@ body{font-family:var(--font-ui);-webkit-font-smoothing:antialiased;color:var(--i
 
   <div class="sec-h"><span class="t">Gagner plus de tampons</span></div>
   <div class="bonus">
-    <a class="bn" id="lkTrust" href="#" target="_blank" rel="noopener" style="text-decoration:none" onclick="claimAction('trustpilot')"><div class="ic trust">★</div><div class="t">Avis Trustpilot</div><div class="s">+3 tampons</div></a>
+    <a class="bn" id="lkTrust" href="#" target="_blank" rel="noopener" style="text-decoration:none" hidden onclick="claimAction('trustpilot')"><div class="ic trust">★</div><div class="t">Avis Trustpilot</div><div class="s">+3 tampons</div></a>
     <div class="bn green"><div class="ic">🎂</div><div class="t">Anniversaire</div><div class="s" id="annivGift">Cadeau le jour J</div></div>
     <!-- 🗑️ 08/09 — « Giveaway du mois » retiré.
          C'était un <div> mort : aucun clic, aucun appel serveur, rien derrière.
@@ -497,11 +502,14 @@ body{font-family:var(--font-ui);-webkit-font-smoothing:antialiased;color:var(--i
          de détail qui se paie le jour où il demande s'il a gagné.
          Le bénéfice RÉEL des réseaux (+2 tampons, câblé par claimAction) est
          conservé — c'est lui qu'on met en avant. -->
-    <div class="bn"><div class="ic">📱</div><div class="t">Réseaux sociaux</div><div class="s">+2 tampons</div></div>
+    <div class="bn" id="bnSocial" hidden><div class="ic">📱</div><div class="t">Réseaux sociaux</div><div class="s">+2 tampons</div></div>
   </div>
 
-  <div class="social">
-    <div class="social-txt">Suis-nous et gagne <b>+2 tampons</b> par réseau — sur Instagram comme sur Facebook 🎁</div>
+  <!-- ⚠️ MASQUÉS PAR DÉFAUT, révélés par brancherLiens() si — et seulement si —
+       le registre donne une adresse pour ce commerce. Voir le commentaire de
+       cette fonction : ces liens pointaient vers des boulangeries parisiennes. -->
+  <div class="social" id="socialBlock" hidden>
+    <div class="social-txt" id="socialTxt">Suis-nous et gagne <b>+2 tampons</b> par réseau 🎁</div>
     <div class="social-links">
       <a class="slink ig" id="lkIg" href="#" target="_blank" rel="noopener" aria-label="Instagram" onclick="claimAction('insta')"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#fff" stroke-width="2"><rect x="2.5" y="2.5" width="19" height="19" rx="5.5"/><circle cx="12" cy="12" r="4.3"/><circle cx="17.6" cy="6.4" r="1.3" fill="#fff" stroke="none"/></svg></a>
       <a class="slink fb" id="lkFb" href="#" target="_blank" rel="noopener" aria-label="Facebook" onclick="claimAction('facebook')"><svg viewBox="0 0 24 24" width="22" height="22" fill="#fff"><path d="M13.5 21v-8h2.7l.4-3.1h-3.1V7.9c0-.9.25-1.5 1.55-1.5H17V3.6c-.3-.04-1.3-.13-2.46-.13-2.43 0-4.1 1.48-4.1 4.21v2.35H7.7V13h2.74v8h3.06z"/></svg></a>
@@ -598,9 +606,12 @@ const SHEETS_URLS = {
   pizzeria:'', vape:'', restaurant:'', primeur:''
 };
 const AVIS_URL   = 'https://boulangerieavisclient.vercel.app/';
-const INSTA_URL  = 'https://www.instagram.com/dupainetdesidees/';  /* PLACEHOLDER boulangerie — à remplacer par le compte Falman */
-const FB_URL     = 'https://www.facebook.com/poilane/';            /* PLACEHOLDER boulangerie — à remplacer par le compte Falman */
-const TRUST_URL  = 'https://fr.trustpilot.com/';                   /* PLACEHOLDER — à remplacer par la page Trustpilot du commerce */
+/* 🗑️ 12/09 — INSTA_URL / FB_URL / TRUST_URL SUPPRIMÉES.
+   Elles contenaient les comptes de deux boulangeries parisiennes et l'accueil de
+   Trustpilot, servis à tous les commerces. Les laisser en place, même inutilisées,
+   c'est laisser à portée de main de quoi recâbler la même erreur.
+   Les adresses vivent maintenant dans le registre : commerces.json →
+   `instagram`, `facebook`, `trustpilot`. Vide = le bloc ne s'affiche pas. */
 const NIVEAUX = [{nom:'Découverte',min:0},{nom:'Fidèle',min:15},{nom:'VIP',min:40}];
 
 // ════ PRESETS MULTI-COMMERCE — 1 base, N verticales. Sélection via ?type= (défaut boulangerie) ════
@@ -794,9 +805,44 @@ const urlId  = (params.get('id')||'').trim();
 const cardId = urlId || recallCard();
 const $ = id => document.getElementById(id);
 let solde = 0;
-if($('lkIg')) $('lkIg').href = INSTA_URL;
-if($('lkFb')) $('lkFb').href = FB_URL;
-if($('lkTrust')) $('lkTrust').href = TRUST_URL;
+/* ⚠️ 12/09 — CE QUI ÉTAIT CÂBLÉ ICI ENVOYAIT LES CLIENTS CHEZ UN CONCURRENT.
+   INSTA_URL et FB_URL étaient restés sur les comptes de « Du Pain et des Idées »
+   et de « Poilâne » — deux boulangeries parisiennes — et TRUST_URL sur l'accueil
+   de Trustpilot. Marqués PLACEHOLDER en commentaire, mais servis en production à
+   TOUS les commerces. Pire : le clic appelle claimAction(), donc le client
+   gagnait 2 ou 3 tampons pour être allé voir la page d'une autre boutique.
+
+   Désormais : les adresses viennent du REGISTRE (champs instagram, facebook,
+   trustpilot), et un bloc sans adresse est MASQUÉ. Proposer « +3 tampons pour un
+   avis Trustpilot » à un commerçant qui n'a pas de page Trustpilot, c'est offrir
+   des tampons contre rien.
+   → Pour les faire réapparaître : remplir le champ dans commerces.json. */
+function brancherLiens(com){
+  com = com || {};
+  const pose = function(idLien, url, idBloc){
+    const a = $(idLien), b = idBloc ? $(idBloc) : null;
+    const u = String(url || '').trim();
+    if(a && u){ a.href = u; a.hidden = false; if(b) b.hidden = false; }
+    else if(a){ a.hidden = true; }
+    return !!u;
+  };
+  pose('lkTrust', com.trustpilot);
+  const ig = pose('lkIg', com.instagram);
+  const fb = pose('lkFb', com.facebook);
+
+  const bloc = $('socialBlock'), tuile = $('bnSocial');
+  if(bloc)  bloc.hidden  = !(ig || fb);
+  if(tuile) tuile.hidden = !(ig || fb);
+  const txt = $('socialTxt');
+  if(txt && (ig || fb)){
+    txt.innerHTML = 'Suis-nous et gagne <b>+2 tampons</b>'
+      + (ig && fb ? ' par réseau — sur Instagram comme sur Facebook 🎁'
+                  : (ig ? ' sur Instagram 🎁' : ' sur Facebook 🎁'));
+  }
+}
+/* Repli hors ligne : on ne montre RIEN plutôt qu'un lien faux. */
+brancherLiens(null);
+if(typeof BA !== 'undefined') BA.pret().then(brancherLiens).catch(function(){});
 
 // hex → rgba (pour dériver les teintes douces du thème)
 function hexA(hex,a){ hex=String(hex).replace('#',''); if(hex.length===3) hex=hex.split('').map(c=>c+c).join(''); const n=parseInt(hex,16); return 'rgba('+((n>>16)&255)+','+((n>>8)&255)+','+(n&255)+','+a+')'; }
@@ -943,6 +989,31 @@ function applySolde(n){
     $('progBar').style.width = '100%';
   }
   renderStamps(n, next);
+  renderCatalogue(n);
+}
+
+/* ⚠️ 12/09 — LE CATALOGUE NE SUIVAIT PAS LE SOLDE.
+   Le commentaire ci-dessus promettait depuis le 04/09 de rafraîchir « la grille
+   ET le catalogue » ; le code ne faisait que la grille — les tuiles n'étaient
+   écrites que dans render(), au chargement. Constaté sur un iPhone au Bap's :
+   en-tête « 7 tampons », et juste en dessous « Plus que 4 tampons » pour un
+   cadeau à 6. Les cinq tampons gagnés par les actions (avis, réseaux, alertes)
+   mettaient à jour le gros chiffre, la barre et la grille — jamais les tuiles.
+   Le catalogue est donc sorti de render() pour avoir UN SEUL dessinateur,
+   appelé des deux côtés. */
+function renderCatalogue(n){
+  const c = $('cat'); if(!c) return;
+  c.innerHTML = [...CATALOGUE].sort((a,b)=>a.cout-b.cout).map(r=>{   // trié par palier croissant
+    const ok = n >= r.cout;
+    const reste = r.cout - n;
+    return '<div class="rw'+(ok?'':' locked')+'">'
+      +(r.img ? '<div class="ph"><img class="ph-img" src="'+r.img+'" alt="" loading="lazy"></div>' : '<div class="ph ph-emoji">'+(r.emoji||'🎁')+'</div>')
+      +'<div class="nm">'+esc(r.libelle)+'</div>'
+      +'<div class="cost">'+r.cout+' tampons</div>'
+      +(ok ? '<button class="btn go" onclick="redeem(\''+r.item+'\', this)">Échanger</button>'
+           : '<button class="btn lock">Plus que '+reste+' tampon'+(reste>1?'s':'')+'</button>')
+      +'</div>';
+  }).join('');
 }
 
 function render(c){
@@ -983,17 +1054,7 @@ function render(c){
     $('progBar').style.width = '100%';
   }
   renderStamps(c.points_solde, next);
-  // catalogue
-  $('cat').innerHTML = [...CATALOGUE].sort((a,b)=>a.cout-b.cout).map(r=>{   // trié par palier croissant
-    const ok = c.points_solde >= r.cout;
-    return '<div class="rw'+(ok?'':' locked')+'">'
-      +(r.img ? '<div class="ph"><img class="ph-img" src="'+r.img+'" alt="" loading="lazy"></div>' : '<div class="ph ph-emoji">'+(r.emoji||'🎁')+'</div>')
-      +'<div class="nm">'+esc(r.libelle)+'</div>'
-      +'<div class="cost">'+r.cout+' tampons</div>'
-      +(ok ? '<button class="btn go" onclick="redeem(\''+r.item+'\', this)">Échanger</button>'
-           : '<button class="btn lock">Plus que '+(r.cout-c.points_solde)+' tampons</button>')
-      +'</div>';
-  }).join('');
+  renderCatalogue(c.points_solde);      // même dessinateur que applySolde()
   $('cardNo').textContent = cardId;
   const oi = String(c.email_opt_in||'').toLowerCase();
   if($('optMail')) $('optMail').checked = !(oi==='off'||oi==='non'||oi==='no'||oi==='0'||oi==='false');
