@@ -588,14 +588,24 @@ p,.oh-d,.res-desc,.gs{line-height:1.55!important;color:var(--muted)}
   <div class="sec-h"><span class="t">Mes récompenses</span><span class="a">glisse →</span></div>
   <div class="cat" id="cat"></div>
 
-  <div class="sec-h"><span class="t">Gagner plus de tampons</span></div>
+  <!-- Titre ET grille masqués ensemble s'il ne reste aucune tuile : depuis le
+       retrait de la tuile « Anniversaire » (12/09), un commerce dont aucun lien
+       n'est renseigné n'a plus rien à mettre sous ce titre. -->
+  <div class="sec-h" id="bonusTitre"><span class="t">Gagner plus de tampons</span></div>
   <div class="bonus">
     <a class="bn" id="lkTrust" href="#" target="_blank" rel="noopener" style="text-decoration:none" hidden onclick="claimAction('trustpilot')"><div class="ic trust">★</div><div class="t">Avis Trustpilot</div><div class="s">+3 tampons</div></a>
     <!-- ⚠️ 12/09 — TripAdvisor était RÉCOMPENSÉ PAR LE BACKEND depuis toujours
          (FID_ACTIONS.tripadvisor, 3 tampons) mais n'a jamais eu de bouton. Pour
          un restaurant, c'est la plateforme qui compte, bien avant Trustpilot. -->
     <a class="bn" id="lkTripa" href="#" target="_blank" rel="noopener" style="text-decoration:none" hidden onclick="claimAction('tripadvisor')"><div class="ic trip">🦉</div><div class="t">Avis TripAdvisor</div><div class="s">+3 tampons</div></a>
-    <div class="bn green"><div class="ic">🎂</div><div class="t">Anniversaire</div><div class="s" id="annivGift">Cadeau le jour J</div></div>
+    <!-- 🗑️ 12/09 — TUILE « ANNIVERSAIRE » RETIRÉE (demande de l'utilisateur).
+         Elle n'avait rien à faire sous « Gagner plus de tampons » : les autres
+         tuiles sont des ACTIONS que le client peut faire maintenant, celle-ci
+         annonçait un cadeau passif qui tombe tout seul le jour J.
+         ⚠️ Le CADEAU D'ANNIVERSAIRE, lui, continue de fonctionner : il est
+         déclenché côté serveur au scan (ANNIV_ENABLED dans Code.gs), la date est
+         toujours demandée à l'enrôlement, et le client voit toujours sa fenêtre
+         de félicitations le jour venu. Seule l'annonce disparaît. -->
     <!-- 🗑️ 08/09 — « Giveaway du mois » retiré.
          C'était un <div> mort : aucun clic, aucun appel serveur, rien derrière.
          Et il annonçait un tirage mensuel supprimé avec la tombola le 07/09.
@@ -974,6 +984,9 @@ function brancherLiens(com){
   if(grille){
     const n = [...grille.children].filter(function(e){ return !e.hidden; }).length;
     grille.style.gridTemplateColumns = 'repeat(' + (n >= 4 ? 2 : Math.max(1, n)) + ',1fr)';
+    /* aucune tuile → on retire aussi le titre, sinon il annonce une section vide */
+    grille.hidden = (n === 0);
+    const t = $('bonusTitre'); if(t) t.hidden = (n === 0);
   }
 }
 /* Repli hors ligne : on ne montre RIEN plutôt qu'un lien faux. */
@@ -1174,7 +1187,8 @@ function render(c){
      palier, donc le genre aussi, d'où le point médian de secours. Ça se lisait
      comme un bug de gabarit. On tourne la phrase pour n'avoir aucun accord à
      faire — ça marche pour « Boisson chaude » comme pour « Croissant ». */
-  if(c.tier_gift && $('annivGift')) $('annivGift').textContent = c.tier_gift+' le jour J';
+  /* (la tuile « Anniversaire » qui affichait ce cadeau a été retirée le 12/09 —
+     le cadeau lui-même est inchangé, cf. le commentaire dans le balisage) */
   // prochaine récompense
   /* Le prochain palier = le MOINS CHER encore hors de portée, pas le premier du
      tableau : le catalogue n'est pas trié par prix, et on proposait la Boisson
