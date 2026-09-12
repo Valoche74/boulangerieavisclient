@@ -343,6 +343,7 @@ body{font-family:var(--font-ui);-webkit-font-smoothing:antialiased;color:var(--i
 .slink:active{transform:scale(.93)}
 .slink.ig{background:linear-gradient(45deg,#f09433,#e6683c 28%,#dc2743 50%,#cc2366 72%,#bc1888)}
 .slink.fb{background:#1877F2}
+.slink.tt{background:#010101}
 .confetti{position:fixed;top:-14px;z-index:210;pointer-events:none;will-change:transform,opacity}
 @keyframes confFall{to{transform:translateY(110vh) rotate(720deg);opacity:.85}}
 
@@ -383,6 +384,21 @@ body{font-family:var(--font-ui);-webkit-font-smoothing:antialiased;color:var(--i
 .wal-hint{font-size:12px;color:var(--muted);margin-top:10px;line-height:1.45}
 
 .optrow{display:flex;align-items:center;gap:13px;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:15px 16px;box-shadow:var(--shadow)}
+/* La saisie d'e-mail, sous l'interrupteur. Même carte, même encre : c'est la
+   suite de la même phrase, pas un nouveau réglage. */
+.optmail{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:15px 16px;box-shadow:var(--shadow);margin-top:10px}
+.om-t{font-size:14px;font-weight:600;color:var(--ink);margin-bottom:10px}
+.om-row{display:flex;gap:8px}
+.om-input{flex:1;min-width:0;padding:12px 14px;border-radius:12px;border:1.5px solid var(--line);
+  background:var(--cream);color:var(--ink);font-family:inherit;font-size:15px;outline:none;transition:border-color .15s}
+.om-input:focus{border-color:var(--gold)}
+.om-input.bad{border-color:#d14343}
+.om-btn{flex-shrink:0;padding:12px 18px;border:none;border-radius:12px;background:var(--gold);color:#fff;
+  font-family:inherit;font-size:14px;font-weight:700;cursor:pointer}
+.om-btn:active{transform:scale(.97)}
+.om-btn:disabled{opacity:.5;cursor:default}
+.om-note{font-size:11.5px;color:var(--muted);line-height:1.5;margin-top:9px}
+.om-note.bad{color:#d14343}
 .optrow .oi{font-size:24px;flex-shrink:0}
 .optrow .ot{flex:1;min-width:0}
 .optrow .ot .n{font-size:14.5px;font-weight:700;color:var(--ink)}
@@ -575,6 +591,10 @@ p,.oh-d,.res-desc,.gs{line-height:1.55!important;color:var(--muted)}
   <div class="sec-h"><span class="t">Gagner plus de tampons</span></div>
   <div class="bonus">
     <a class="bn" id="lkTrust" href="#" target="_blank" rel="noopener" style="text-decoration:none" hidden onclick="claimAction('trustpilot')"><div class="ic trust">★</div><div class="t">Avis Trustpilot</div><div class="s">+3 tampons</div></a>
+    <!-- ⚠️ 12/09 — TripAdvisor était RÉCOMPENSÉ PAR LE BACKEND depuis toujours
+         (FID_ACTIONS.tripadvisor, 3 tampons) mais n'a jamais eu de bouton. Pour
+         un restaurant, c'est la plateforme qui compte, bien avant Trustpilot. -->
+    <a class="bn" id="lkTripa" href="#" target="_blank" rel="noopener" style="text-decoration:none" hidden onclick="claimAction('tripadvisor')"><div class="ic trip">🦉</div><div class="t">Avis TripAdvisor</div><div class="s">+3 tampons</div></a>
     <div class="bn green"><div class="ic">🎂</div><div class="t">Anniversaire</div><div class="s" id="annivGift">Cadeau le jour J</div></div>
     <!-- 🗑️ 08/09 — « Giveaway du mois » retiré.
          C'était un <div> mort : aucun clic, aucun appel serveur, rien derrière.
@@ -594,6 +614,8 @@ p,.oh-d,.res-desc,.gs{line-height:1.55!important;color:var(--muted)}
     <div class="social-links">
       <a class="slink ig" id="lkIg" href="#" target="_blank" rel="noopener" aria-label="Instagram" onclick="claimAction('insta')"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#fff" stroke-width="2"><rect x="2.5" y="2.5" width="19" height="19" rx="5.5"/><circle cx="12" cy="12" r="4.3"/><circle cx="17.6" cy="6.4" r="1.3" fill="#fff" stroke="none"/></svg></a>
       <a class="slink fb" id="lkFb" href="#" target="_blank" rel="noopener" aria-label="Facebook" onclick="claimAction('facebook')"><svg viewBox="0 0 24 24" width="22" height="22" fill="#fff"><path d="M13.5 21v-8h2.7l.4-3.1h-3.1V7.9c0-.9.25-1.5 1.55-1.5H17V3.6c-.3-.04-1.3-.13-2.46-.13-2.43 0-4.1 1.48-4.1 4.21v2.35H7.7V13h2.74v8h3.06z"/></svg></a>
+      <!-- TikTok : là aussi le backend crédite déjà (FID_ACTIONS.tiktok, 2 tampons). -->
+      <a class="slink tt" id="lkTt" href="#" target="_blank" rel="noopener" aria-label="TikTok" onclick="claimAction('tiktok')"><svg viewBox="0 0 24 24" width="22" height="22" fill="#fff"><path d="M16.6 5.8a4.3 4.3 0 0 1-1-2.8h-3v11.6a2.4 2.4 0 1 1-1.7-2.3V9.2a5.4 5.4 0 1 0 4.7 5.3V9.1a7.2 7.2 0 0 0 4.2 1.3V7.4a4.3 4.3 0 0 1-3.2-1.6z"/></svg></a>
     </div>
   </div>
 
@@ -633,6 +655,24 @@ p,.oh-d,.res-desc,.gs{line-height:1.55!important;color:var(--muted)}
     <div class="oi">🔔</div>
     <div class="ot"><div class="n" id="optTitre">Offres et bons plans</div><div class="d" id="optSous">Reçois un email quand la boutique lance une offre</div></div>
     <label class="switch"><input type="checkbox" id="optMail" onchange="setOptin(this.checked)"><span class="sl"></span></label>
+  </div>
+
+  <!-- ⚠️ 12/09 — IL N'Y AVAIT NULLE PART OÙ DONNER SON E-MAIL.
+       L'interrupteur ci-dessus n'écrit qu'un drapeau (colonne email_opt_in).
+       Un client arrivé par le Wallet n'a jamais saisi d'adresse : il pouvait
+       activer « Offres et bons plans » et ne rien recevoir, parce qu'il n'y
+       avait pas d'adresse à qui écrire. C'est aussi pour ça que le compteur de
+       destinataires de l'onglet Promo affichait zéro.
+       Ce bloc n'apparaît QUE si la fiche n'a pas d'adresse. -->
+  <div class="optmail" id="optMailRow" hidden>
+    <div class="om-t" id="omTitre">Ton e-mail pour recevoir les offres</div>
+    <div class="om-row">
+      <input class="om-input" id="omInput" type="email" inputmode="email" autocomplete="email"
+             placeholder="prenom@exemple.fr" enterkeyhint="done"
+             onkeydown="if(event.key==='Enter')enregistrerEmail()">
+      <button class="om-btn" id="omBtn" onclick="enregistrerEmail()">Valider</button>
+    </div>
+    <div class="om-note" id="omNote">Uniquement pour les offres de la boutique. Jamais revendu, et tu peux couper quand tu veux.</div>
   </div>
 
   <div class="foot">
@@ -907,18 +947,33 @@ function brancherLiens(com){
     else if(a){ a.hidden = true; }
     return !!u;
   };
-  pose('lkTrust', com.trustpilot);
-  const ig = pose('lkIg', com.instagram);
-  const fb = pose('lkFb', com.facebook);
+  const tp = pose('lkTrust', com.trustpilot);
+  const ta = pose('lkTripa', com.tripadvisor);
+  const ig = pose('lkIg',  com.instagram);
+  const fb = pose('lkFb',  com.facebook);
+  const tt = pose('lkTt',  com.tiktok);
 
+  const reseaux = [ig && 'Instagram', fb && 'Facebook', tt && 'TikTok'].filter(Boolean);
   const bloc = $('socialBlock'), tuile = $('bnSocial');
-  if(bloc)  bloc.hidden  = !(ig || fb);
-  if(tuile) tuile.hidden = !(ig || fb);
+  if(bloc)  bloc.hidden  = !reseaux.length;
+  if(tuile) tuile.hidden = !reseaux.length;
   const txt = $('socialTxt');
-  if(txt && (ig || fb)){
-    txt.innerHTML = 'Suis-nous et gagne <b>+2 tampons</b>'
-      + (ig && fb ? ' par réseau — sur Instagram comme sur Facebook 🎁'
-                  : (ig ? ' sur Instagram 🎁' : ' sur Facebook 🎁'));
+  if(txt && reseaux.length){
+    const liste = reseaux.length > 1
+      ? reseaux.slice(0, -1).join(', ') + ' et ' + reseaux[reseaux.length - 1]
+      : reseaux[0];
+    txt.innerHTML = 'Suis-nous sur ' + liste + ' et gagne <b>+2 tampons</b>'
+      + (reseaux.length > 1 ? ' par réseau 🎁' : ' 🎁');
+  }
+
+  /* La grille des bonus est en 3 colonnes fixes. Le nombre de tuiles VISIBLES
+     varie de 1 à 4 selon ce que le commerce a rempli : à 4, la quatrième se
+     retrouvait seule et étirée sur toute la largeur. On pose donc le nombre de
+     colonnes d'après ce qui est réellement affiché. */
+  const grille = document.querySelector('.bonus');
+  if(grille){
+    const n = [...grille.children].filter(function(e){ return !e.hidden; }).length;
+    grille.style.gridTemplateColumns = 'repeat(' + (n >= 4 ? 2 : Math.max(1, n)) + ',1fr)';
   }
 }
 /* Repli hors ligne : on ne montre RIEN plutôt qu'un lien faux. */
@@ -1138,7 +1193,22 @@ function render(c){
   renderCatalogue(c.points_solde);      // même dessinateur que applySolde()
   $('cardNo').textContent = cardId;
   const oi = String(c.email_opt_in||'').toLowerCase();
-  if($('optMail')) $('optMail').checked = !(oi==='off'||oi==='non'||oi==='no'||oi==='0'||oi==='false');
+  const refuse = (oi==='off'||oi==='non'||oi==='no'||oi==='0'||oi==='false');
+  if($('optMail')) $('optMail').checked = !refuse;
+
+  /* Pas d'adresse en fiche = l'interrupteur ne promet rien. On la demande, sans
+     attendre que le client comprenne tout seul pourquoi il ne reçoit jamais rien.
+     Mais PAS à celui qui a explicitement coupé les alertes : il a répondu, on
+     ne lui repose pas la question à chaque ouverture. S'il rallume, le champ
+     apparaît (cf. setOptin). */
+  /* `c.a_email` d'abord (booléen posé par le backend, survit au caviardage),
+     puis la trace locale. `c.email` reste lu au cas où la réponse vienne d'un
+     contexte non caviardé — il ne le sera jamais depuis la carte du client. */
+  const aUnEmail = (c.a_email === true)
+                || !!String(c.email || '').trim()
+                || emailDejaDonne(cardId);
+  emailClient = aUnEmail ? '(en fiche)' : '';
+  montrerSaisieEmail(!aUnEmail && !refuse);
 }
 // Encart +30 pts : visible tant que l'opt-in n'est pas explicitement 'on' (= bonus pas encore pris)
 
@@ -1288,6 +1358,66 @@ window.redeem = function(item, btn){
   }).catch(()=>{ toast('Connexion impossible.'); restore(); });
 };
 
+/* ── ✉️ L'ADRESSE E-MAIL DU CLIENT ────────────────────────────────────────
+   Écrite par `fid_activate`, qui sait déjà mettre à jour un profil existant
+   (colonne 4 = email, colonne 13 = email_opt_in). Aucune action nouvelle côté
+   Apps Script : appelé SANS `gain`, il ne crée aucun cadeau et n'a pas d'autre
+   effet de bord — vérifié dans le code du backend avant d'être câblé ici. */
+/* ⚠️ LE NAVIGATEUR DU CLIENT NE PEUT PAS SAVOIR S'IL A DÉJÀ DONNÉ SON ADRESSE.
+   `jsonResponse` caviarde les champs de CHAMPS_JAMAIS_PUBLICS (`email`,
+   `anniversaire`) pour toute requête SANS secret vendeur — et la carte du client
+   n'en a pas, à raison. Le champ `email` est donc toujours absent de la réponse,
+   pas vide : absent. (Vérifié le 12/09 en comparant deux appels au même endpoint,
+   l'un avec secret l'autre sans.)
+
+   Sans signal, on redemanderait l'adresse à chaque ouverture. Deux sources, dans
+   cet ordre :
+     1. `a_email` — un simple booléen, s'il est présent dans la réponse. Il ne
+        traverse PAS le caviardage (ce n'est pas une donnée nominative). Il
+        n'existe que si le Code.gs du commerce a reçu la ligne correspondante ;
+     2. à défaut, une trace locale posée après un enregistrement réussi.
+   Le repli n'est pas parfait — changer de téléphone fait reposer la question —
+   mais redonner la même adresse est sans effet : elle est simplement réécrite. */
+let emailClient = '';
+const CLE_EMAIL = 'perify_email_donne_';
+function emailDejaDonne(id){ try{ return localStorage.getItem(CLE_EMAIL + id) === '1'; }catch(e){ return false; } }
+function marquerEmailDonne(id){ try{ localStorage.setItem(CLE_EMAIL + id, '1'); }catch(e){} }
+
+function montrerSaisieEmail(afficher, motif){
+  const bloc = $('optMailRow'); if(!bloc) return;
+  bloc.hidden = !afficher;
+  const n = $('omNote');
+  if(n && motif){ n.textContent = motif; n.classList.remove('bad'); }
+}
+/* Volontairement permissive : on refuse ce qui est évidemment faux, on ne
+   prétend pas valider une adresse — seul un envoi le prouve. */
+function emailPlausible(v){ return /^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i.test(String(v||'').trim()); }
+
+window.enregistrerEmail = function(){
+  const champ = $('omInput'), btn = $('omBtn'), note = $('omNote');
+  const v = String(champ.value || '').trim();
+  if(!emailPlausible(v)){
+    champ.classList.add('bad');
+    note.classList.add('bad');
+    note.textContent = 'Cette adresse ne semble pas valide — vérifie qu\'il y a bien un @ et un point.';
+    return;
+  }
+  champ.classList.remove('bad'); note.classList.remove('bad');
+  btn.disabled = true; btn.textContent = '…';
+  api('fid_activate', { card_id: cardId, email: v, email_opt_in: 'on' }).then(function(d){
+    btn.disabled = false; btn.textContent = 'Valider';
+    if(d.status !== 'ok'){ note.classList.add('bad'); note.textContent = 'Enregistrement impossible, réessaie dans un instant.'; return; }
+    emailClient = v;
+    marquerEmailDonne(cardId);        // pour ne pas reposer la question à la prochaine ouverture
+    const el = $('optMail'); if(el) el.checked = true;
+    montrerSaisieEmail(false);
+    toast('✉️ C\'est noté, tu recevras les offres');
+  }).catch(function(){
+    btn.disabled = false; btn.textContent = 'Valider';
+    note.classList.add('bad'); note.textContent = 'Connexion impossible — réessaie dans un instant.';
+  });
+};
+
 window.setOptin = function(on){
   api('fid_optin',{card_id:cardId, value:on?'on':'off'}).then(d=>{
     if(d.status==='ok'){
@@ -1298,7 +1428,14 @@ window.setOptin = function(on){
         : 'Tu seras prévenu des produits gratuits, offres flash et paniers anti-gaspi 🥐';
       if(d.bonus>0){ applySolde(solde + d.bonus); showConfirm({badge:'🎉 +'+d.bonus+' tampons !', emoji:'🔔', title:'Alertes activées !', lib:'+'+d.bonus+' tampons offerts', note:promesse}); }
       else toast(on?'🔔 Alertes activées':'Alertes désactivées');
-      const el=$('optMail'); if(el) el.checked=on; 
+      const el=$('optMail'); if(el) el.checked=on;
+      /* Activer sans adresse en fiche, c'est cocher une case qui n'enverra
+         jamais rien. On demande l'adresse dans la foulée, en disant pourquoi. */
+      if(on && !emailClient){
+        montrerSaisieEmail(true, 'Il manque ton adresse : sans elle, la boutique n’a nulle part où t’écrire.');
+        const c = $('omInput'); if(c) c.focus();
+      }
+      if(!on) montrerSaisieEmail(false);
     }
     else { toast('Action impossible.'); const el=$('optMail'); if(el) el.checked=!on; }
   }).catch(()=>{ toast('Connexion impossible.'); const el=$('optMail'); if(el) el.checked=!on; });
