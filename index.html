@@ -450,7 +450,11 @@ body::after{
       <!-- Consentement RGPD (opt-in explicite, non pré-coché). Ne conditionne PAS le coupon (email transactionnel). -->
       <label class="s3-consent" for="fieldOptin">
         <input type="checkbox" id="fieldOptin">
-        <span>J'accepte de recevoir par email les <b>offres</b> et <b>alertes anti-gaspi</b> de la boutique <span style="color:var(--muted2)">(désactivable à tout moment sur ma carte fidélité)</span></span>
+        <!-- ⚠️ « alertes anti-gaspi » n'est vrai que chez les commerces qui ont
+             pris le module : faire consentir un client à quelque chose qui
+             n'existe pas chez ce commerçant vide le consentement de son sens.
+             Le texte est ajusté depuis le registre (champ `antigaspi`). -->
+        <span id="consentTxt">J'accepte de recevoir par email les <b>offres</b> et <b>alertes anti-gaspi</b> de la boutique <span style="color:var(--muted2)">(désactivable à tout moment sur ma carte fidélité)</span></span>
       </label>
       <button class="s3-submit" onclick="submitForm()">Recevoir mon coupon 🎁</button>
       <div class="s3-legal">🔒 Données sécurisées · Non revendues · RGPD</div>
@@ -761,8 +765,25 @@ function brancherLienAvis(){
   }).catch(function(){});
 }
 
+/* Le texte du consentement, ajusté au commerce. On ne promet des « alertes
+   anti-gaspi » qu'à ceux qui ont réellement le module : un consentement qui
+   porte sur une chose inexistante n'est pas un consentement.
+   Le texte par défaut (celui du HTML) est le plus large — s'il n'était pas
+   corrigé faute de registre, on aurait demandé PLUS que nécessaire, jamais
+   moins : c'est le sens dans lequel se tromper. */
+function brancherConsentement(){
+  var el = document.getElementById('consentTxt');
+  if(!el || typeof BA === 'undefined') return;
+  BA.pret().then(function(com){
+    if(!com || com.antigaspi !== false) return;      // le commerce a le module : texte inchangé
+    el.innerHTML = 'J\'accepte de recevoir par email les <b>offres</b> et <b>bons plans</b> de la boutique '
+      + '<span style="color:var(--muted2)">(désactivable à tout moment sur ma carte fidélité)</span>';
+  }).catch(function(){});
+}
+
 window.addEventListener("load",()=>{
   brancherLienAvis();
+  brancherConsentement();
   /* 🎫 10/09 — UN PORTEUR DE CARTE NE REPASSE PLUS PAR L'ÉCRAN D'AVIS.
      Signalé depuis un iPhone : scanner le présentoir avec une carte déjà enregistrée
      redemandait un avis avant de donner accès à la fidélité.
