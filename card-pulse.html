@@ -8,6 +8,14 @@
 <title>Ma Fidélité — Falman (habillage Pulse)</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<!-- ⚡ 12/09 — Le seul appel qui compte dans le temps de chargement est celui au
+     backend Apps Script : mesuré à 4,3 s sur 4,3 s de total, et il ne démarre
+     qu'à 1,1 s. Ces deux lignes ouvrent la connexion (DNS + TLS) PENDANT que le
+     navigateur lit encore le HTML, au lieu de l'ouvrir au moment de l'appel.
+     `script.googleusercontent.com` est là parce qu'Apps Script REDIRIGE vers lui :
+     sans cette seconde ligne, on paierait deux poignées de main au lieu d'une. -->
+<link rel="preconnect" href="https://script.google.com" crossorigin>
+<link rel="preconnect" href="https://script.googleusercontent.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
 /* ════════════════════════════════════════════════════════════════
