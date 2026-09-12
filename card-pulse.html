@@ -280,6 +280,10 @@ body{font-family:var(--font-ui);-webkit-font-smoothing:antialiased;color:var(--i
 .bonus{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:4px}
 .bn{background:var(--card);border-radius:18px;padding:15px 8px;box-shadow:var(--shadow);border:1px solid var(--line);text-align:center}
 .bn .ic{font-size:24px;line-height:1}.bn .ic.trust{color:var(--trust-ink)}
+/* Le vrai logo TripAdvisor, à la taille exacte de l'emoji qu'il remplace :
+   posé en 96 px pour rester net sur un écran d'iPhone. */
+.bn .ic.trip{display:flex;justify-content:center}
+.bn .ic.trip img{width:26px;height:26px;display:block}
 .bn .t{font-size:11.5px;font-weight:600;color:var(--ink);margin-top:7px;line-height:1.25}
 .bn .s{font-size:11.5px;color:var(--gold-ink);font-weight:700;margin-top:3px}.bn.green .s{color:var(--green-ink)}
 
@@ -599,7 +603,7 @@ p,.oh-d,.res-desc,.gs{line-height:1.55!important;color:var(--muted)}
     <!-- ⚠️ 12/09 — TripAdvisor était RÉCOMPENSÉ PAR LE BACKEND depuis toujours
          (FID_ACTIONS.tripadvisor, 3 tampons) mais n'a jamais eu de bouton. Pour
          un restaurant, c'est la plateforme qui compte, bien avant Trustpilot. -->
-    <a class="bn" id="lkTripa" href="#" target="_blank" rel="noopener" style="text-decoration:none" hidden onclick="claimAction('tripadvisor')"><div class="ic trip">🦉</div><div class="t">Avis TripAdvisor</div><div class="s">+3 tampons</div></a>
+    <a class="bn" id="lkTripa" href="#" target="_blank" rel="noopener" style="text-decoration:none" hidden onclick="claimAction('tripadvisor')"><div class="ic trip"><img src="assets/tripadvisor.png" alt="" width="96" height="96"></div><div class="t">Avis TripAdvisor</div><div class="s">+3 tampons</div></a>
     <!-- 🗑️ 12/09 — TUILE « ANNIVERSAIRE » RETIRÉE (demande de l'utilisateur).
          Elle n'avait rien à faire sous « Gagner plus de tampons » : les autres
          tuiles sont des ACTIONS que le client peut faire maintenant, celle-ci
@@ -615,7 +619,10 @@ p,.oh-d,.res-desc,.gs{line-height:1.55!important;color:var(--muted)}
          de détail qui se paie le jour où il demande s'il a gagné.
          Le bénéfice RÉEL des réseaux (+2 tampons, câblé par claimAction) est
          conservé — c'est lui qu'on met en avant. -->
-    <div class="bn" id="bnSocial" hidden><div class="ic">📱</div><div class="t">Réseaux sociaux</div><div class="s">+2 tampons</div></div>
+    <!-- 🗑️ 12/09 — TUILE « 📱 Réseaux sociaux » RETIRÉE. Elle disait exactement
+         ce que le bloc juste en dessous dit déjà, en moins parlant : là il y a
+         les vrais logos Instagram et Facebook, sur lesquels on clique. Deux fois
+         la même information, dont une en emoji générique. -->
   </div>
 
   <!-- ⚠️ MASQUÉS PAR DÉFAUT, révélés par brancherLiens() si — et seulement si —
@@ -973,9 +980,10 @@ function brancherLiens(com){
   const tt = pose('lkTt',  com.tiktok);
 
   const reseaux = [ig && 'Instagram', fb && 'Facebook', tt && 'TikTok'].filter(Boolean);
-  const bloc = $('socialBlock'), tuile = $('bnSocial');
-  if(bloc)  bloc.hidden  = !reseaux.length;
-  if(tuile) tuile.hidden = !reseaux.length;
+  /* (la tuile « 📱 Réseaux sociaux » a été retirée le 12/09 : elle doublonnait
+     avec ce bloc-ci, qui porte les vrais logos) */
+  const bloc = $('socialBlock');
+  if(bloc) bloc.hidden = !reseaux.length;
   const txt = $('socialTxt');
   if(txt && reseaux.length){
     const liste = reseaux.length > 1
@@ -993,9 +1001,12 @@ function brancherLiens(com){
   if(grille){
     const n = [...grille.children].filter(function(e){ return !e.hidden; }).length;
     grille.style.gridTemplateColumns = 'repeat(' + (n >= 4 ? 2 : Math.max(1, n)) + ',1fr)';
-    /* aucune tuile → on retire aussi le titre, sinon il annonce une section vide */
     grille.hidden = (n === 0);
-    const t = $('bonusTitre'); if(t) t.hidden = (n === 0);
+    /* ⚠️ Le titre couvre DEUX choses : les tuiles d'avis ET le bloc des réseaux.
+       Le masquer sur le seul compte des tuiles laissait les logos Instagram et
+       Facebook orphelins, sans en-tête au-dessus — repéré par le test des 9
+       combinaisons, pas à l'œil. Il ne disparaît que si les deux sont vides. */
+    const t = $('bonusTitre'); if(t) t.hidden = (n === 0 && !reseaux.length);
   }
 }
 /* Repli hors ligne : on ne montre RIEN plutôt qu'un lien faux. */
