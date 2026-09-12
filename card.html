@@ -353,6 +353,13 @@ body{font-family:var(--font-ui);-webkit-font-smoothing:antialiased;color:var(--i
 .slink.ig{background:linear-gradient(45deg,#f09433,#e6683c 28%,#dc2743 50%,#cc2366 72%,#bc1888)}
 .slink.fb{background:#1877F2}
 .slink.tt{background:#010101}
+/* TripAdvisor : le logo porte déjà son rond vert, la pastille reste neutre. */
+.slink.ta{background:transparent;box-shadow:none;padding:0}
+.slink.ta img{width:44px;height:44px;display:block}
+/* Trustpilot n'a pas de logo fourni — l'étoile de la marque, sur son vert. */
+.slink.tp{background:#00B67A;color:#fff;font-size:24px;line-height:1}
+/* Plusieurs rangées à la suite : on les espace comme le reste de la page. */
+.social + .social{margin-top:10px}
 .confetti{position:fixed;top:-14px;z-index:210;pointer-events:none;will-change:transform,opacity}
 @keyframes confFall{to{transform:translateY(110vh) rotate(720deg);opacity:.85}}
 
@@ -517,31 +524,26 @@ body{font-family:var(--font-ui);-webkit-font-smoothing:antialiased;color:var(--i
        retrait de la tuile « Anniversaire » (12/09), un commerce dont aucun lien
        n'est renseigné n'a plus rien à mettre sous ce titre. -->
   <div class="sec-h" id="bonusTitre"><span class="t">Gagner plus de tampons</span></div>
-  <div class="bonus">
-    <a class="bn" id="lkTrust" href="#" target="_blank" rel="noopener" style="text-decoration:none" hidden onclick="claimAction('trustpilot')"><div class="ic trust">★</div><div class="t">Avis Trustpilot</div><div class="s">+3 tampons</div></a>
-    <!-- ⚠️ 12/09 — TripAdvisor était RÉCOMPENSÉ PAR LE BACKEND depuis toujours
-         (FID_ACTIONS.tripadvisor, 3 tampons) mais n'a jamais eu de bouton. Pour
-         un restaurant, c'est la plateforme qui compte, bien avant Trustpilot. -->
-    <a class="bn" id="lkTripa" href="#" target="_blank" rel="noopener" style="text-decoration:none" hidden onclick="claimAction('tripadvisor')"><div class="ic trip"><img src="assets/tripadvisor.png" alt="" width="96" height="96"></div><div class="t">Avis TripAdvisor</div><div class="s">+3 tampons</div></a>
-    <!-- 🗑️ 12/09 — TUILE « ANNIVERSAIRE » RETIRÉE (demande de l'utilisateur).
-         Elle n'avait rien à faire sous « Gagner plus de tampons » : les autres
-         tuiles sont des ACTIONS que le client peut faire maintenant, celle-ci
-         annonçait un cadeau passif qui tombe tout seul le jour J.
-         ⚠️ Le CADEAU D'ANNIVERSAIRE, lui, continue de fonctionner : il est
-         déclenché côté serveur au scan (ANNIV_ENABLED dans Code.gs), la date est
-         toujours demandée à l'enrôlement, et le client voit toujours sa fenêtre
-         de félicitations le jour venu. Seule l'annonce disparaît. -->
-    <!-- 🗑️ 08/09 — « Giveaway du mois » retiré.
-         C'était un <div> mort : aucun clic, aucun appel serveur, rien derrière.
-         Et il annonçait un tirage mensuel supprimé avec la tombola le 07/09.
-         Promettre à un client un tirage que personne n'organise, c'est le genre
-         de détail qui se paie le jour où il demande s'il a gagné.
-         Le bénéfice RÉEL des réseaux (+2 tampons, câblé par claimAction) est
-         conservé — c'est lui qu'on met en avant. -->
-    <!-- 🗑️ 12/09 — TUILE « 📱 Réseaux sociaux » RETIRÉE. Elle disait exactement
-         ce que le bloc juste en dessous dit déjà, en moins parlant : là il y a
-         les vrais logos Instagram et Facebook, sur lesquels on clique. Deux fois
-         la même information, dont une en emoji générique. -->
+  <!-- ⚠️ 12/09 — LES DEUX PLATEFORMES D'AVIS SONT DES RANGÉES, plus des tuiles.
+       Même forme que le bloc des réseaux : une phrase à gauche, le logo
+       cliquable à droite. En petite tuile centrée, TripAdvisor faisait une case
+       presque vide à côté d'un bloc bien rempli.
+       Chaque rangée n'apparaît que si le registre donne une adresse.
+       ⚠️ Les montants écrits ici doivent rester d'accord avec FID_ACTIONS dans
+       Code.gs — c'est le backend qui crédite. `controle-commerce.mjs` compare
+       les deux et refuse de passer s'ils divergent. -->
+  <div class="social" id="tripaBlock" hidden>
+    <div class="social-txt" id="tripaTxt">Laisse un avis sur <b>TripAdvisor</b> et gagne <b>+2 tampons</b> 🎁</div>
+    <div class="social-links">
+      <a class="slink ta" id="lkTripa" href="#" target="_blank" rel="noopener" aria-label="TripAdvisor" onclick="claimAction('tripadvisor')"><img src="assets/tripadvisor.png" alt="" width="96" height="96"></a>
+    </div>
+  </div>
+
+  <div class="social" id="trustBlock" hidden>
+    <div class="social-txt" id="trustTxt">Laisse un avis sur <b>Trustpilot</b> et gagne <b>+3 tampons</b> 🎁</div>
+    <div class="social-links">
+      <a class="slink tp" id="lkTrust" href="#" target="_blank" rel="noopener" aria-label="Trustpilot" onclick="claimAction('trustpilot')">★</a>
+    </div>
   </div>
 
   <!-- ⚠️ MASQUÉS PAR DÉFAUT, révélés par brancherLiens() si — et seulement si —
@@ -610,6 +612,8 @@ body{font-family:var(--font-ui);-webkit-font-smoothing:antialiased;color:var(--i
        Ce bloc n'apparaît QUE si la fiche n'a pas d'adresse. -->
     <div class="optmail" id="optMailRow" hidden>
       <div class="om-t" id="omTitre">Ton e-mail — <b>+1 tampon</b> une fois validé</div>
+      <!-- « +1 » doit rester d'accord avec FID_ACTIONS.optin_email dans Code.gs,
+           contrôlé par _outils/controle-commerce.mjs. -->
       <div class="om-row">
         <input class="om-input" id="omInput" type="email" inputmode="email" autocomplete="email"
                placeholder="prenom@exemple.fr" enterkeyhint="done"
@@ -898,9 +902,14 @@ function brancherLiens(com){
   const fb = pose('lkFb',  com.facebook);
   const tt = pose('lkTt',  com.tiktok);
 
+  /* ⚠️ Les montants viennent d'ICI et de nulle part ailleurs dans cette page.
+     Ils doivent refléter FID_ACTIONS (Code.gs) : c'est le backend qui crédite,
+     le front ne fait qu'annoncer. Écrire « +2 » en dur dans une phrase et « 1 »
+     dans le backend, c'est promettre au client ce qu'il ne recevra pas.
+     `_outils/controle-commerce.mjs` compare les deux et échoue s'ils divergent. */
+  const TAMPONS = { tripadvisor:2, trustpilot:3, reseau:1 };
+
   const reseaux = [ig && 'Instagram', fb && 'Facebook', tt && 'TikTok'].filter(Boolean);
-  /* (la tuile « 📱 Réseaux sociaux » a été retirée le 12/09 : elle doublonnait
-     avec ce bloc-ci, qui porte les vrais logos) */
   const bloc = $('socialBlock');
   if(bloc) bloc.hidden = !reseaux.length;
   const txt = $('socialTxt');
@@ -908,25 +917,26 @@ function brancherLiens(com){
     const liste = reseaux.length > 1
       ? reseaux.slice(0, -1).join(', ') + ' et ' + reseaux[reseaux.length - 1]
       : reseaux[0];
-    txt.innerHTML = 'Suis-nous sur ' + liste + ' et gagne <b>+2 tampons</b>'
-      + (reseaux.length > 1 ? ' par réseau 🎁' : ' 🎁');
+    txt.innerHTML = 'Suis-nous sur ' + liste + ' et gagne <b>+' + TAMPONS.reseau + ' tampon'
+      + (TAMPONS.reseau > 1 ? 's' : '') + '</b>' + (reseaux.length > 1 ? ' par réseau 🎁' : ' 🎁');
   }
 
-  /* La grille des bonus est en 3 colonnes fixes. Le nombre de tuiles VISIBLES
-     varie de 1 à 4 selon ce que le commerce a rempli : à 4, la quatrième se
-     retrouvait seule et étirée sur toute la largeur. On pose donc le nombre de
-     colonnes d'après ce qui est réellement affiché. */
-  const grille = document.querySelector('.bonus');
-  if(grille){
-    const n = [...grille.children].filter(function(e){ return !e.hidden; }).length;
-    grille.style.gridTemplateColumns = 'repeat(' + (n >= 4 ? 2 : Math.max(1, n)) + ',1fr)';
-    grille.hidden = (n === 0);
-    /* ⚠️ Le titre couvre DEUX choses : les tuiles d'avis ET le bloc des réseaux.
-       Le masquer sur le seul compte des tuiles laissait les logos Instagram et
-       Facebook orphelins, sans en-tête au-dessus — repéré par le test des 9
-       combinaisons, pas à l'œil. Il ne disparaît que si les deux sont vides. */
-    const t = $('bonusTitre'); if(t) t.hidden = (n === 0 && !reseaux.length);
-  }
+  /* Les deux plateformes d'avis, chacune dans sa rangée. */
+  const rangee = function(idBloc, idTexte, visible, nom, pts){
+    const b = $(idBloc); if(b) b.hidden = !visible;
+    const t = $(idTexte);
+    if(t && visible) t.innerHTML = 'Laisse un avis sur <b>' + nom + '</b> et gagne <b>+'
+      + pts + ' tampon' + (pts > 1 ? 's' : '') + '</b> 🎁';
+  };
+  rangee('tripaBlock', 'tripaTxt', ta, 'TripAdvisor', TAMPONS.tripadvisor);
+  rangee('trustBlock', 'trustTxt', tp, 'Trustpilot',  TAMPONS.trustpilot);
+
+  /* Le titre « Gagner plus de tampons » couvre les TROIS rangées : il ne
+     disparaît que si aucune n'est affichée. Le masquer sur un seul critère
+     laissait les autres orphelines, sans en-tête — repéré par le test des
+     combinaisons, pas à l'œil. */
+  const t = $('bonusTitre');
+  if(t) t.hidden = !(ta || tp || reseaux.length);
 }
 /* Repli hors ligne : on ne montre RIEN plutôt qu'un lien faux. */
 brancherLiens(null);
@@ -1145,9 +1155,16 @@ function render(c){
   renderStamps(c.points_solde, next);
   renderCatalogue(c.points_solde);      // même dessinateur que applySolde()
   $('cardNo').textContent = cardId;
-  const oi = String(c.email_opt_in||'').toLowerCase();
-  const refuse = (oi==='off'||oi==='non'||oi==='no'||oi==='0'||oi==='false');
-  if($('optMail')) $('optMail').checked = !refuse;
+  /* ⚠️ 12/09 — VIDE = NON (décision de l'utilisateur, option « b »).
+     L'interrupteur s'affichait coché par défaut pour un client qui n'avait
+     jamais rien décidé : cocher n'était pas un choix, c'était l'état initial.
+     Désormais seul un « on » écrit l'allume — et il n'est écrit qu'au moment où
+     le client valide son adresse. Le backend applique la même règle côté envoi
+     (optinOui_), pour que l'affichage et la réalité ne divergent pas. */
+  const oi = String(c.email_opt_in||'').trim().toLowerCase();
+  const accepte = (oi==='on'||oi==='oui'||oi==='1'||oi==='true');
+  const refuse  = (oi==='off'||oi==='non'||oi==='no'||oi==='0'||oi==='false');
+  if($('optMail')) $('optMail').checked = accepte;
 
   /* Pas d'adresse en fiche = l'interrupteur ne promet rien. On la demande, sans
      attendre que le client comprenne tout seul pourquoi il ne reçoit jamais rien.
