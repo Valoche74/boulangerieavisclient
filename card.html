@@ -438,6 +438,11 @@ body{font-family:var(--font-ui);-webkit-font-smoothing:antialiased;color:var(--i
 .om-btn:disabled{opacity:.5;cursor:default}
 .om-note{font-size:11.5px;color:var(--muted);line-height:1.5;margin-top:9px}
 .om-note.bad{color:#d14343}
+/* ⚡ 13/09 — « Ne plus recevoir nos offres » (état « retrouver »). Discret, mais en
+   encre --muted (5,86:1) et souligné : le retrait doit se trouver sans chercher. */
+.om-lien{display:block;margin-top:4px;padding:6px 0;background:none;border:0;font-family:inherit;
+  font-size:12px;font-weight:600;color:var(--muted);text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+.om-lien:active{opacity:.6}
 /* Le champ FIGÉ, une fois l'adresse validée. Il doit rester parfaitement
    LISIBLE — c'est le seul endroit où le client peut repérer sa propre faute de
    frappe — donc on ne le grise pas : on le borde de vert et on garde l'encre
@@ -668,6 +673,9 @@ body{font-family:var(--font-ui);-webkit-font-smoothing:antialiased;color:var(--i
         <button class="om-btn" id="omBtn" onclick="omAction()">Valider</button>
       </div>
       <div class="om-note" id="omNote">En validant, tu acceptes de recevoir les offres de la boutique par e-mail. Adresse jamais revendue, suppression possible à tout moment.</div>
+      <!-- ⚡ 13/09 — État « retrouver » seulement (inscrit, adresse inconnue sur ce
+           téléphone) : se désinscrire sans avoir à retrouver son adresse. -->
+      <button class="om-lien" id="omDesinscrire" type="button" hidden onclick="demanderSuppression()">Ne plus recevoir nos offres</button>
     </div>
   </div>
 
@@ -710,6 +718,20 @@ body{font-family:var(--font-ui);-webkit-font-smoothing:antialiased;color:var(--i
     <div class="pv-warn" id="pvWarn" style="display:none">Tes informations personnelles vont être effacées. <b>Ta carte et tes tampons, eux, restent.</b> Touche à nouveau pour confirmer.</div>
     <button class="pv-danger" id="pvBtn" type="button" onclick="askForget()">Effacer mes informations</button>
     <button class="pv-close" type="button" onclick="closePrivacy()">Fermer</button>
+  </div>
+</div>
+
+<!-- ⚡ 13/09 — Confirmation avant de se désinscrire (pop-up demandée le 12/09).
+     « Supprimer » agissait au premier appui : sur un téléphone tenu d'une main, le
+     geste part tout seul. Même habillage que « Mes données ».
+     ⚠️ Le texte ne promet QUE ce qui se passe vraiment : l'arrêt des envois.
+     L'adresse, elle, reste dans le classeur (cf. montrerEtatEmail). -->
+<div class="cm-overlay" id="delOverlay" onclick="if(event.target===this)fermerSuppression()">
+  <div class="cm-card pv-card">
+    <div class="pv-t">Ne plus recevoir nos offres ?</div>
+    <p class="pv-p">Tu ne recevras plus aucune offre par e-mail. Tu pourras te réinscrire quand tu veux, depuis ta carte.</p>
+    <button class="pv-danger armed" id="delOui" type="button" onclick="confirmerSuppression()">Oui, me désinscrire</button>
+    <button class="pv-close" type="button" onclick="fermerSuppression()">Annuler</button>
   </div>
 </div>
 
@@ -1548,56 +1570,84 @@ function oublierEmail(id){ try{ localStorage.removeItem(CLE_EMAIL + id); }catch(
      'saisie'  : champ vide/modifiable, bouton « Valider »
      'inscrit' : adresse relisible et figée, bouton « Supprimer » */
 let etatEmail = 'saisie';
+/* ⚠️ 13/09 — RÉGRESSION DU 12/09 : LE CLAVIER NE S'OUVRAIT PLUS.
+   « inscrit » figeait le champ (readOnly) même quand CE téléphone ne connaît pas
+   l'adresse — le serveur la caviarde, seule la mémoire locale la garde. Touchés :
+   les clients inscrits avant le 12/09 au soir (ancien marqueur « 1 ») et tous ceux
+   qui changent de téléphone. Ils voyaient un champ verrouillé ET vide, qu'on touche
+   sans que rien ne se passe. Constaté sur l'iPhone de l'utilisateur, sa propre carte.
+
+   D'où un troisième état, réservé à ce cas :
+     'retrouver' : inscrit, adresse inconnue ici → champ modifiable et « Valider »
+                   (re-valider est sans effet de bord : fid_activate réécrit la
+                   même adresse, fid_action ne recrédite pas le tampon), plus un
+                   lien pour se désinscrire SANS avoir à retrouver son adresse —
+                   le retrait doit rester aussi simple que l'accord (RGPD art. 7-3).
+   « inscrit » ne fige donc plus que si l'on a réellement l'adresse à montrer. */
 function montrerEtatEmail(etat, motif){
   const champ = $('omInput'), bouton = $('omBtn'), carte = $('optRow');
   if(!champ || !bouton) return;
-  etatEmail = (etat === 'inscrit') ? 'inscrit' : 'saisie';
-  const inscrit = (etatEmail === 'inscrit');
+  const connue = emailMemorise(cardId);
+  etatEmail = (etat === 'inscrit') ? (connue ? 'inscrit' : 'retrouver') : 'saisie';
+  const fige   = (etatEmail === 'inscrit');     // adresse relisible, champ figé, « Supprimer »
+  const abonne = (etatEmail !== 'saisie');      // reçoit les offres, qu'on ait l'adresse ou non
 
-  champ.readOnly = inscrit;
-  champ.classList.toggle('fige', inscrit);
+  champ.readOnly = fige;
+  champ.classList.toggle('fige', fige);
   champ.classList.remove('bad');
-  bouton.textContent = inscrit ? 'Supprimer' : 'Valider';
-  bouton.classList.toggle('om-btn-off', inscrit);
+  bouton.textContent = fige ? 'Supprimer' : 'Valider';
+  bouton.classList.toggle('om-btn-off', fige);
   bouton.disabled = false;
-  if(carte) carte.classList.toggle('ouverte', inscrit);
+  if(carte) carte.classList.toggle('ouverte', abonne);
 
   const t = $('omTitre');
-  if(t) t.innerHTML = inscrit
-    ? 'Tu reçois nos offres à cette adresse'
+  if(t) t.innerHTML = fige ? 'Tu reçois nos offres à cette adresse'
+    : abonne ? 'Tu reçois déjà nos offres'
     : 'Ton e-mail — <b>' + tampon(TAMPONS.optin_email) + '</b> une fois validé';
 
   /* L'en-tête de la carte suit : promettre « gagne +1 tampon en activant » à
      quelqu'un qui est déjà inscrit et qui l'a déjà touché, c'est lui proposer
      une récompense qu'il ne peut plus avoir. */
   const h = $('optTitre');
-  if(h) h.innerHTML = inscrit
+  if(h) h.innerHTML = abonne
     ? 'Tes offres fidélité'
     : 'Gagne <b>' + tampon(TAMPONS.optin_email) + '</b> en activant les e-mails';
 
-  if(inscrit){
-    /* Sur un autre téléphone on n'a pas l'adresse (le serveur la caviarde) :
-       on le dit, plutôt que d'afficher un blanc qui passerait pour un bug. */
-    const m = emailMemorise(cardId);
-    champ.value = m;
-    champ.placeholder = m ? m : 'Adresse enregistrée sur un autre téléphone';
-  }
+  /* Figé : on montre l'adresse. Sinon on ne touche PAS à la valeur — le client est
+     peut-être en train de taper, et un rendu tardif ne doit pas l'effacer. */
+  if(fige){ champ.value = connue; champ.placeholder = connue; }
+  else { champ.placeholder = 'prenom@exemple.fr'; }
 
+  const lien = $('omDesinscrire');
+  if(lien) lien.hidden = (etatEmail !== 'retrouver');
+
+  /* ⚠️ 13/09 — « et ton adresse est effacée » a été retiré de la note : c'était
+     faux. fid_optin ne fait que passer l'envoi à « off », l'adresse reste dans le
+     classeur (vérifié en production le 13/09 sur deux cartes). Effacer vraiment
+     ou garder cette phrase : décision laissée à l'utilisateur. */
   const n = $('omNote');
   if(n){
     n.classList.remove('bad');
     n.textContent = motif ? motif
-      : (inscrit ? 'Tu peux la supprimer quand tu veux : tu ne recevras plus nos offres, et ton adresse est effacée.'
-                 : 'En validant, tu acceptes de recevoir les offres de la boutique par e-mail. Adresse jamais revendue, suppression possible à tout moment.');
+      : fige   ? 'Tu peux la supprimer quand tu veux : tu ne recevras plus nos offres.'
+      : abonne ? 'Ton adresse est bien enregistrée, mais pas sur ce téléphone. Saisis-la pour la retrouver ici.'
+      : 'En validant, tu acceptes de recevoir les offres de la boutique par e-mail. Adresse jamais revendue, suppression possible à tout moment.';
   }
 }
 
 /* Le bouton fait l'un ou l'autre selon l'état. Un seul bouton, donc aucun risque
    d'en montrer deux ou de laisser le mauvais actif. */
 window.omAction = function(){
-  if(etatEmail === 'inscrit') supprimerEmail();
-  else enregistrerEmail();
+  if(etatEmail === 'inscrit') window.demanderSuppression();
+  else enregistrerEmail();                  // 'saisie' ET 'retrouver'
 };
+
+/* ⚡ 13/09 — POP-UP DE CONFIRMATION avant de se désinscrire (demandée le 12/09).
+   Deux chemins y mènent : le bouton « Supprimer » (adresse connue sur ce
+   téléphone) et le lien « Ne plus recevoir nos offres » (état « retrouver »). */
+window.demanderSuppression = function(){ $('delOverlay').classList.add('show'); };
+window.fermerSuppression = function(){ $('delOverlay').classList.remove('show'); };
+window.confirmerSuppression = function(){ window.fermerSuppression(); supprimerEmail(); };
 
 /* ⚠️ RETRAIT DU CONSENTEMENT — obligatoire, et aussi simple à exercer que
    l'accord (RGPD art. 7-3). C'est ce que remplaçait l'ancien interrupteur.
@@ -1649,7 +1699,7 @@ window.enregistrerEmail = function(){
      (cf. apresFraiches), et demandeEmail garde la saisie ouverte quand elles
      arrivent — sinon elles pourraient refermer le champ sous les doigts du client. */
   if(!donneesFraiches){
-    demandeEmail = true;
+    if(etatEmail === 'saisie') demandeEmail = true;   // en « retrouver », le rendu ne touche déjà pas à la saisie
     if(!emailDiffere){ emailDiffere = true; apresFraiches(function(){ emailDiffere = false; window.enregistrerEmail(); }); }
     return;
   }
