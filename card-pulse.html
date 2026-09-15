@@ -305,6 +305,24 @@ body{font-family:var(--font-ui);-webkit-font-smoothing:antialiased;color:var(--i
 .bn .s{font-size:11.5px;color:var(--gold-ink);font-weight:700;margin-top:3px}.bn.green .s{color:var(--green-ink)}
 
 /* mes cadeaux */
+/* 🎁 15/09 — Offre reçue par e-mail, à activer (bloc « Nouvelle offre »). Rayons en
+   variables avec repli : l'habillage Pulse (skin-pulse.mjs) définit --r-carte et
+   --r-bouton, la carte d'origine garde ses valeurs. */
+.offres-wrap{display:flex;flex-direction:column;gap:10px}
+.offres{display:flex;flex-direction:column;gap:10px}
+.offre{display:flex;gap:14px;align-items:center;background:var(--card);border:1.5px solid var(--gold-line);
+  border-radius:var(--r-carte,20px);padding:12px 14px 12px 12px;box-shadow:var(--shadow)}
+.offre-img{width:62px;aspect-ratio:9/16;flex-shrink:0;border-radius:10px;overflow:hidden;background:var(--gold-soft);
+  display:grid;place-items:center;font-size:26px}
+.offre-img img{width:100%;height:100%;object-fit:cover;display:block}
+.offre-meta{flex:1;min-width:0}
+.offre-t{font-size:14.5px;font-weight:700;color:var(--ink);line-height:1.3}
+.offre-d{font-size:12px;font-weight:600;color:var(--gold-ink);margin-top:3px}
+.offre-go{margin-top:10px;border:none;border-radius:var(--r-bouton,99px);padding:10px 16px;font-family:var(--font-ui);
+  font-size:13px;font-weight:700;color:#3a2705;background:linear-gradient(135deg,var(--gold),var(--gold2));
+  box-shadow:0 4px 12px rgba(200,150,62,.30);cursor:pointer}
+.offre-go:active{transform:scale(.96)}
+.offre-go:disabled{opacity:.6;cursor:default;transform:none}
 .gifts{background:var(--card);border-radius:20px;box-shadow:var(--shadow);border:1px solid var(--line);overflow:hidden}
 .gift{display:flex;align-items:center;gap:13px;padding:14px 16px;border-bottom:1px solid var(--line)}.gift:last-child{border-bottom:none}
 .gift .ic{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;font-size:21px;background:var(--gold-soft);flex-shrink:0}
@@ -630,6 +648,14 @@ p,.oh-d,.res-desc,.gs{line-height:1.55!important;color:var(--muted)}
     <div class="prog-top"><span class="l" id="progL">—</span><span class="r" id="progR"></span></div>
     <div class="bar" id="progBarWrap"><i id="progBar" style="width:0%"></i></div>
     <div class="stamps" id="stampGrid"></div>
+  </div>
+
+  <!-- 🎁 15/09 — Offres reçues par e-mail, pas encore activées (décision du 14/09,
+       option B). Masqué tant qu'il n'y en a pas ; une offre dont la date est passée n'y
+       apparaît jamais (option A du 15/09). Rempli par renderOffres(). -->
+  <div class="offres-wrap" id="offresWrap" hidden>
+    <div class="sec-h"><span class="t" id="offresTitre">🎁 Nouvelle offre</span></div>
+    <div class="offres" id="offres"></div>
   </div>
 
   <!-- bandeau anti-gaspi : paniers invendus du jour (alerte clients fidélité) -->
@@ -1053,7 +1079,7 @@ let donneesFraiches = false;        // la carte à l'écran vient-elle du serveu
    Les dessinateurs le tiennent à jour (render, applySolde, renderRewards,
    applyActions) : un geste confirmé par le serveur n'est donc pas oublié à
    l'ouverture suivante. */
-const carteVue = { client:null, rewards:[], now:0, t:0, actions:{} };
+const carteVue = { client:null, rewards:[], now:0, t:0, actions:{}, offres:[] };   // 🎁 15/09 — offres : bloc « Nouvelle offre »
 
 function sansChampsPrives(c){
   const o = Object.assign({}, c);
@@ -1073,7 +1099,8 @@ function cacheSauver(){
   try{
     localStorage.setItem(CLE_CACHE + cardId, JSON.stringify({
       v:CACHE_V, t:carteVue.t, now:carteVue.now,
-      client:sansChampsPrives(carteVue.client), rewards:carteVue.rewards, actions:carteVue.actions
+      client:sansChampsPrives(carteVue.client), rewards:carteVue.rewards, actions:carteVue.actions,
+      offres:carteVue.offres   // 🎁 15/09 — un ancien cache sans ce champ donne une liste vide
     }));
   }catch(e){}
 }
@@ -1881,7 +1908,10 @@ function renderRewards(list, serverNow){
 
   /* Un cadeau consommé il y a plus d'une heure disparaît de la liste. */
   const shown = lastRewards.filter(g =>
-    !(g.statut==='done' && g.used_at && (Date.now() - toLocal(g.used_at)) > REDEEM_WINDOW_MS));
+    !(g.statut==='done' && g.used_at && (Date.now() - toLocal(g.used_at)) > REDEEM_WINDOW_MS)
+    /* 🎁 15/09 — une offre promo pas utilisée dont la date est passée disparaît aussi
+       (option A). Le serveur ne la renvoie plus ; ceci couvre la liste gardée en cache. */
+    && !(g.statut!=='done' && Number(g.fin_ms) > 0 && maintenantServeur() > Number(g.fin_ms)));
 
   if(!shown.length){ $('giftsWrap').style.display='none'; if(listTimer) clearInterval(listTimer); return; }
   $('giftsWrap').style.display='';
@@ -1891,7 +1921,8 @@ function renderRewards(list, serverNow){
     const lib = esc(g.libelle).replace(/'/g,"\\'");
     return '<div class="gift"><div class="ic">🎁</div>'
       +'<div class="meta"><div class="n">'+esc(g.libelle)+'</div>'
-      +'<div class="d">'+(g.code?('code '+esc(g.code)):'')+'</div></div>'
+      +'<div class="d">'+(g.code?('code '+esc(g.code)):'')
+      +(!done && g.fin_le ? ' · jusqu’au '+esc(g.fin_le) : '')+'</div></div>'   // 🎁 15/09 — offre promo : sa date
       +(done
         /* Validé : on garde le bouton actif — le client doit pouvoir le rouvrir
            en grand devant le vendeur, et voir le temps qu'il lui reste. */
@@ -1969,6 +2000,12 @@ window.confirmUse = function(btn){
     }
     api('fid_use', {card_id:cardId, code:code}).then(d=>{
       btn.disabled = false; btn.textContent = 'Oui, je suis en caisse';
+      if(d.status === 'expired'){
+        /* 🎁 15/09 — offre promo dont la date est passée (option A) : refusée, elle quitte la liste. */
+        closeUse(); loadRewards();
+        toast('Cette offre a expiré' + (d.fin_le ? ' : elle était valable jusqu’au ' + d.fin_le : '') + '.');
+        return;
+      }
       if(d.status !== 'ok' && d.status !== 'already'){
         toast(d.status === 'not_yours' ? "Ce cadeau n'est pas sur ta carte." : "Impossible de valider.");
         return;
@@ -1982,20 +2019,79 @@ window.confirmUse = function(btn){
   });
 }
 
-/* 🎟️ Activation d'une offre promo reçue par email (?promo=CAMP) → cadeau en attente + animation redeem */
+/* ═══ 🎁 15/09 — L'OFFRE REÇUE PAR E-MAIL APPARAÎT SUR LA CARTE ════════════════
+   Décidé avec l'utilisateur le 14/09 (option B) puis le 15/09 (option A) :
+     • une offre reçue et pas encore activée s'affiche dans « Nouvelle offre », avec le
+       bouton « Activer mon offre » ;
+     • activer = le même geste que le clic dans l'e-mail (fid_promo_claim) : l'offre
+       rejoint « Mes cadeaux » et quitte ce bloc ;
+     • après sa date, elle n'apparaît plus — même si le téléphone l'a gardée en cache.
+   ⚠️ Activer ÉCRIT côté serveur : le geste attend les données fraîches (apresFraiches),
+      sinon la liste de cadeaux lue AVANT lui repeindrait l'écran.
+   ⚠️ L'expiration se juge à l'heure du SERVEUR (écart d'horloge : cf. clockSkew). */
+let offresEnCours = {};            // offres dont l'activation est partie : bouton gelé
+function maintenantServeur(){ return Date.now() + clockSkew; }
+function offreVisible(o){
+  if(!o || !o.id || !(Number(o.fin_ms) > maintenantServeur())) return false;
+  return !(carteVue.rewards || []).some(function(g){ return g && g.source === 'promo_' + o.id; });
+}
+function renderOffres(list){
+  carteVue.offres = (Array.isArray(list) ? list : []).filter(offreVisible);
+  cacheSauver();
+  const wrap = $('offresWrap'), box = $('offres');
+  if(!wrap || !box) return;
+  const l = carteVue.offres;
+  if(!l.length){ wrap.hidden = true; box.innerHTML = ''; return; }
+  $('offresTitre').textContent = l.length > 1 ? '🎁 Nouvelles offres' : '🎁 Nouvelle offre';
+  box.innerHTML = l.map(function(o){
+    const enCours = !!offresEnCours[o.id];
+    const img = /^https:\/\//.test(o.image || '') ? '<img src="' + esc(o.image) + '" alt="" loading="lazy">' : '🎁';
+    return '<div class="offre">'
+      + '<div class="offre-img">' + img + '</div>'
+      + '<div class="offre-meta">'
+      +   '<div class="offre-t">' + esc(o.titre || 'Offre spéciale') + '</div>'
+      +   (o.fin_le ? '<div class="offre-d">Valable jusqu’au ' + esc(o.fin_le) + '</div>' : '')
+      +   '<button class="offre-go" type="button" data-offre="' + esc(o.id) + '"' + (enCours ? ' disabled' : '') + '>'
+      +     (enCours ? 'Activation…' : 'Activer mon offre') + '</button>'
+      + '</div></div>';
+  }).join('');
+  /* Un seul écouteur, sur le bloc : l'identifiant voyage dans un attribut, jamais dans
+     du code construit à la main (qui se casse sur la première apostrophe). */
+  box.onclick = function(ev){
+    const b = ev && ev.target && ev.target.closest ? ev.target.closest('[data-offre]') : null;
+    if(b) activerOffre(b.getAttribute('data-offre'), b);
+  };
+  wrap.hidden = false;
+}
+function activerOffre(id, btn){
+  if(!id || offresEnCours[id]) return;               // double appui : une seule activation
+  offresEnCours[id] = true;
+  if(btn){ btn.disabled = true; btn.textContent = 'Activation…'; }
+  apresFraiches(function(){ claimPromo(id); });
+}
+/* 🎟️ Activation d'une offre : clic dans l'e-mail (?promo=CAMP) ou bouton « Activer mon offre ».
+   Rejouable sans risque : une 2e activation répond « already » avec le même code. */
 function claimPromo(camp){
-  api('fid_promo_claim',{card_id:cardId, promo:camp}).then(d=>{
+  const liberer = function(){ delete offresEnCours[camp]; };
+  const retirer = function(){ liberer(); renderOffres((carteVue.offres || []).filter(function(o){ return o.id !== camp; })); };
+  api('fid_promo_claim',{card_id:cardId, promo:camp}, 1).then(d=>{
     if(d.status==='ok'){
-      loadRewards();
+      retirer(); loadRewards();
       showConfirm({badge:'🎁 Offre activée !', emoji:'🎉', title:'Offre activée !', lib:d.libelle, code:d.code,
-        note:'Montre ce code en caisse pour profiter de ton offre. Il est aussi dans « Mes cadeaux ».'});
+        note:'Montre ce code en caisse pour profiter de ton offre' + (d.fin_le ? ', jusqu’au ' + d.fin_le + ' inclus' : '') + '. Il est aussi dans « Mes cadeaux ».'});
     } else if(d.status==='already'){
-      loadRewards();
+      retirer(); loadRewards();
       showConfirm({badge:'✅ Déjà activée', emoji:'🎁', title:'Offre déjà activée', lib:d.libelle, code:d.code,
         note:'Cette offre est déjà dans « Mes cadeaux ». Montre le code en caisse.'});
-    } else { toast('Offre indisponible.'); }
+    } else if(d.status==='expired'){
+      retirer(); loadRewards();
+      toast('Cette offre a expiré' + (d.fin_le ? ' : elle était valable jusqu’au ' + d.fin_le : '') + '.');
+    } else if(d.status==='not_recipient'){
+      retirer();
+      toast('Cette offre n’est pas disponible sur ta carte.');
+    } else { liberer(); renderOffres(carteVue.offres); toast('Offre indisponible.'); }
     try{ var q=new URLSearchParams(location.search); q.delete('promo'); history.replaceState(null,'',location.pathname+(q.toString()?('?'+q.toString()):'')); }catch(e){}   // retire ?promo= (garde id/type)
-  }).catch(e=>toast(messageEchec(e)));
+  }).catch(e=>{ liberer(); renderOffres(carteVue.offres); toast(messageEchec(e)); });
 }
 
 /* 🥖 Paniers anti-gaspi du jour (alerte) */
@@ -2044,6 +2140,7 @@ else{
     try{
       render(enCache.client); show('stateActive');
       renderRewards(enCache.rewards, nowServeurDepuisCache(enCache));
+      renderOffres(enCache.offres);   // 🎁 15/09 — les expirées sont filtrées à l'heure serveur reconstituée
       applyActions(enCache.actions);
       $('cMaj').hidden = false;
       try{ performance.mark('carte-cache'); }catch(e){}
@@ -2063,7 +2160,9 @@ else{
       const inchange = !!enCache && JSON.stringify(sansChampsPrives(d.client)) === JSON.stringify(enCache.client);
       if(inchange){ carteVue.client = d.client; cacheSauver(); }
       else { render(d.client); }
-      show('stateActive'); renderRewards(d.rewards, d.now); renderPaniers(d.paniers); applyActions(d.actions);
+      show('stateActive'); renderRewards(d.rewards, d.now);
+      try{ renderOffres(d.offres); }catch(e){ console.warn('[carte] offres', e); }   // 🎁 15/09 — jamais bloquant pour la suite
+      renderPaniers(d.paniers); applyActions(d.actions);
       $('cMaj').hidden = true;
       try{ performance.mark('carte-fraiche'); }catch(e){}
       var _promo=(params.get('promo')||'').trim();
