@@ -1,4 +1,30 @@
 {
+  "redirects": [
+    {
+      "source": "/",
+      "has": [{ "type": "host", "value": "baps.perify.app" }],
+      "destination": "https://boulangerieavisclient.vercel.app/?c=baps&type=baps",
+      "permanent": false
+    },
+    {
+      "source": "/:chemin*",
+      "has": [{ "type": "host", "value": "baps.perify.app" }],
+      "destination": "https://boulangerieavisclient.vercel.app/:chemin*",
+      "permanent": false
+    },
+    {
+      "source": "/",
+      "has": [{ "type": "host", "value": "falman.perify.app" }],
+      "destination": "https://boulangerieavisclient.vercel.app/?c=falman&type=boulangerie",
+      "permanent": false
+    },
+    {
+      "source": "/:chemin*",
+      "has": [{ "type": "host", "value": "falman.perify.app" }],
+      "destination": "https://boulangerieavisclient.vercel.app/:chemin*",
+      "permanent": false
+    }
+  ],
   "headers": [
     {
       "source": "/commerces.json",
