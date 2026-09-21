@@ -649,6 +649,19 @@ body{font-family:var(--font-ui);-webkit-font-smoothing:antialiased;color:var(--i
       </svg>
       Ajouter à Apple Wallet
     </button>
+    <!-- 21/09 — GOOGLE WALLET, À L'ESSAI. Caché tant que Google n'a pas accordé la
+         publication : seuls les comptes de test déclarés dans sa console peuvent ajouter
+         la carte, un vrai client tomberait sur un refus. Il n'apparaît qu'avec ?gw=1
+         (retenu ensuite sur l'appareil), hors iPhone, et pour un commerce servi par
+         Perify — l'ancien serveur Google ne connaît pas gwallet_link.
+         ⚠️ Avant de l'ouvrir à tous : le remplacer par le bouton OFFICIEL de Google
+         (charte « Add to Google Wallet »), que leur validation exige. -->
+    <button class="wal-btn" id="gwBtn" type="button" style="display:none" onclick="ajouterAuGoogleWallet(this)">
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <rect x="2.5" y="5.5" width="19" height="14" rx="3"/><path d="M2.5 10.5h19"/><path d="M17 15.5h2"/>
+      </svg>
+      Ajouter à Google Wallet
+    </button>
     <div class="wal-hint" id="walHint"></div>
   </div>
 
@@ -1438,6 +1451,22 @@ function placerLeCommerce(com){
   if (r) r.style.display = 'block';
 }
 
+/* ── Google Wallet, à l'essai (21/09) ────────────────────────────────────────
+   ?gw=1 l'allume et l'appareil s'en souvient ; ?gw=0 l'éteint. Voir le commentaire
+   du bouton #gwBtn : tant que Google n'a pas accordé la publication, un client
+   ordinaire ne doit PAS voir ce bouton. */
+const GW_ESSAI = (function(){
+  let v = null;
+  try {
+    const q = new URLSearchParams(location.search).get('gw');
+    if (q === '1' || q === '0') localStorage.setItem('perify.gw', q);
+    v = localStorage.getItem('perify.gw');
+  } catch(e){ /* navigation privée : pas de mémoire, le paramètre seul fait foi */
+    v = new URLSearchParams(location.search).get('gw');
+  }
+  return v === '1';
+})();
+
 document.addEventListener('DOMContentLoaded', function(){
   const h = $('walHint');
   if (h && !EST_IOS) h.textContent = "Depuis un iPhone. Sur Android, la carte arrivera plus tard.";
@@ -1446,7 +1475,38 @@ document.addEventListener('DOMContentLoaded', function(){
      rendu le commerce avant de placer le plan. En cas d'échec, le bloc reste
      simplement masqué — mieux vaut pas de plan qu'un plan faux. */
   BA.pret().then(placerLeCommerce).catch(function(){});
+
+  /* Le bouton Google : à l'essai, hors iPhone, et seulement si le commerce est servi
+     par Perify (le registre le dit). Sur Android, le bouton Apple ne sert à rien : on
+     le retire plutôt que de laisser deux boutons dont un inutile. */
+  if (GW_ESSAI && !EST_IOS) BA.pret().then(function(com){
+    if (String(com && com.apps_script || '').indexOf('https://api.perify.app/') !== 0) return;
+    const g = $('gwBtn'); if (!g) return;
+    g.style.display = '';
+    const apple = document.querySelector('.wal-row .wal-btn:not(#gwBtn)');
+    if (apple) apple.style.display = 'none';
+    if (h) h.textContent = "Carte Google Wallet à l'essai : réservée aux comptes de test pour l'instant.";
+  }).catch(function(){});
 });
+
+window.ajouterAuGoogleWallet = function(btn){
+  const initial = btn.innerHTML;
+  btn.disabled = true; btn.textContent = 'Préparation…';
+  const rendre = () => { btn.disabled = false; btn.innerHTML = initial; };
+
+  /* Même lien signé que pour Apple ; le service enregistre la carte chez Google puis
+     renvoie le téléphone sur « Ajouter à Google Wallet ». */
+  api('gwallet_link', { card_id: cardId, type: COMMERCE_TYPE }).then(d=>{
+    if (d && d.status === 'ok' && d.url) {
+      location.href = d.url;
+      setTimeout(rendre, 4000);
+    } else if (d && d.status === 'not_configured') {
+      rendre(); toast('Service indisponible — préviens le commerçant');
+    } else {
+      rendre(); toast("Ta carte n'a pas pu être préparée");
+    }
+  }).catch(()=>{ rendre(); toast('Hors ligne — réessaie dans un instant'); });
+};
 
 window.ajouterAuWallet = function(btn){
   const initial = btn.innerHTML;
