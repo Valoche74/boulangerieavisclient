@@ -508,6 +508,18 @@ body::after{
 </div>
 </div>
 
+<!-- PROGRAMME TERMINÉ (23/09) — le serveur répond `commerce_arrete` (fin de contrat) :
+     plus de roue, plus de carte à créer ; on le dit avec les mots du commerçant. -->
+<div class="screen" id="screenArrete">
+<div class="screen-inner">
+<div class="already-wrap">
+  <span class="already-emoji">🏁</span>
+  <div class="already-title" id="arreteTitre">Programme terminé</div>
+  <div class="already-desc" id="arreteDesc">Ce programme de fidélité est terminé. Merci de votre fidélité !</div>
+</div>
+</div>
+</div>
+
 <!-- Theming multi-commerce (?type=) — boulangerie inchangée si absent -->
 <script>
 (function(){
@@ -718,6 +730,7 @@ const roueCheck = (function(){
   if(!fidCardId) return Promise.resolve(false);
   return apiGet({ action:'fid_client', card_id:fidCardId })
     .then(function(d){
+      if(d && d.code === 'commerce_arrete'){ montrerArret(d); }   // 🏁 23/09 : fin de contrat, on le dit tout de suite
       roueJouee = !!(d && d.roue_jouee);
       return roueJouee;
     })
@@ -752,6 +765,20 @@ function allerVersRoue(){
 }
 
 /* ─── Nav ─── */
+/* 🏁 23/09 — programme arrêté : l'écran dédié, avec le message du commerçant (jamais une alerte). */
+function montrerArret(d){
+  try{
+    document.getElementById('arreteTitre').textContent = (d && d.commerce ? d.commerce + ' — ' : '') + 'programme terminé';
+    document.getElementById('arreteDesc').textContent = (d && d.message) || 'Ce programme de fidélité est terminé. Merci de votre fidélité !';
+  }catch(e){}
+  showScreen('screenArrete');
+}
+/* 🏁 Dès le chargement : si le registre publié dit que le programme est arrêté (etat, message,
+   date — posés par ?action=registre après commerce_arreter), on n'attend pas la roue pour le dire.
+   Le serveur refuserait de toute façon (commerce_arrete) : ceci évite juste un avis pour rien. */
+BA.pret().then(function(com){
+  if(com && com.etat === 'arrete'){ montrerArret({ commerce: com.nom, message: com.message_arret, arrete_le: com.arrete_le }); }
+}).catch(function(){});
 function showScreen(id){
   document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
   document.getElementById(id).classList.add("active");
@@ -1213,6 +1240,7 @@ function walletViaStart(){
       showScreen('screenAlready');
       return r.url;
     }
+    if(r && r.code === 'commerce_arrete'){ montrerArret(r); throw new Error('programme_arrete'); }   // 🏁 23/09
     if(!r || r.status !== 'ok' || !r.url){
       throw new Error((r && (r.message || r.etape)) || 'lien indisponible');
     }
@@ -1350,6 +1378,11 @@ async function submitForm(){
          vers sa carte, comme sur le chemin Wallet. */
       if(data.status==="roue_jouee"){
         roueJouee = true; majLienCarte(); showScreen("screenAlready");
+        btn.textContent=btnOriginal; btn.disabled=false;
+        return;
+      }
+      if(data.code==="commerce_arrete"){   // 🏁 23/09 — fin de contrat : pas de cadeau, on le dit
+        montrerArret(data);
         btn.textContent=btnOriginal; btn.disabled=false;
         return;
       }

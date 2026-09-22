@@ -550,6 +550,14 @@ body{font-family:var(--font-ui);-webkit-font-smoothing:antialiased;color:var(--i
   <button class="cta" onclick="location.reload()">Réessayer</button>
 </div></div>
 
+<!-- PROGRAMME TERMINÉ (23/09) — le serveur répond `commerce_arrete` (fin de contrat,
+     article 14) : on le dit avec les mots du commerçant, jamais « connexion impossible ». -->
+<div class="screen" id="stateArrete"><div class="msg">
+  <div class="mic">🏁</div><h2 id="arrTitre">Programme terminé</h2>
+  <p id="arrMsg">Ce programme de fidélité est terminé. Merci de ta fidélité !</p>
+  <p class="small" id="arrDepuis" style="font-size:12px;color:var(--muted2)"></p>
+</div></div>
+
 <!-- FIDÉLITÉ -->
 <!-- 🎟️ Validation d'un cadeau, devant le vendeur -->
 <div class="use-ov" id="useModal">
@@ -1279,7 +1287,17 @@ function messageEchec(err){
   if(m === 'timeout')           return 'Le serveur met trop de temps — réessaie dans un instant.';
   return 'Pas de connexion — vérifie ton réseau.';
 }
-function show(id){ ['loading','stateNew','stateUnknown','stateError','stateActive'].forEach(s=>$(s).classList.toggle('on', s===id)); }
+function show(id){ ['loading','stateNew','stateUnknown','stateError','stateActive','stateArrete'].forEach(s=>$(s).classList.toggle('on', s===id)); }
+/* 🏁 23/09 — programme arrêté (fin de contrat) : l'écran dédié, avec le message du commerçant. */
+function montrerArret(d){
+  try{
+    $('arrTitre').textContent = (d && d.commerce ? d.commerce + ' — ' : '') + 'programme terminé';
+    $('arrMsg').textContent = (d && d.message) || 'Ce programme de fidélité est terminé. Merci de ta fidélité !';
+    $('arrDepuis').textContent = d && d.arrete_le ? 'Depuis le ' + String(d.arrete_le).slice(0, 10).split('-').reverse().join('/') : '';
+    cacheOublier(cardId);
+  }catch(e){}
+  show('stateArrete');
+}
 function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 let tT=null;
 function toast(msg){ const t=$('toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(tT); tT=setTimeout(()=>t.classList.remove('show'),3200); }
@@ -1957,6 +1975,7 @@ window.claimAction = function(key){
   api('fid_action',{card_id:cardId, key:key}, 2).then(d=>{
     if(d.status==='ok'){ actionsState[key]=true; applySolde(solde + d.points_delta); celebrerTampons(d.points_delta, solde); toast('🎉 +'+d.points_delta+' tampon'+(d.points_delta>1?'s':'')+', merci !'); applyActions(actionsState); }
     else if(d.status==='already'){ actionsState[key]=true; applyActions(actionsState); }
+    else if(d.code==='commerce_arrete'){ montrerArret(d); }
   }).catch(()=>{});
 };
 
@@ -1964,6 +1983,7 @@ function creditPassage(){
   api('fid_passage',{card_id:cardId, source:'scan'}).then(d=>{
     if(d.status==='ok'){ render(d.client); celebrerTampons(d.points_delta, d.client.points_solde); toast('🎉 '+tampon(d.points_delta)+' pour ton passage !'); }
     else if(d.status==='cooldown' && d.client){ render(d.client); }
+    else if(d.code==='commerce_arrete'){ montrerArret(d); }
   }).catch(()=>{});
 }
 
@@ -2259,6 +2279,7 @@ else{
       } else if(d.passage){ celebrerTampons(d.passage.points_delta, d.client.points_solde); toast('🎉 '+tampon(d.passage.points_delta)+' pour ton passage !'); }
       lancerGestesDifferes();        // ⚡ 13/09 — les gestes faits pendant l'attente, sur le vrai solde
     }
+    else if(d.code==='commerce_arrete'){ quandFraiches = []; montrerArret(d); }
     else if(d.status==='new'){ quandFraiches = []; cacheOublier(cardId); show('stateNew'); }
     else {
       /* Carte inconnue du serveur. Si elle venait de la mémoire locale, elle est
