@@ -433,12 +433,14 @@ body{font-family:var(--font-ui);-webkit-font-smoothing:antialiased;color:var(--i
 .wal-row{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:15px 16px;box-shadow:var(--shadow);text-align:center}
 .wal-t{font-size:14.5px;font-weight:700;color:var(--ink);margin-bottom:3px}
 .wal-d{font-size:12.5px;color:var(--muted);line-height:1.45;margin-bottom:12px}
-.wal-btn{display:inline-flex;align-items:center;justify-content:center;gap:9px;width:100%;
-  padding:14px 18px;border:0;border-radius:14px;background:#000;color:#fff;
-  font-family:var(--font-ui);font-size:14.5px;font-weight:600;cursor:pointer}
-.wal-btn:active{transform:scale(.98)}
-.wal-btn:disabled{opacity:.55}
-.wal-btn svg{flex-shrink:0}
+/* 22/09 — les badges OFFICIELS d'Apple et de Google (assets/wallet/), jamais redessinés :
+   leurs chartes l'exigent, et Google le vérifie à la demande de publication. Hauteur 48 px
+   (minimum Google, ≥ les autres boutons de la page), 8 px d'espace libre tout autour,
+   proportions gardées. Le bouton lui-même est invisible : seule l'image se voit. */
+.wal-badge{display:inline-block;padding:0;margin:4px 8px;border:0;background:none;cursor:pointer;line-height:0;transition:transform .12s}
+.wal-badge img{height:48px;width:auto;display:block}
+.wal-badge:active{transform:scale(.97)}
+.wal-badge:disabled{opacity:.55;cursor:default;transform:none}
 .wal-hint{font-size:12px;color:var(--muted);margin-top:10px;line-height:1.45}
 
 /* UNE seule carte : l'interrupteur en haut, la saisie d'e-mail qui s'ouvre en
@@ -650,24 +652,18 @@ body{font-family:var(--font-ui);-webkit-font-smoothing:antialiased;color:var(--i
   <div class="wal-row">
     <div class="wal-t">Ta carte dans ton téléphone</div>
     <div class="wal-d">Change de téléphone ou supprime ta carte par erreur : tu la retrouves ici, avec tes tampons.</div>
-    <button class="wal-btn" type="button" onclick="ajouterAuWallet(this)">
-      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-        <rect x="2.5" y="5.5" width="19" height="14" rx="3"/><path d="M2.5 10.5h19"/><path d="M17 15.5h2"/>
-      </svg>
-      Ajouter à Apple Wallet
+    <!-- Badge officiel Apple (pack « Add to Apple Wallet », FR, RGB) — 22/09. -->
+    <button class="wal-badge" id="awBtn" type="button" onclick="ajouterAuWallet(this)" aria-label="Ajouter à l’app Cartes Apple">
+      <img src="assets/wallet/apple-wallet-badge-fr.svg" alt="Ajouter à l’app Cartes Apple">
     </button>
     <!-- 21/09 — GOOGLE WALLET, À L'ESSAI. Caché tant que Google n'a pas accordé la
          publication : seuls les comptes de test déclarés dans sa console peuvent ajouter
          la carte, un vrai client tomberait sur un refus. Il n'apparaît qu'avec ?gw=1
          (retenu ensuite sur l'appareil), hors iPhone, et pour un commerce servi par
          Perify — l'ancien serveur Google ne connaît pas gwallet_link.
-         ⚠️ Avant de l'ouvrir à tous : le remplacer par le bouton OFFICIEL de Google
-         (charte « Add to Google Wallet »), que leur validation exige. -->
-    <button class="wal-btn" id="gwBtn" type="button" style="display:none" onclick="ajouterAuGoogleWallet(this)">
-      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-        <rect x="2.5" y="5.5" width="19" height="14" rx="3"/><path d="M2.5 10.5h19"/><path d="M17 15.5h2"/>
-      </svg>
-      Ajouter à Google Wallet
+         22/09 — bouton OFFICIEL de Google (pack « Add to Google Wallet », fr-FR, SVG). -->
+    <button class="wal-badge" id="gwBtn" type="button" hidden onclick="ajouterAuGoogleWallet(this)" aria-label="Ajouter au Google Wallet">
+      <img src="assets/wallet/google-wallet-bouton-fr.svg" alt="Ajouter au Google Wallet">
     </button>
     <div class="wal-hint" id="walHint"></div>
   </div>
@@ -1523,17 +1519,26 @@ document.addEventListener('DOMContentLoaded', function(){
   if (GW_ESSAI && !EST_IOS) BA.pret().then(function(com){
     if (String(com && com.apps_script || '').indexOf('https://api.perify.app/') !== 0) return;
     const g = $('gwBtn'); if (!g) return;
-    g.style.display = '';
-    const apple = document.querySelector('.wal-row .wal-btn:not(#gwBtn)');
-    if (apple) apple.style.display = 'none';
+    g.hidden = false;
+    const apple = $('awBtn');
+    if (apple) apple.hidden = true;
     if (h) h.textContent = "Carte Google Wallet à l'essai : réservée aux comptes de test pour l'instant.";
   }).catch(function(){});
 });
 
+/* Un badge officiel ne se remplace pas par du texte pendant l'attente (il changerait de
+   taille) : on l'estompe, et c'est la ligne d'aide qui dit « Préparation… ». */
+function badgeAttente(btn, enCours){
+  btn.disabled = enCours;
+  const h = $('walHint');
+  if (!h) return;
+  if (enCours){ h.dataset.avant = h.textContent; h.textContent = 'Préparation…'; }
+  else if ('avant' in h.dataset){ h.textContent = h.dataset.avant; delete h.dataset.avant; }
+}
+
 window.ajouterAuGoogleWallet = function(btn){
-  const initial = btn.innerHTML;
-  btn.disabled = true; btn.textContent = 'Préparation…';
-  const rendre = () => { btn.disabled = false; btn.innerHTML = initial; };
+  badgeAttente(btn, true);
+  const rendre = () => badgeAttente(btn, false);
 
   /* Même lien signé que pour Apple ; le service enregistre la carte chez Google puis
      renvoie le téléphone sur « Ajouter à Google Wallet ». */
@@ -1550,9 +1555,8 @@ window.ajouterAuGoogleWallet = function(btn){
 };
 
 window.ajouterAuWallet = function(btn){
-  const initial = btn.innerHTML;
-  btn.disabled = true; btn.textContent = 'Préparation…';
-  const rendre = () => { btn.disabled = false; btn.innerHTML = initial; };
+  badgeAttente(btn, true);
+  const rendre = () => badgeAttente(btn, false);
 
   api('wallet_link', { card_id: cardId, type: COMMERCE_TYPE }).then(d=>{
     /* ⚠️ Apps Script répond HTTP 200 même quand il refuse : c'est le `status`
