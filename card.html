@@ -252,6 +252,23 @@ body{font-family:var(--font-ui);-webkit-font-smoothing:antialiased;color:var(--i
 @keyframes stampPop{from{transform:scale(.35);opacity:0}to{transform:none;opacity:1}}
 @media (prefers-reduced-motion:reduce){.stamp.on{animation:none}}
 
+/* ✨ 22/09 — L'EFFET DOPAMINE : le tampon qu'on vient de GAGNER atterrit (pop plus
+   ample + anneau qui s'élargit + étincelles), et le gros chiffre rebondit. Distinct
+   de stampPop, qui n'est que l'apparition de la grille. Rien de tout ça si le client
+   a demandé moins d'animations : le toast reste. */
+.stamp.win{position:relative;z-index:2;animation:stampWin .9s cubic-bezier(.2,.9,.3,1.3) both}
+.stamp.win::after{content:'';position:absolute;inset:-5px;border-radius:50%;border:2px solid var(--gold);
+  pointer-events:none;animation:stampRing .9s ease-out both;animation-delay:inherit}
+@keyframes stampWin{0%{transform:scale(.3);opacity:0}55%{transform:scale(1.4);opacity:1}75%{transform:scale(.94)}100%{transform:none;opacity:1}}
+@keyframes stampRing{0%{transform:scale(.6);opacity:.95}60%{opacity:.5}100%{transform:scale(2.3);opacity:0}}
+.hero-pts .v{display:inline-block}
+.hero-pts .v.bump{animation:soldeBump .75s cubic-bezier(.2,.9,.3,1.4)}
+@keyframes soldeBump{0%{transform:scale(1)}40%{transform:scale(1.28)}100%{transform:scale(1)}}
+.etincelle{position:fixed;z-index:210;width:7px;height:7px;margin:-3px 0 0 -3px;border-radius:50%;pointer-events:none;
+  will-change:transform,opacity;animation:etincelle .85s cubic-bezier(.1,.8,.3,1) forwards}
+@keyframes etincelle{to{transform:translate(var(--dx),var(--dy)) scale(.15);opacity:0}}
+@media (prefers-reduced-motion:reduce){.stamp.win,.stamp.win::after,.hero-pts .v.bump{animation:none}.etincelle{display:none}}
+
 .sec-h{display:flex;align-items:baseline;justify-content:space-between;margin:8px 2px 0}
 .sec-h .t{font-family:var(--font-display);font-size:21px;font-weight:700;color:var(--ink)}
 .sec-h .a{font-size:12px;font-weight:600;color:var(--muted)}
@@ -1277,6 +1294,48 @@ function spawnConfetti(){
     document.body.appendChild(p); setTimeout(()=>p.remove(),(dur+delay)*1000+300);
   }
 }
+/* ✨ 22/09 — L'EFFET DOPAMINE (demande de l'utilisateur, 18/09) : un tampon gagné doit
+   se SENTIR. Appelé aux trois moments où le serveur en donne : le passage (fid_open,
+   fid_passage) et une action récompensée (fid_action, alertes e-mail). Les tampons
+   gagnés atterrissent l'un après l'autre APRÈS l'apparition de la grille, le gros
+   chiffre rebondit, le téléphone vibre (Android ; iOS ignore navigator.vibrate).
+   Sans grille (palier > 25 tampons), les étincelles partent de la barre.
+   Aucun son : les navigateurs bloquent l'audio sans geste, et une carte qui sonne
+   en boutique gênerait plus qu'elle ne réjouirait. Tout est enveloppé : une animation
+   qui rate ne doit JAMAIS empêcher la carte de s'afficher. */
+function celebrerTampons(delta, apres){
+  try{
+    const n = Math.floor(Number(delta) || 0); if(n <= 0) return;
+    const fin = Number.isFinite(Number(apres)) ? Number(apres) : solde;
+    try{ if(navigator.vibrate) navigator.vibrate(n > 1 ? [35, 60, 35, 60, 35] : [35, 60, 35]); }catch(e){}
+    if(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const v = $('cSolde'); if(v){ v.classList.remove('bump'); void v.offsetWidth; v.classList.add('bump'); }
+    const grid = $('stampGrid');
+    if(grid && grid.classList.contains('on')){
+      const cells = grid.children, premier = Math.max(0, fin - n);
+      for(let i = premier; i < fin && i < cells.length; i++){
+        const c = cells[i], attente = 420 + (i - premier) * 240;
+        c.style.animationDelay = attente + 'ms';        // après stampPop de la grille (≤ 14 × 35 ms)
+        c.classList.add('win');
+        setTimeout(function(){ etincelles(c); }, attente + 480);
+      }
+    } else { const b = $('progBar'); if(b) setTimeout(function(){ etincelles(b, true); }, 300); }
+  }catch(e){}
+}
+function etincelles(el, aDroite){
+  try{
+    const r = el.getBoundingClientRect();
+    const cx = aDroite ? r.right : r.left + r.width / 2, cy = r.top + r.height / 2;
+    const couleurs = ['#C8963E','#E2B25A','#F5D07A','#ffffff'];
+    for(let i = 0; i < 12; i++){
+      const p = document.createElement('i'); p.className = 'etincelle';
+      const a = Math.random() * Math.PI * 2, d = 24 + Math.random() * 34;
+      p.style.cssText = 'left:'+cx+'px;top:'+cy+'px;background:'+couleurs[i % couleurs.length]
+        + ';--dx:'+Math.round(Math.cos(a) * d)+'px;--dy:'+Math.round(Math.sin(a) * d)+'px;animation-delay:'+Math.round(Math.random() * 80)+'ms';
+      document.body.appendChild(p); setTimeout(function(){ p.remove(); }, 1100);
+    }
+  }catch(e){}
+}
 function showConfirm(o){
   $('cmBadge').textContent = o.badge || '✓ Confirmé';
   const ph = $('cmPh');
@@ -1853,7 +1912,7 @@ window.enregistrerEmail = function(){
        un client qui coupe puis rallume ne le gagne pas deux fois. */
     api('fid_action', { card_id: cardId, key: 'optin_email' }, 2).then(function(r){
       if(r && r.status === 'ok' && r.points_delta > 0){
-        applySolde(solde + r.points_delta);
+        applySolde(solde + r.points_delta); celebrerTampons(r.points_delta, solde);
         actionsState.optin_email = true;
         showConfirm({ badge:'🎉 +' + r.points_delta + ' tampon' + (r.points_delta > 1 ? 's' : '') + ' !',
                       emoji:'🔔', title:'C’est noté !',
@@ -1896,14 +1955,14 @@ window.claimAction = function(key){
      mais on le DIT — le silence passait pour une panne (21/09). */
   if(actionsState[key]){ toast('Tu as déjà gagné ces tampons, merci !'); return; }
   api('fid_action',{card_id:cardId, key:key}, 2).then(d=>{
-    if(d.status==='ok'){ actionsState[key]=true; applySolde(solde + d.points_delta); toast('🎉 +'+d.points_delta+' tampon'+(d.points_delta>1?'s':'')+', merci !'); applyActions(actionsState); }
+    if(d.status==='ok'){ actionsState[key]=true; applySolde(solde + d.points_delta); celebrerTampons(d.points_delta, solde); toast('🎉 +'+d.points_delta+' tampon'+(d.points_delta>1?'s':'')+', merci !'); applyActions(actionsState); }
     else if(d.status==='already'){ actionsState[key]=true; applyActions(actionsState); }
   }).catch(()=>{});
 };
 
 function creditPassage(){
   api('fid_passage',{card_id:cardId, source:'scan'}).then(d=>{
-    if(d.status==='ok'){ render(d.client); toast('🎉 '+tampon(d.points_delta)+' pour ton passage !'); }
+    if(d.status==='ok'){ render(d.client); celebrerTampons(d.points_delta, d.client.points_solde); toast('🎉 '+tampon(d.points_delta)+' pour ton passage !'); }
     else if(d.status==='cooldown' && d.client){ render(d.client); }
   }).catch(()=>{});
 }
@@ -2197,7 +2256,7 @@ else{
       else if(d.anniv){
         showConfirm({badge:'🎂 Joyeux anniversaire !', emoji:'🎂', title:'Joyeux anniversaire '+((d.client.prenom||'').trim())+' !',
           lib:'Cadeau offert : '+d.anniv.libelle, code:d.anniv.code, note:'Montre ce code en caisse pour récupérer ton cadeau d\'anniversaire 🎂'});
-      } else if(d.passage){ toast('🎉 '+tampon(d.passage.points_delta)+' pour ton passage !'); }
+      } else if(d.passage){ celebrerTampons(d.passage.points_delta, d.client.points_solde); toast('🎉 '+tampon(d.passage.points_delta)+' pour ton passage !'); }
       lancerGestesDifferes();        // ⚡ 13/09 — les gestes faits pendant l'attente, sur le vrai solde
     }
     else if(d.status==='new'){ quandFraiches = []; cacheOublier(cardId); show('stateNew'); }
