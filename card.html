@@ -383,8 +383,15 @@ body{font-family:var(--font-ui);-webkit-font-smoothing:antialiased;color:var(--i
 .social{background:var(--card);border-radius:20px;padding:15px 18px;box-shadow:var(--shadow);border:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:12px}
 .social-txt{font-size:12.5px;color:var(--ink);line-height:1.45}.social-txt b{color:var(--gold-ink);font-weight:700}
 .social-links{display:flex;gap:10px;flex-shrink:0}
-.slink{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;text-decoration:none;box-shadow:0 4px 12px rgba(0,0,0,.16);transition:transform .12s}
+.slink{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;text-decoration:none;box-shadow:0 4px 12px rgba(0,0,0,.16);transition:transform .12s;position:relative}
 .slink:active{transform:scale(.93)}
+/* 21/09 — un bouton dont les tampons sont DÉJÀ gagnés le dit : coche verte et icône
+   estompée. Avant, le client cliquait, rien ne se passait, et il croyait à une panne. */
+.slink.done{opacity:.55}
+.slink.done::after{content:'✓';position:absolute;right:-6px;top:-6px;width:19px;height:19px;border-radius:50%;
+  background:var(--green,#16a34a);color:#fff;font-size:11px;font-weight:800;line-height:19px;text-align:center;
+  box-shadow:0 2px 6px rgba(0,0,0,.25);opacity:1}
+.social-txt.done{color:var(--muted)}.social-txt.done b{color:var(--green,#16a34a)}
 .slink.ig{background:linear-gradient(45deg,#f09433,#e6683c 28%,#dc2743 50%,#cc2366 72%,#bc1888)}
 .slink.fb{background:#1877F2}
 .slink.tt{background:#010101}
@@ -1081,6 +1088,13 @@ function lancerGestesDifferes(){
 const TAMPONS = { optin_email:1, tripadvisor:2, trustpilot:2, reseau:1 };
 const tampon = function(n){ return '+' + n + ' tampon' + (n > 1 ? 's' : ''); };
 
+/* Ce que le registre a rendu visible — relu par rafraichirTextes() quand on apprend
+   quelles actions sont déjà gagnées (elles arrivent APRÈS, avec la carte). */
+let liensVisibles = { ta:false, tp:false, ig:false, fb:false, tt:false };
+/* Déclaré ICI et non plus à côté d'applyActions : brancherLiens(null) tourne dès le
+   chargement et lit actionsState — déclaré plus bas, il n'existerait pas encore. */
+let actionsState = {};
+
 function brancherLiens(com){
   com = com || {};
   const pose = function(idLien, url, idBloc){
@@ -1090,39 +1104,66 @@ function brancherLiens(com){
     else if(a){ a.hidden = true; }
     return !!u;
   };
-  const tp = pose('lkTrust', com.trustpilot);
-  const ta = pose('lkTripa', com.tripadvisor);
-  const ig = pose('lkIg',  com.instagram);
-  const fb = pose('lkFb',  com.facebook);
-  const tt = pose('lkTt',  com.tiktok);
-
-  const reseaux = [ig && 'Instagram', fb && 'Facebook', tt && 'TikTok'].filter(Boolean);
-  const bloc = $('socialBlock');
-  if(bloc) bloc.hidden = !reseaux.length;
-  const txt = $('socialTxt');
-  if(txt && reseaux.length){
-    const liste = reseaux.length > 1
-      ? reseaux.slice(0, -1).join(', ') + ' et ' + reseaux[reseaux.length - 1]
-      : reseaux[0];
-    txt.innerHTML = 'Suis-nous sur ' + liste + ' et gagne <b>' + tampon(TAMPONS.reseau) + '</b>'
-      + (reseaux.length > 1 ? ' par réseau 🎁' : ' 🎁');
-  }
-
-  /* Les deux plateformes d'avis, chacune dans sa rangée. */
-  const rangee = function(idBloc, idTexte, visible, nom, pts){
-    const b = $(idBloc); if(b) b.hidden = !visible;
-    const t = $(idTexte);
-    if(t && visible) t.innerHTML = 'Laisse un avis sur <b>' + nom + '</b> et gagne <b>' + tampon(pts) + '</b> 🎁';
+  liensVisibles = {
+    tp: pose('lkTrust', com.trustpilot),
+    ta: pose('lkTripa', com.tripadvisor),
+    ig: pose('lkIg',  com.instagram),
+    fb: pose('lkFb',  com.facebook),
+    tt: pose('lkTt',  com.tiktok)
   };
-  rangee('tripaBlock', 'tripaTxt', ta, 'TripAdvisor', TAMPONS.tripadvisor);
-  rangee('trustBlock', 'trustTxt', tp, 'Trustpilot',  TAMPONS.trustpilot);
+  const v = liensVisibles;
+  const bloc = $('socialBlock');
+  if(bloc) bloc.hidden = !(v.ig || v.fb || v.tt);
+  const rangee = function(idBloc, visible){ const b = $(idBloc); if(b) b.hidden = !visible; };
+  rangee('tripaBlock', v.ta);
+  rangee('trustBlock', v.tp);
+  rafraichirTextes();
 
   /* Le titre « Gagner plus de tampons » couvre les TROIS rangées : il ne
      disparaît que si aucune n'est affichée. Le masquer sur un seul critère
      laissait les autres orphelines, sans en-tête — repéré par le test des
      combinaisons, pas à l'œil. */
   const t = $('bonusTitre');
-  if(t) t.hidden = !(ta || tp || reseaux.length);
+  if(t) t.hidden = !(v.ta || v.tp || v.ig || v.fb || v.tt);
+}
+
+/* 21/09 — Les textes des trois rangées disent ce qu'il RESTE à gagner. Une action
+   n'est récompensée qu'une fois par carte : un bouton déjà utilisé prend une coche,
+   et une rangée entièrement gagnée le dit au lieu de promettre encore des tampons.
+   (Avant : « Laisse un avis et gagne +2 tampons » restait affiché à vie, et le clic
+   ne répondait rien — l'utilisateur a cru à une panne le 21/09.) */
+function rafraichirTextes(){
+  const v = liensVisibles, st = actionsState || {};
+  const coche = function(idLien, fait){ const a = $(idLien); if(a) a.classList.toggle('done', !!fait); };
+  coche('lkIg', st.insta); coche('lkFb', st.facebook); coche('lkTt', st.tiktok);
+  coche('lkTripa', st.tripadvisor); coche('lkTrust', st.trustpilot);
+
+  const reseaux = [[v.ig, st.insta, 'Instagram'], [v.fb, st.facebook, 'Facebook'], [v.tt, st.tiktok, 'TikTok']]
+    .filter(function(r){ return r[0]; });
+  const restants = reseaux.filter(function(r){ return !r[1]; }).map(function(r){ return r[2]; });
+  const txt = $('socialTxt');
+  if(txt && reseaux.length){
+    if(!restants.length){
+      txt.innerHTML = '✓ Tu nous suis déjà — <b>tampons gagnés</b>, merci !';
+      txt.classList.add('done');
+    } else {
+      const liste = restants.length > 1
+        ? restants.slice(0, -1).join(', ') + ' et ' + restants[restants.length - 1]
+        : restants[0];
+      txt.innerHTML = 'Suis-nous sur ' + liste + ' et gagne <b>' + tampon(TAMPONS.reseau) + '</b>'
+        + (restants.length > 1 ? ' par réseau 🎁' : ' 🎁');
+      txt.classList.remove('done');
+    }
+  }
+
+  /* Les deux plateformes d'avis, chacune dans sa rangée. */
+  const avis = function(idTexte, visible, fait, nom, pts){
+    const t = $(idTexte); if(!t || !visible) return;
+    if(fait){ t.innerHTML = '✓ Avis <b>' + nom + '</b> : <b>' + tampon(pts) + '</b> déjà gagnés, merci !'; t.classList.add('done'); }
+    else { t.innerHTML = 'Laisse un avis sur <b>' + nom + '</b> et gagne <b>' + tampon(pts) + '</b> 🎁'; t.classList.remove('done'); }
+  };
+  avis('tripaTxt', v.ta, st.tripadvisor, 'TripAdvisor', TAMPONS.tripadvisor);
+  avis('trustTxt', v.tp, st.trustpilot,  'Trustpilot',  TAMPONS.trustpilot);
 }
 /* Repli hors ligne : on ne montre RIEN plutôt qu'un lien faux. */
 brancherLiens(null);
@@ -1829,11 +1870,11 @@ window.enregistrerEmail = function(){
    directement. Une fonction de moins entre le geste du client et l'écriture. */
 
 /* 🏅 Actions récompensées (1×/carte) — le clic ouvre le lien ET déclare l'action */
-let actionsState = {};
+/* actionsState est déclaré plus haut, avec liensVisibles. */
 function applyActions(st){
   actionsState = st || {};
   carteVue.actions = actionsState; cacheSauver();     // ⚡ 13/09 — cf. CLE_CACHE
-  if(actionsState.trustpilot){ const t=$('lkTrust'); if(t){ const s=t.querySelector('.s'); if(s) s.textContent='✓ points gagnés'; } }
+  rafraichirTextes();                                 // 21/09 — coches et textes « déjà gagné »
 }
 /* ⚡ 13/09 — crédits demandés pendant que la carte vient du cache, un par réseau. */
 const actionsDifferees = {};
@@ -1846,7 +1887,9 @@ window.claimAction = function(key){
     if(!actionsDifferees[key]){ actionsDifferees[key] = true; apresFraiches(function(){ window.claimAction(key); }); }
     return;
   }
-  if(actionsState[key]) return;              // déjà récompensé
+  /* Déjà récompensé : le lien s'ouvre quand même (le client veut peut-être y aller),
+     mais on le DIT — le silence passait pour une panne (21/09). */
+  if(actionsState[key]){ toast('Tu as déjà gagné ces tampons, merci !'); return; }
   api('fid_action',{card_id:cardId, key:key}, 2).then(d=>{
     if(d.status==='ok'){ actionsState[key]=true; applySolde(solde + d.points_delta); toast('🎉 +'+d.points_delta+' tampon'+(d.points_delta>1?'s':'')+', merci !'); applyActions(actionsState); }
     else if(d.status==='already'){ actionsState[key]=true; applyActions(actionsState); }
