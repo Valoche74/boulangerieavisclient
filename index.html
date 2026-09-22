@@ -233,6 +233,15 @@ body::after{
   font-family:'Inter',sans-serif;font-weight:600;font-size:19px;letter-spacing:-.01em;
   color:var(--cream);line-height:1.4;margin-bottom:24px;
 }
+/* 22/09 — le message d'accueil (texte validé par l'utilisateur), à la place de « Votre cadeau
+   vous attend dans votre carte ». Le nom du commerce et le cadeau sont posés par le script. */
+.sw-welcome{font-family:'Inter',sans-serif;font-size:15px;color:var(--cream);line-height:1.5;margin:-6px 0 22px;opacity:.94}
+.sw-welcome b{font-weight:700}
+.sw-welcome .sw-w-titre{display:block;font-weight:700;font-size:18.5px;letter-spacing:-.01em;margin-bottom:8px;opacity:1}
+/* Le bouton Google est plus bas que le badge Apple : 320 px de large = 50 px de haut (Google exige ≥ 48). */
+#btnGWallet{max-width:320px}
+/* `display:block` ci-dessus l'emporterait sur l'attribut hidden : on le dit explicitement. */
+.btn-wallet[hidden]{display:none}
 
 /* ── Badge officiel « Ajouter à Apple Cartes » ── */
 .btn-wallet{
@@ -402,12 +411,25 @@ body::after{
     <div class="sw-prize-name" id="swName">Croissant Artisanal</div>
   </div>
 
-  <div class="sw-title">Votre cadeau vous attend<br>dans votre carte.</div>
+  <!-- 22/09 — message d'accueil, texte validé par l'utilisateur. -->
+  <div class="sw-welcome" id="swWelcome">
+    <span class="sw-w-titre">Voici ta carte de fidélité <span id="swShop">…</span>.</span>
+    À chaque passage, tu cumules des tampons et tu gagnes des produits offerts.
+    Ton premier cadeau, <b id="swGain">…</b>, t'attend déjà dessus : ajoute ta carte à ton téléphone pour le récupérer en boutique.
+  </div>
 
-  <button class="btn-wallet" id="btnWallet" onclick="addToWallet()" aria-label="Ajouter à l’app Cartes Apple">
+  <button class="btn-wallet" id="btnWallet" onclick="addToWallet(this)" aria-label="Ajouter à l’app Cartes Apple">
     <!-- 22/09 — le badge OFFICIEL d'Apple (pack « Add to Apple Wallet », FR, RGB), tel quel.
          Avant : une copie redessinée en SVG — ce que la charte d'Apple interdit. -->
     <img class="sw-badge" src="assets/wallet/apple-wallet-badge-fr.svg" alt="Ajouter à l’app Cartes Apple">
+    <span class="sw-loading"><span class="sw-spin"></span> Préparation…</span>
+  </button>
+  <!-- 22/09 — Android : le bouton OFFICIEL de Google. Montré par afterWheel() seulement à
+       l'essai (?gw=1, tant que Google n'a pas accordé la publication) et pour un commerce
+       servi par Perify. Même préparation que pour Apple : wallet_start signe un lien vers
+       /api/gpass au lieu de /api/pass. -->
+  <button class="btn-wallet" id="btnGWallet" hidden onclick="addToWallet(this)" aria-label="Ajouter au Google Wallet">
+    <img class="sw-badge" src="assets/wallet/google-wallet-bouton-fr.svg" alt="Ajouter au Google Wallet">
     <span class="sw-loading"><span class="sw-spin"></span> Préparation…</span>
   </button>
 
@@ -1141,6 +1163,29 @@ function apiGet(params){
    `walletReady` est la promesse en cours — addToWallet() se contente de l'attendre. */
 let walletReady = null;
 
+/* 22/09 — Google Wallet à l'essai : ?gw=1 l'allume (retenu sur l'appareil, même clé que
+   card.html), ?gw=0 l'éteint. Tant que Google n'a pas accordé la publication, seuls les
+   comptes de test déclarés peuvent ajouter la carte : un vrai client tomberait sur un refus. */
+const GW_ESSAI = (function(){
+  var v = null;
+  try {
+    var q = new URLSearchParams(location.search).get('gw');
+    if (q === '1' || q === '0') localStorage.setItem('perify.gw', q);
+    v = localStorage.getItem('perify.gw');
+  } catch(e){ v = new URLSearchParams(location.search).get('gw'); }
+  return v === '1';
+})();
+/* Le commerce est-il servi par Perify ? L'ancien serveur (Google) ne sait pas signer un lien
+   Google Wallet. Et son nom, pour le message d'accueil. */
+let commercePerify = false;
+BA.pret().then(function(com){
+  commercePerify = String(com && com.apps_script || '').indexOf('https://api.perify.app/') === 0;
+  var s = document.getElementById('swShop');
+  if (s) s.textContent = (com && (com.nom_court || com.nom)) || 'ta boutique';
+}).catch(function(){});
+/* 'apple' ou 'google' : fixé par afterWheel() AVANT de préparer le lien. */
+let WALLET_CIBLE = 'apple';
+
 /* Le chemin rapide : une seule action backend, un lien qui porte deja le profil. */
 function walletViaStart(){
   var p = {
@@ -1149,7 +1194,8 @@ function walletViaStart(){
     gain   : wonPrize.name,
     emoji  : wonPrize.emoji,
     prenom : '', email : '',          // le coupon part sans email : aucun envoi
-    type   : TYPE_PARAM
+    type   : TYPE_PARAM,
+    wallet : WALLET_CIBLE             // 22/09 — 'google' → lien vers /api/gpass
   };
   /* Si le client vient deja d'une carte (?id=), on reutilise la sienne. */
   if(fidCardId) p.card_id = fidCardId;
@@ -1204,17 +1250,24 @@ function prepareWallet(){
   return walletReady;
 }
 
-/* Apres la roue : Wallet sur iPhone, formulaire partout ailleurs. */
+/* Apres la roue : Wallet sur iPhone ; sur Android, Google Wallet si l'essai est ouvert
+   (?gw=1) et que le commerce est servi par Perify ; formulaire e-mail partout ailleurs. */
 function afterWheel(){
-  if(!IS_IOS || DEMO){ goToForm(); return; }
+  if(DEMO){ goToForm(); return; }
+  var google = !IS_IOS && GW_ESSAI && commercePerify;
+  if(!IS_IOS && !google){ goToForm(); return; }
+  WALLET_CIBLE = google ? 'google' : 'apple';
+  document.getElementById('btnWallet').hidden  = google;
+  document.getElementById('btnGWallet').hidden = !google;
   poserVisuelLot(document.getElementById('swEmoji'), wonPrize, 48);
   document.getElementById('swName').textContent  = wonPrize ? wonPrize.name  : 'Votre cadeau';
+  document.getElementById('swGain').textContent  = wonPrize ? wonPrize.name  : 'ton cadeau';
   showScreen('screenWallet');
   prepareWallet().catch(function(){});    // en tache de fond, l'erreur est traitee au tap
 }
 
-function addToWallet(){
-  var btn = document.getElementById('btnWallet');
+function addToWallet(el){
+  var btn = el || document.getElementById('btnWallet');
   /* etat de chargement : on masque le badge et on affiche un spinner (cf. .is-loading) */
   btn.disabled = true;
   btn.classList.add('is-loading');
