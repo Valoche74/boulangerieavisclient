@@ -441,6 +441,7 @@ body{font-family:var(--font-ui);-webkit-font-smoothing:antialiased;color:var(--i
 .wal-badge img{height:48px;width:auto;display:block}
 .wal-badge:active{transform:scale(.97)}
 .wal-badge:disabled{opacity:.55;cursor:default;transform:none}
+.wal-badge[hidden]{display:none}   /* `display:inline-block` l'emporterait sur l'attribut hidden */
 .wal-hint{font-size:12px;color:var(--muted);margin-top:10px;line-height:1.45}
 
 /* UNE seule carte : l'interrupteur en haut, la saisie d'e-mail qui s'ouvre en
