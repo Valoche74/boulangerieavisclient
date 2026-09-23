@@ -16,7 +16,7 @@
      sans cette seconde ligne, on paierait deux poignées de main au lieu d'une. -->
 <link rel="preconnect" href="https://script.google.com" crossorigin>
 <link rel="preconnect" href="https://script.googleusercontent.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,600;0,9..144,700;0,9..144,900;1,9..144,600&family=Sora:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 /* ════════════════════════════════════════════════════════════════
    CARD.HTML v3 — page client ouverte par la carte NFC (?id=card_id)
@@ -39,7 +39,11 @@
    seulement. Vérifié dans le DOM, pas à l'œil. */
 [hidden]{display:none!important}
 :root{
-  --cream:#FBF7EF;--cream2:#F4ECDC;--card:#FFFFFF;
+  /* 🎨 23/09 — DIRECTION B « vitaminé » (son choix) : fond NUIT pour la page, cartes claires,
+     orange / orange foncé / jaune en accents, Plus Jakarta Sans + Inter. Les textes posés directement
+     sur le fond nuit passent par --surbg / --surbg-doux ; tout ce qui est dans une carte garde l'encre. */
+  --bg:#1B1F3B;--cream:#FFF8F0;--cream2:#FFEEDD;--card:#FFFFFF;
+  --surbg:#FFFFFF;--surbg-doux:rgba(255,255,255,.74);
   /* 🔎 08/09 — LISIBILITÉ. Contrastes mesurés sur le fond réel (--cream #FBF7EF),
      pas estimés à l'œil : 7 zones de texte sur 8 échouaient au seuil WCAG AA de
      4,5:1. Cette carte se lit dans une boutique, souvent dehors, à bout de bras —
@@ -49,28 +53,28 @@
        --muted2  #B3A88E  2,21:1  →  #776B55  4,89:1
      Les anciennes valeurs restent en commentaire : ce sont elles, la référence,
      si quelqu'un trouve un jour la nouvelle palette « trop foncée ». */
-  --ink:#2A2418;--muted:#6A5F4B;--muted2:#776B55;
-  --gold:#C8963E;--gold2:#E2B25A;--gold3:#F5D07A;
+  --ink:#1B1F3B;--muted:#5B5F7A;--muted2:#6B7086;
+  --gold:#FF6B2C;--gold2:#E85A1B;--gold3:#FFC53D;   /* orange, orange foncé, jaune */
   /* ⚠️ --gold est une couleur de REMPLISSAGE (boutons, tampons, le gros chiffre),
      pas une couleur de TEXTE : en texte sur crème il tombe à 2,49:1. On ne
      l'assombrit donc pas — la marque garde son or — on ajoute une variante encre
      réservée au texte doré. */
-  --gold-ink:#8B6220;   /* 5,08:1 sur crème · 5,43:1 sur blanc */
+  --gold-ink:#C2410C;   /* 23/09 : orange foncé pour le TEXTE — 4,9:1 sur blanc, 4,6:1 sur crème */
   /* Même règle pour les deux autres accents. Un balayage de TOUS les nœuds de
      texte (et non d'une liste de sélecteurs choisis à la main, qui laissait
      passer 12 échecs) a montré que --green et --trust servaient aussi de couleur
      de texte : le ★ Trustpilot tombait à 2,47:1. */
-  --green-ink:#2F6022;  /* 6,98:1 sur crème */
+  --green-ink:#15803D;  /* 5,1:1 sur blanc */
   --trust-ink:#00875A;  /* 4,26:1 — icône 24 px, seuil 3:1 */
-  --gold-soft:rgba(200,150,62,.10);--gold-line:rgba(200,150,62,.28);
-  --green:#3F7D2E;--green-soft:rgba(63,125,46,.12);--trust:#00B67A;
-  --line:rgba(42,36,24,.08);
-  --shadow:0 10px 30px rgba(120,90,30,.10),0 2px 8px rgba(120,90,30,.06);
-  --font-display:'Fraunces',Georgia,serif;--font-ui:'Sora','Segoe UI',system-ui,sans-serif;
+  --gold-soft:rgba(255,107,44,.10);--gold-line:rgba(255,107,44,.30);
+  --green:#16A34A;--green-soft:rgba(22,163,74,.12);--trust:#00B67A;
+  --line:rgba(27,31,59,.08);
+  --shadow:0 10px 30px rgba(10,12,30,.18),0 2px 8px rgba(10,12,30,.10);
+  --font-display:'Plus Jakarta Sans','Segoe UI',system-ui,sans-serif;--font-ui:'Inter','Segoe UI',system-ui,sans-serif;
 }
-html,body{background:var(--cream)}
+html,body{background:var(--bg)}
 body{font-family:var(--font-ui);-webkit-font-smoothing:antialiased;color:var(--ink);min-height:100vh;font-variant-numeric:tabular-nums lining-nums;
-  background:radial-gradient(ellipse 80% 40% at 50% -5%,rgba(245,208,122,.30),transparent 60%),var(--cream)}
+  background:radial-gradient(ellipse 90% 42% at 50% -6%,rgba(255,107,44,.34),transparent 62%),radial-gradient(ellipse 60% 40% at 100% 34%,rgba(255,197,61,.10),transparent 60%),var(--bg)}
 
 .floaties{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
 .fl{position:fixed;opacity:.15;animation:floaty 7s ease-in-out infinite;will-change:transform}
@@ -86,9 +90,9 @@ body{font-family:var(--font-ui);-webkit-font-smoothing:antialiased;color:var(--i
 .msg{position:relative;z-index:1;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:40px 26px;max-width:430px;margin:0 auto}
 .msg .mic{width:80px;height:80px;border-radius:50%;display:grid;place-items:center;font-size:36px;margin-bottom:18px;background:var(--gold-soft);border:1.5px solid var(--gold-line)}
 .msg .mic.bad{background:rgba(190,60,60,.10);border-color:rgba(190,60,60,.30)}
-.msg h2{font-family:var(--font-display);font-size:25px;color:var(--ink);margin-bottom:10px}
-.msg p{font-size:14px;color:var(--muted);line-height:1.6;margin-bottom:22px}
-.msg .cta{display:inline-block;padding:15px 28px;border:none;border-radius:14px;background:linear-gradient(135deg,var(--gold),var(--gold2));color:#3a2705;font-family:var(--font-ui);font-size:15px;font-weight:700;cursor:pointer;text-decoration:none;box-shadow:0 6px 18px rgba(200,150,62,.36)}
+.msg h2{font-family:var(--font-display);font-size:25px;font-weight:800;color:var(--surbg);margin-bottom:10px}
+.msg p{font-size:14px;color:var(--surbg-doux);line-height:1.6;margin-bottom:22px}
+.msg .cta{display:inline-block;padding:15px 28px;border:none;border-radius:14px;background:linear-gradient(135deg,var(--gold),var(--gold2));color:#fff;font-family:var(--font-ui);font-size:15px;font-weight:700;cursor:pointer;text-decoration:none;box-shadow:0 6px 18px rgba(200,150,62,.36)}
 .spin{width:32px;height:32px;border:3px solid var(--cream2);border-top-color:var(--gold);border-radius:50%;animation:rot .8s linear infinite}
 
 /* ── Chargement de la carte ─────────────────────────────────────────────────
@@ -152,9 +156,9 @@ body{font-family:var(--font-ui);-webkit-font-smoothing:antialiased;color:var(--i
 
 /* header */
 .head{display:flex;align-items:center;justify-content:space-between}
-.head .eyebrow{font-size:11px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--gold-ink);margin-bottom:4px}
-.head .bakery{font-family:var(--font-display);font-size:24px;font-weight:700;font-style:italic;color:var(--ink);line-height:1}
-.head .greet{font-size:13px;color:var(--muted);margin-top:5px}
+.head .eyebrow{font-size:11px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--gold3);margin-bottom:4px}
+.head .bakery{font-family:var(--font-display);font-size:24px;font-weight:800;font-style:normal;letter-spacing:-.01em;color:var(--surbg);line-height:1.05}
+.head .greet{font-size:13px;color:var(--surbg-doux);margin-top:5px}
 .avatar{width:48px;height:48px;border-radius:50%;flex-shrink:0;display:grid;place-items:center;background:linear-gradient(135deg,var(--gold),var(--gold2) 55%,var(--gold3));font-family:var(--font-display);font-size:21px;font-weight:800;color:var(--ink);box-shadow:0 6px 16px rgba(200,150,62,.4)}
 /* Avatar de repli : un emoji a besoin de plus de place qu'une initiale, et la
    police à empattements ne lui sert à rien. */
@@ -174,12 +178,12 @@ body{font-family:var(--font-ui);-webkit-font-smoothing:antialiased;color:var(--i
 
 /* solde */
 .hero{background:var(--card);border-radius:24px;padding:22px 22px 20px;box-shadow:var(--shadow);border:1px solid var(--line);position:relative;overflow:hidden}
-.hero::after{content:'';position:absolute;top:-40px;right:-30px;width:140px;height:140px;border-radius:50%;background:radial-gradient(circle,rgba(245,208,122,.35),transparent 70%);pointer-events:none}
+.hero::after{content:'';position:absolute;top:-40px;right:-30px;width:140px;height:140px;border-radius:50%;background:radial-gradient(circle,rgba(255,197,61,.35),transparent 70%);pointer-events:none}
 .hero-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px}
 .hero-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--muted2)}
-.badge-lvl{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;color:#5a3d05;background:linear-gradient(135deg,var(--gold3),var(--gold2));border-radius:99px;padding:5px 12px;box-shadow:0 3px 8px rgba(200,150,62,.3)}
+.badge-lvl{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;color:var(--ink);background:linear-gradient(135deg,var(--gold3),var(--gold));border-radius:99px;padding:5px 12px;box-shadow:0 3px 8px rgba(200,150,62,.3)}
 .hero-pts{display:flex;align-items:baseline;gap:9px}
-.hero-pts .v{font-family:var(--font-ui);font-size:62px;font-weight:800;line-height:.9;letter-spacing:-.02em;background:linear-gradient(135deg,var(--gold),var(--gold2) 60%,#b8842f);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.hero-pts .v{font-family:var(--font-ui);font-size:62px;font-weight:800;line-height:.9;letter-spacing:-.02em;background:linear-gradient(135deg,var(--gold),var(--gold2) 60%,#E85A1B);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
 .hero-pts .u{font-size:15px;font-weight:600;color:var(--muted)}
 .hero-sub{font-size:12px;color:var(--muted);margin-top:9px}
 .hero-sub b{color:var(--ink);font-weight:700}
@@ -199,14 +203,14 @@ body{font-family:var(--font-ui);-webkit-font-smoothing:antialiased;color:var(--i
 .prog-top .l{color:var(--ink);font-weight:600}.prog-top .l b{color:var(--gold-ink);font-weight:700}
 .prog-top .r{font-size:12px;color:var(--muted);font-weight:600}
 .bar{height:11px;border-radius:99px;background:var(--cream2);overflow:hidden;border:1px solid var(--line)}
-.bar i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,var(--gold),var(--gold2),var(--gold3));transition:width .6s cubic-bezier(.16,1,.3,1);box-shadow:0 1px 4px rgba(200,150,62,.4)}
+.bar i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,var(--gold3),var(--gold));transition:width .6s cubic-bezier(.16,1,.3,1);box-shadow:0 1px 4px rgba(200,150,62,.4)}
 
 /* ─── Utiliser un cadeau : avertissement + écran de validation ─── */
-.use-warn{background:rgba(200,150,62,.10);border:1px solid var(--gold-line);border-radius:14px;
-  padding:11px 14px;font-size:12.5px;color:var(--muted);line-height:1.5;margin:0 2px}
-.use-warn b{color:var(--ink)}
+.use-warn{background:rgba(255,255,255,.08);border:1px solid rgba(255,197,61,.35);border-radius:14px;
+  padding:11px 14px;font-size:12.5px;color:var(--surbg-doux);line-height:1.5;margin:0 2px}
+.use-warn b{color:var(--surbg)}
 .st.use{border:none;border-radius:99px;padding:8px 15px;font-family:var(--font-ui);font-size:12px;
-  font-weight:700;cursor:pointer;color:#3a2705;background:linear-gradient(135deg,var(--gold),var(--gold2));
+  font-weight:700;cursor:pointer;color:#fff;background:linear-gradient(135deg,var(--gold),var(--gold2));
   box-shadow:0 4px 12px rgba(200,150,62,.34)}
 .st.use:active{transform:scale(.95)}
 /* cadeau validé : reste cliquable pour être rouvert en grand devant le vendeur */
@@ -216,7 +220,7 @@ body{font-family:var(--font-ui);-webkit-font-smoothing:antialiased;color:var(--i
 .st.done.live .cd{font-size:10.5px;color:var(--muted);font-variant-numeric:tabular-nums}
 .st.done.live:active{transform:scale(.96)}
 
-.use-ov{position:fixed;inset:0;z-index:60;background:rgba(30,24,12,.55);backdrop-filter:blur(6px);
+.use-ov{position:fixed;inset:0;z-index:60;background:rgba(10,12,30,.62);backdrop-filter:blur(6px);
   display:none;align-items:center;justify-content:center;padding:24px}
 .use-ov.on{display:flex}
 .use-box{background:var(--card);border-radius:26px;padding:28px 24px;max-width:360px;width:100%;
@@ -228,12 +232,12 @@ body{font-family:var(--font-ui);-webkit-font-smoothing:antialiased;color:var(--i
 .use-actions{display:flex;flex-direction:column;gap:9px}
 .use-actions button{border:none;border-radius:14px;padding:14px;font-family:var(--font-ui);
   font-size:15px;font-weight:700;cursor:pointer}
-.use-go{background:linear-gradient(135deg,var(--gold),var(--gold2));color:#3a2705;
+.use-go{background:linear-gradient(135deg,var(--gold),var(--gold2));color:#fff;
   box-shadow:0 6px 18px rgba(200,150,62,.36)}
 .use-no{background:transparent;color:var(--muted);font-weight:600}
 /* écran validé : le vendeur doit le reconnaître d'un coup d'œil */
 .use-ok{width:78px;height:78px;border-radius:50%;margin:0 auto 14px;display:grid;place-items:center;
-  font-size:38px;color:#fff;background:linear-gradient(135deg,#3F7D2E,#5DA648);
+  font-size:38px;color:#fff;background:linear-gradient(135deg,#15803D,#22C55E);
   box-shadow:0 10px 26px rgba(63,125,46,.4);animation:okPop .45s cubic-bezier(.2,.9,.3,1.5) both}
 @keyframes okPop{from{transform:scale(.4);opacity:0}to{transform:none;opacity:1}}
 .use-clock{font-size:34px;font-weight:800;letter-spacing:-.01em;color:var(--ink);margin:4px 0 2px;
@@ -270,8 +274,8 @@ body{font-family:var(--font-ui);-webkit-font-smoothing:antialiased;color:var(--i
 @media (prefers-reduced-motion:reduce){.stamp.win,.stamp.win::after,.hero-pts .v.bump{animation:none}.etincelle{display:none}}
 
 .sec-h{display:flex;align-items:baseline;justify-content:space-between;margin:8px 2px 0}
-.sec-h .t{font-family:var(--font-display);font-size:21px;font-weight:700;color:var(--ink)}
-.sec-h .a{font-size:12px;font-weight:600;color:var(--muted)}
+.sec-h .t{font-family:var(--font-display);font-size:21px;font-weight:800;letter-spacing:-.01em;color:var(--surbg)}
+.sec-h .a{font-size:12px;font-weight:600;color:var(--surbg-doux)}
 
 /* catalogue carrousel */
 .cat{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;padding:4px 18px 8px;margin:0 -18px;-webkit-overflow-scrolling:touch;scrollbar-width:none;overscroll-behavior-x:contain}
@@ -307,7 +311,7 @@ body{font-family:var(--font-ui);-webkit-font-smoothing:antialiased;color:var(--i
 .rw .cost{font-size:13px;font-weight:700;color:var(--gold-ink);margin:7px 0 11px;display:inline-flex;align-items:center;gap:5px}
 .rw .cost::before{content:'';width:7px;height:7px;border-radius:50%;background:var(--gold)}
 .rw .btn{width:100%;padding:11px;border:none;border-radius:12px;font-family:var(--font-ui);font-size:13px;font-weight:700;cursor:pointer;transition:transform .12s}
-.rw .btn.go{background:linear-gradient(135deg,var(--gold),var(--gold2));color:#3a2705;box-shadow:0 5px 14px rgba(200,150,62,.36)}
+.rw .btn.go{background:linear-gradient(135deg,var(--gold),var(--gold2));color:#fff;box-shadow:0 5px 14px rgba(200,150,62,.36)}
 .rw .btn.go:active{transform:scale(.96)}
 .rw .btn.lock{background:var(--cream2);color:var(--muted);cursor:default;font-size:11.5px;font-weight:700}
 .rw .btn:disabled{opacity:.5;cursor:default}
@@ -341,7 +345,7 @@ body{font-family:var(--font-ui);-webkit-font-smoothing:antialiased;color:var(--i
 .offre-t{font-size:14.5px;font-weight:700;color:var(--ink);line-height:1.3}
 .offre-d{font-size:12px;font-weight:600;color:var(--gold-ink);margin-top:3px}
 .offre-go{margin-top:10px;border:none;border-radius:var(--r-bouton,99px);padding:10px 16px;font-family:var(--font-ui);
-  font-size:13px;font-weight:700;color:#3a2705;background:linear-gradient(135deg,var(--gold),var(--gold2));
+  font-size:13px;font-weight:700;color:#fff;background:linear-gradient(135deg,var(--gold),var(--gold2));
   box-shadow:0 4px 12px rgba(200,150,62,.30);cursor:pointer}
 .offre-go:active{transform:scale(.96)}
 .offre-go:disabled{opacity:.6;cursor:default;transform:none}
@@ -356,15 +360,15 @@ body{font-family:var(--font-ui);-webkit-font-smoothing:antialiased;color:var(--i
    la carte est crème : sans `invert`, le logo serait purement et simplement invisible.
    En pied et non en tête, à dessein — sur la carte du client, l'identité qui domine
    doit rester celle du commerce. */
-.marque{display:block;height:34px;width:auto;margin:0 auto 14px;filter:invert(1);opacity:.88}
+.marque{display:block;height:34px;width:auto;margin:0 auto 14px;opacity:.9}   /* 23/09 : fond nuit, le logo blanc se pose tel quel (plus d'invert) */
 
-.foot{text-align:center;margin-top:6px}.foot .ty{font-size:12px;color:var(--muted)}
-.foot .bk{font-family:var(--font-display);font-style:italic;color:var(--gold-ink);font-weight:700}
-.cardno{margin-top:10px;font-size:11.5px;letter-spacing:.1em;color:var(--muted)}.cardno b{color:var(--muted);font-weight:700}
+.foot{text-align:center;margin-top:6px}.foot .ty{font-size:12px;color:var(--surbg-doux)}
+.foot .bk{font-family:var(--font-display);font-style:normal;color:var(--gold3);font-weight:800}
+.cardno{margin-top:10px;font-size:11.5px;letter-spacing:.1em;color:var(--surbg-doux)}.cardno b{color:var(--surbg);font-weight:700}
 
 /* Mes données — information (RGPD art. 13) et effacement (art. 17).
    ⚠️ Texte en var(--ink), jamais en var(--gold) : l'or en TEXTE tombe à 2,49:1. */
-.plink{margin-top:13px;background:none;border:0;padding:7px 10px;font-family:var(--font-ui);font-size:11.5px;color:var(--muted);text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+.plink{margin-top:13px;background:none;border:0;padding:7px 10px;font-family:var(--font-ui);font-size:11.5px;color:var(--surbg-doux);text-decoration:underline;text-underline-offset:3px;cursor:pointer}
 .plink:active{opacity:.6}
 .pv-card{text-align:left}
 .pv-t{font-family:var(--font-display);font-size:20px;font-weight:700;color:var(--ink);margin-bottom:13px;text-align:center}
@@ -378,11 +382,11 @@ body{font-family:var(--font-ui);-webkit-font-smoothing:antialiased;color:var(--i
 .pv-danger:disabled{opacity:.6}
 .pv-close{width:100%;margin-top:9px;padding:12px;border:0;border-radius:14px;background:var(--gold-soft);color:var(--ink);font-family:var(--font-ui);font-size:14px;font-weight:700;cursor:pointer}
 
-.toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,16px);background:var(--ink);color:#fff;padding:14px 20px;border-radius:14px;font-size:13.5px;font-weight:600;box-shadow:0 12px 34px rgba(0,0,0,.3);z-index:99;opacity:0;pointer-events:none;transition:opacity .25s,transform .25s;max-width:340px;text-align:center}
+.toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,16px);background:var(--card);color:var(--ink);padding:14px 20px;border-radius:14px;font-size:13.5px;font-weight:600;box-shadow:0 12px 34px rgba(0,0,0,.3);z-index:99;opacity:0;pointer-events:none;transition:opacity .25s,transform .25s;max-width:340px;text-align:center}
 .toast.show{opacity:1;transform:translate(-50%,0)}
 
 /* modal cadeau confirmé + confettis */
-.cm-overlay{position:fixed;inset:0;z-index:200;display:none;align-items:center;justify-content:center;padding:26px;background:rgba(42,36,24,.55);backdrop-filter:blur(4px);opacity:0;transition:opacity .25s}
+.cm-overlay{position:fixed;inset:0;z-index:200;display:none;align-items:center;justify-content:center;padding:26px;background:rgba(10,12,30,.62);backdrop-filter:blur(4px);opacity:0;transition:opacity .25s}
 .cm-overlay.show{display:flex;opacity:1}
 .cm-card{background:var(--card);border-radius:26px;padding:30px 24px 24px;max-width:330px;width:100%;text-align:center;box-shadow:0 30px 70px rgba(0,0,0,.35);border:1px solid var(--gold-line);transform:scale(.6) translateY(20px);opacity:0}
 .cm-overlay.show .cm-card{animation:cmPop .55s cubic-bezier(.34,1.56,.64,1) forwards}
@@ -395,7 +399,7 @@ body{font-family:var(--font-ui);-webkit-font-smoothing:antialiased;color:var(--i
 .cm-codelbl{font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--muted2);margin-bottom:6px}
 .cm-code{font-family:var(--font-ui);font-size:38px;font-weight:800;letter-spacing:.1em;color:var(--gold-ink);line-height:1}
 .cm-note{font-size:12px;color:var(--muted);margin:12px 0 18px;line-height:1.5}
-.cm-btn{width:100%;padding:14px;border:none;border-radius:14px;background:linear-gradient(135deg,var(--gold),var(--gold2));color:#3a2705;font-family:var(--font-ui);font-size:15px;font-weight:700;cursor:pointer}
+.cm-btn{width:100%;padding:14px;border:none;border-radius:14px;background:linear-gradient(135deg,var(--gold),var(--gold2));color:#fff;font-family:var(--font-ui);font-size:15px;font-weight:700;cursor:pointer}
 /* réseaux sociaux */
 .social{background:var(--card);border-radius:20px;padding:15px 18px;box-shadow:var(--shadow);border:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:12px}
 .social-txt{font-size:12.5px;color:var(--ink);line-height:1.45}.social-txt b{color:var(--gold-ink);font-weight:700}
@@ -432,7 +436,7 @@ body{font-family:var(--font-ui);-webkit-font-smoothing:antialiased;color:var(--i
 .tier-line .tt{font-size:11.5px;color:var(--muted)}.tier-line .tt b{color:var(--ink);font-weight:700}
 
 /* bandeau anti-gaspi (alerte paniers du jour) */
-.agb{background:linear-gradient(135deg,rgba(63,125,46,.10),rgba(245,208,122,.13));border:1px solid rgba(63,125,46,.22);border-radius:20px;padding:15px 16px;box-shadow:var(--shadow)}
+.agb{background:linear-gradient(135deg,rgba(22,163,74,.08),rgba(255,197,61,.12)),var(--card);border:1px solid rgba(63,125,46,.22);border-radius:20px;padding:15px 16px;box-shadow:var(--shadow)}
 .agb-h{display:flex;align-items:center;gap:8px;font-family:var(--font-display);font-size:18px;font-weight:700;color:var(--green-ink)}
 .agb-h .tag{margin-left:auto;font-family:var(--font-ui);font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;color:#2a6b1f;background:rgba(63,125,46,.16);border:1px solid rgba(63,125,46,.3);border-radius:99px;padding:3px 9px}
 .agb-sub{font-size:12px;color:var(--muted);margin:3px 0 4px}
@@ -887,7 +891,9 @@ const PRESETS = {
     logo:'assets/baps/logo.png',      /* remplace le nom ecrit en haut de carte */
     antigaspi:false,                  /* Le Bap's ne prend pas le module invendus */
     fl:['🍔','🌯','🍟','🥤','🧀','🌮'],
-    theme:{cream:'#FBF7F2',cream2:'#EFE4D8',gold:'#C9761F',gold2:'#E08A33',gold3:'#F4A460',green:'#3F7D2E',ink:'#241F1B'},
+    /* 23/09 — direction B : le fond de la page est nuit pour tous (--bg), les cartes restent claires ;
+       Le Bap's prend l'orange / orange foncé / jaune de Perify. */
+    theme:{cream:'#FFF8F0',cream2:'#FFEEDD',gold:'#FF6B2C',gold2:'#E85A1B',gold3:'#FFC53D',green:'#16A34A',ink:'#1B1F3B'},
     catalogue:[
       {item:'b1',libelle:'Boisson',     cout:6,  img:'assets/baps/boisson.png',     emoji:'🥤'},
       {item:'b2',libelle:'Frites',      cout:10, img:'assets/baps/frites.png',      emoji:'🍟'},
@@ -1202,7 +1208,7 @@ function applyPreset(p){
     for(const k in t){ if(M[k]) r.setProperty(M[k], t[k]); }
     if(t.gold){ r.setProperty('--gold-soft',hexA(t.gold,.10)); r.setProperty('--gold-line',hexA(t.gold,.28)); }
     if(t.green){ r.setProperty('--green-soft',hexA(t.green,.12)); }
-    document.querySelector('meta[name="theme-color"]') && document.querySelector('meta[name="theme-color"]').setAttribute('content', t.cream||'#FBF7EF');
+    document.querySelector('meta[name="theme-color"]') && document.querySelector('meta[name="theme-color"]').setAttribute('content', '#1B1F3B');   /* 23/09 : la barre du navigateur suit le fond nuit */
   }
   /* L'enseigne : son logo quand le commerce en fournit un, son nom sinon.
      Le nom reste dans l'attribut `title` et dans l'alternative de l'image — un

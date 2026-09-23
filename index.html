@@ -7,24 +7,25 @@
 <meta name="color-scheme" content="light">
 <title>Falman Emmanuelle et Flavien</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 :root{
-  --cream:#F5EDD8;--cream3:#FBF6EE;
-  --gold:#C8963E;--gold2:#E2B25A;--gold3:#F5D07A;
-  --gold-border:rgba(200,150,62,.35);
-  --ink:#1a1a14;--muted:#6b6045;--muted2:#9a8c6e;
-  --green-dk:#2d5a12;
+  /* 🎨 23/09 — direction B « vitaminé » (son choix) : nuit, orange, orange foncé, jaune ; Plus Jakarta Sans + Inter. */
+  --cream:#FFF8F0;--cream3:#FFFFFF;
+  --gold:#FF6B2C;--gold2:#E85A1B;--gold3:#FFC53D;--gold-ink:#C2410C;
+  --gold-border:rgba(255,107,44,.35);
+  --ink:#1B1F3B;--muted:#5B5F7A;--muted2:#6B7086;
+  --green-dk:#15803D;
   /* ⚠️ 11/09 — le fond était écrit EN DUR en sept endroits : l'écran d'accueil
      restait vert boulangerie chez tous les commerces, alors que la carte, elle, se
      re-colorait déjà. Passé en variables pour qu'un commerce puisse l'habiller
      (cf. le bloc « habillage par commerce » plus bas). Valeurs boulangerie inchangées. */
-  --bg:#3e7a1a;
-  --bg-a:rgba(120,200,45,.48);
-  --bg-b:rgba(25,85,6,.55);
-  --bg-c:rgba(48,108,14,.42);
-  --bg-d:rgba(68,138,18,.32);
+  --bg:#1B1F3B;
+  --bg-a:rgba(255,107,44,.30);
+  --bg-b:rgba(0,0,0,.45);
+  --bg-c:rgba(255,197,61,.12);
+  --bg-d:rgba(255,107,44,.10);
 }
 html{background:var(--bg);min-height:100%}
 body{
@@ -75,18 +76,18 @@ body::after{
 .viewer-loading{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:12px;color:rgba(245,237,216,.5);letter-spacing:.05em;pointer-events:none;animation:fadePulse 1.5s ease-in-out infinite}
 @keyframes fadePulse{0%,100%{opacity:.3}50%{opacity:.8}}
 .viewer-loading.gone{display:none}
-.viewer-name{margin-top:6px;font-family:'Playfair Display',serif;font-size:17px;font-weight:700;font-style:italic;color:var(--cream);text-shadow:0 2px 14px rgba(0,0,0,.4);text-align:center;line-height:1.2;letter-spacing:.02em}
+.viewer-name{margin-top:6px;font-family:'Plus Jakarta Sans',sans-serif;font-size:17px;font-weight:800;font-style:normal;color:var(--cream);text-shadow:0 2px 14px rgba(0,0,0,.4);text-align:center;line-height:1.2;letter-spacing:.02em}
 .s1-stars{display:flex;gap:4px;justify-content:center;margin:16px 0 20px}
 .s1-star{font-size:20px;opacity:0;transform:translateY(5px) scale(.75);animation:starIn .4s ease forwards}
 .s1-star:nth-child(1){animation-delay:.12s}.s1-star:nth-child(2){animation-delay:.22s}.s1-star:nth-child(3){animation-delay:.32s}.s1-star:nth-child(4){animation-delay:.42s}.s1-star:nth-child(5){animation-delay:.52s}
 @keyframes starIn{to{opacity:1;transform:none}}
-.s1-card{width:100%;background:rgba(251,246,238,.97);border-radius:26px;overflow:hidden;box-shadow:0 20px 56px rgba(0,0,0,.38),0 0 0 1px rgba(200,150,62,.18) inset}
+.s1-card{width:100%;background:rgba(255,255,255,.97);border-radius:26px;overflow:hidden;box-shadow:0 20px 56px rgba(0,0,0,.38),0 0 0 1px rgba(200,150,62,.18) inset}
 .s1-card-top{padding:24px 22px 18px;background:linear-gradient(180deg,rgba(200,150,62,.07) 0%,transparent 100%);border-bottom:1px solid var(--gold-border);text-align:center}
-.s1-heading{font-family:'Playfair Display',serif;font-size:23px;font-weight:900;color:var(--ink);line-height:1.2;letter-spacing:-.01em;margin-bottom:7px}
-.s1-heading .accent{color:var(--gold)}
+.s1-heading{font-family:'Plus Jakarta Sans',sans-serif;font-size:23px;font-weight:800;color:var(--ink);line-height:1.2;letter-spacing:-.01em;margin-bottom:7px}
+.s1-heading .accent{color:var(--gold-ink)}
 .s1-subtext{font-size:13px;color:var(--muted);line-height:1.65}
 .s1-card-bottom{padding:18px 22px 22px;display:flex;flex-direction:column;gap:10px}
-.btn-google{display:flex;align-items:center;justify-content:center;gap:9px;width:100%;padding:15px 18px;background:linear-gradient(135deg,var(--gold) 0%,var(--gold2) 60%,var(--gold3) 100%);color:var(--ink);border:none;border-radius:15px;font-family:'Inter',sans-serif;font-size:15px;font-weight:700;cursor:pointer;text-decoration:none;text-align:center;box-shadow:0 6px 22px rgba(200,150,62,.48),0 2px 6px rgba(0,0,0,.14);transition:transform .15s ease;position:relative;overflow:hidden;letter-spacing:.01em}
+.btn-google{display:flex;align-items:center;justify-content:center;gap:9px;width:100%;padding:15px 18px;background:linear-gradient(135deg,var(--gold) 0%,var(--gold2) 100%);color:#fff;border:none;border-radius:15px;font-family:'Inter',sans-serif;font-size:15px;font-weight:700;cursor:pointer;text-decoration:none;text-align:center;box-shadow:0 6px 22px rgba(200,150,62,.48),0 2px 6px rgba(0,0,0,.14);transition:transform .15s ease;position:relative;overflow:hidden;letter-spacing:.01em}
 .btn-google:active{transform:scale(.97)}
 .s1-optional{display:flex;align-items:flex-start;gap:8px;background:rgba(200,150,62,.05);border:1px solid rgba(200,150,62,.15);border-radius:11px;padding:10px 13px}
 .s1-optional-icon{font-size:13px;flex-shrink:0;margin-top:1px}
@@ -110,9 +111,9 @@ body::after{
    « Lancer » en goutte au centre (c'est sa pointe qui désigne le lot), trois étapes sous la roue.
    Mécanique inchangée : lots et seuils (PRIZES), une roue par carte, visuels réels des produits. */
 .s2-header{text-align:center;margin-bottom:8px}
-.s2-bienvenue{font-family:'Inter',sans-serif;font-size:22px;font-weight:800;letter-spacing:-.01em;color:var(--cream);line-height:1.15}
+.s2-bienvenue{font-family:'Plus Jakarta Sans',sans-serif;font-size:22px;font-weight:800;letter-spacing:-.01em;color:var(--cream);line-height:1.15}
 .s2-titre{position:relative;display:inline-block;padding:6px 18px 8px;margin-top:2px;color:var(--gold3)}
-.s2-titre-txt{position:relative;z-index:1;font-family:'Inter',sans-serif;font-size:clamp(20px,6.2vw,25px);font-weight:800;letter-spacing:-.01em;line-height:1.15;white-space:nowrap}
+.s2-titre-txt{position:relative;z-index:1;font-family:'Plus Jakarta Sans',sans-serif;font-size:clamp(20px,6.2vw,25px);font-weight:800;letter-spacing:-.01em;line-height:1.15;white-space:nowrap}
 .s2-ellipse{position:absolute;left:-6px;top:-2px;width:calc(100% + 12px);height:calc(100% + 4px);overflow:visible;transform:rotate(-2deg)}
 .s2-croix{position:absolute;right:-2px;bottom:-15px;font-size:13px;font-weight:700;letter-spacing:.18em;opacity:.9}
 .s2-sub{font-size:13.5px;color:rgba(245,237,216,.78);margin-top:16px;line-height:1.55}
@@ -199,14 +200,14 @@ body::after{
 @keyframes resultPop{from{opacity:0;transform:translateY(18px) scale(.93)}to{opacity:1;transform:none}}
 .wr-badge{
   display:inline-block;font-size:9.5px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;
-  color:var(--gold);border:1px solid var(--gold-border);border-radius:999px;padding:5px 12px;margin-bottom:12px;
+  color:var(--gold-ink);border:1px solid var(--gold-border);border-radius:999px;padding:5px 12px;margin-bottom:12px;
 }
 .wr-emoji{
   font-size:60px;line-height:1;display:block;margin-bottom:6px;
   filter:drop-shadow(0 8px 16px rgba(0,0,0,.18));animation:wrFloat 3s ease-in-out infinite;
 }
 @keyframes wrFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
-.wr-name{font-family:'Playfair Display',serif;font-weight:700;font-size:23px;color:var(--ink);line-height:1.2}
+.wr-name{font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:23px;color:var(--ink);line-height:1.2}
 .wr-divider{width:44px;height:1px;background:var(--gold-border);margin:13px auto}
 .wr-msg{font-size:12.5px;color:var(--muted);line-height:1.5}
 
@@ -221,7 +222,7 @@ body::after{
 .btn-claim{
   display:none;width:100%;max-width:300px;padding:15px;margin-top:16px;
   background:linear-gradient(135deg,var(--gold),var(--gold2));
-  color:var(--ink);border:none;border-radius:15px;
+  color:#fff;border:none;border-radius:15px;
   font-family:'Inter',sans-serif;font-size:15px;font-weight:700;cursor:pointer;
   box-shadow:0 6px 22px rgba(200,150,62,.42);
 }
@@ -242,7 +243,7 @@ body::after{
   border:1px solid var(--gold-border);box-shadow:0 14px 40px rgba(0,0,0,.35);margin-bottom:26px;
 }
 .sw-prize-emoji{font-size:44px;line-height:1;display:block;margin-bottom:6px;filter:drop-shadow(0 6px 12px rgba(0,0,0,.15))}
-.sw-prize-name{font-family:'Playfair Display',serif;font-weight:700;font-size:19px;color:var(--ink);line-height:1.2}
+.sw-prize-name{font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:19px;color:var(--ink);line-height:1.2}
 
 .sw-title{
   font-family:'Inter',sans-serif;font-weight:600;font-size:19px;letter-spacing:-.01em;
@@ -288,7 +289,7 @@ body::after{
 .s3-hero{padding:28px 22px 20px;background:linear-gradient(180deg,rgba(200,150,62,.08) 0%,transparent 100%);border-bottom:1px solid var(--gold-border);text-align:center;display:flex;flex-direction:column;align-items:center;gap:8px}
 .s3-emoji-big{font-size:58px;display:block;animation:popIn .6s cubic-bezier(.36,.07,.19,.97) both}
 @keyframes popIn{0%{transform:scale(0) rotate(-14deg);opacity:0}60%{transform:scale(1.16) rotate(4deg)}100%{transform:scale(1) rotate(0);opacity:1}}
-.s3-congrats{font-family:'Playfair Display',serif;font-size:24px;font-weight:700;color:var(--ink)}
+.s3-congrats{font-family:'Plus Jakarta Sans',sans-serif;font-size:24px;font-weight:700;color:var(--ink)}
 .s3-prize-pill{display:inline-block;padding:5px 14px;background:rgba(200,150,62,.1);border:1px solid var(--gold-border);border-radius:999px;font-size:12px;font-weight:700;color:var(--gold)}
 .s3-body{padding:20px 22px 24px}
 .s3-section-title{font-size:15px;font-weight:700;color:var(--ink);margin-bottom:2px}
@@ -301,14 +302,14 @@ body::after{
 .s3-consent{display:flex;align-items:flex-start;gap:10px;margin-top:12px;padding:11px 12px;background:rgba(200,150,62,.07);border:1px solid rgba(200,150,62,.22);border-radius:12px;cursor:pointer;font-size:12.5px;line-height:1.5;color:var(--muted);text-align:left}
 .s3-consent input{width:20px;height:20px;margin:1px 0 0;flex-shrink:0;accent-color:var(--gold)}
 .s3-consent b{color:var(--ink)}
-.s3-submit{width:100%;padding:15px;margin-top:12px;background:linear-gradient(135deg,var(--gold),var(--gold2));color:var(--ink);border:none;border-radius:15px;font-family:'Inter',sans-serif;font-size:15px;font-weight:700;cursor:pointer;box-shadow:0 6px 22px rgba(200,150,62,.32);transition:all .2s}
+.s3-submit{width:100%;padding:15px;margin-top:12px;background:linear-gradient(135deg,var(--gold),var(--gold2));color:#fff;border:none;border-radius:15px;font-family:'Inter',sans-serif;font-size:15px;font-weight:700;cursor:pointer;box-shadow:0 6px 22px rgba(255,107,44,.32);transition:all .2s}
 .s3-submit:active{transform:scale(.98)}
 .s3-submit:disabled{opacity:.5;cursor:default}
 .s3-legal{text-align:center;font-size:11px;color:var(--muted2);margin-top:11px;line-height:1.6}
 
 .s4-wrap{text-align:center;max-width:310px}
 .s4-check{width:78px;height:78px;margin:0 auto 20px;background:rgba(61,122,24,.12);border:1.5px solid rgba(100,180,40,.28);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:30px;animation:popIn .6s cubic-bezier(.36,.07,.19,.97) both}
-.s4-title{font-family:'Playfair Display',serif;font-size:28px;font-weight:700;color:var(--cream);margin-bottom:8px}
+.s4-title{font-family:'Plus Jakarta Sans',sans-serif;font-size:28px;font-weight:700;color:var(--cream);margin-bottom:8px}
 .s4-desc{font-size:13px;color:rgba(245,237,216,.6);line-height:1.75;margin-bottom:20px}
 .s4-code-block{background:rgba(245,237,216,.09);border:1px solid rgba(200,150,62,.22);border-radius:20px;padding:20px;backdrop-filter:blur(10px)}
 .s4-code-label{font-size:10px;font-weight:700;color:rgba(245,237,216,.38);letter-spacing:.15em;text-transform:uppercase;margin-bottom:8px}
@@ -317,7 +318,7 @@ body::after{
 
 .already-wrap{text-align:center;max-width:280px}
 .already-emoji{font-size:50px;display:block;margin-bottom:14px}
-.already-title{font-family:'Playfair Display',serif;font-size:22px;font-weight:700;color:var(--cream);margin-bottom:10px}
+.already-title{font-family:'Plus Jakarta Sans',sans-serif;font-size:22px;font-weight:700;color:var(--cream);margin-bottom:10px}
 /* .78 et non .56 : à .56 sur le fond du site, le texte passait sous le seuil de
    lisibilité une fois l'écran au soleil, dehors, devant le présentoir. */
 .already-desc{font-size:14.5px;color:rgba(245,237,216,.78);line-height:1.65}
@@ -544,7 +545,7 @@ body::after{
 <!-- Theming multi-commerce (?type=) — boulangerie inchangée si absent -->
 <script>
 (function(){
-  var T={baps:['#F4A460','#E08A33','#F7C48F'],fleuriste:['#C8568E','#E084B0','#F4B6D2'],pizzeria:['#C8442E','#E2664E','#F2A07E'],vape:['#6D5AE0','#8A7AF0','#B6ABFF'],restaurant:['#9A3F4C','#B85A68','#D78F99'],primeur:['#E0892E','#F0A94E','#F8C87C']};
+  var T={baps:['#FF6B2C','#E85A1B','#FFC53D'],fleuriste:['#C8568E','#E084B0','#F4B6D2'],pizzeria:['#C8442E','#E2664E','#F2A07E'],vape:['#6D5AE0','#8A7AF0','#B6ABFF'],restaurant:['#9A3F4C','#B85A68','#D78F99'],primeur:['#E0892E','#F0A94E','#F8C87C']};
   var N={baps:"Le Bap's",fleuriste:'Au Jardin de Rose',pizzeria:'Bella Napoli',vape:'VapoStore',restaurant:'Le Bistrot',primeur:'Le Panier Frais'};
   var E={baps:'assets/baps/logo-blanc.png',fleuriste:'🌷',pizzeria:'🍕',vape:'💨',restaurant:'🍽️',primeur:'🥕'};
   var t=(new URLSearchParams(location.search).get('type')||'').toLowerCase();
@@ -594,11 +595,11 @@ let PRIZES = [
    casser un commerce existant. */
 (function(){
   var HABILLAGE = {
-    baps: { bg:'#16130F',
-            a:'rgba(244,164,96,.22)', b:'rgba(0,0,0,.55)',
-            c:'rgba(201,118,31,.20)', d:'rgba(244,164,96,.12)',
-            gold:'#F4A460', gold2:'#E08A33', gold3:'#F7C48F',
-            border:'rgba(244,164,96,.38)', theme:'#16130F' }
+    baps: { bg:'#1B1F3B',
+            a:'rgba(255,107,44,.30)', b:'rgba(0,0,0,.45)',
+            c:'rgba(255,197,61,.12)', d:'rgba(255,107,44,.10)',
+            gold:'#FF6B2C', gold2:'#E85A1B', gold3:'#FFC53D',
+            border:'rgba(255,107,44,.38)', theme:'#1B1F3B' }
   };
   var t = HABILLAGE[(new URLSearchParams(location.search).get('type')||'').toLowerCase()];
   if(!t) return;
