@@ -104,79 +104,94 @@ body::after{
    S2 — ROUE DE LA CHANCE
 ══════════════════════════════════ */
 .s2-wrap{width:100%;max-width:400px;display:flex;flex-direction:column;align-items:center}
-
-.s2-header{text-align:center;margin-bottom:12px}
-.s2-eyebrow{font-size:11px;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:var(--gold3);opacity:.85;margin-bottom:8px}
-.s2-title{font-family:'Playfair Display',serif;font-style:italic;font-weight:700;font-size:31px;line-height:1.12;color:var(--cream);text-shadow:0 3px 16px rgba(0,0,0,.32)}
-.s2-sub{font-size:13.5px;color:rgba(245,237,216,.72);margin-top:9px;line-height:1.5}
+/* 23/09 — écran refait « à la TheGiftsClub » (demande de Valentin : « un truc plus similaire ») :
+   titre « Bienvenue sur la… » cerclé à la main, roue plate à deux tons de la couleur du commerce,
+   ampoules blanches sur la jante, anneau pointillé avec le logo du commerce en haut, bouton
+   « Lancer » en goutte au centre (c'est sa pointe qui désigne le lot), trois étapes sous la roue.
+   Mécanique inchangée : lots et seuils (PRIZES), une roue par carte, visuels réels des produits. */
+.s2-header{text-align:center;margin-bottom:8px}
+.s2-bienvenue{font-family:'Inter',sans-serif;font-size:22px;font-weight:800;letter-spacing:-.01em;color:var(--cream);line-height:1.15}
+.s2-titre{position:relative;display:inline-block;padding:6px 18px 8px;margin-top:2px;color:var(--gold3)}
+.s2-titre-txt{position:relative;z-index:1;font-family:'Inter',sans-serif;font-size:clamp(20px,6.2vw,25px);font-weight:800;letter-spacing:-.01em;line-height:1.15;white-space:nowrap}
+.s2-ellipse{position:absolute;left:-6px;top:-2px;width:calc(100% + 12px);height:calc(100% + 4px);overflow:visible;transform:rotate(-2deg)}
+.s2-croix{position:absolute;right:-2px;bottom:-15px;font-size:13px;font-weight:700;letter-spacing:.18em;opacity:.9}
+.s2-sub{font-size:13.5px;color:rgba(245,237,216,.78);margin-top:16px;line-height:1.55}
+.s2-sub b{font-weight:700;color:var(--gold3)}
 
 /* ── Scène ── */
 .wheel-scene{
-  position:relative;width:min(86vw,318px);height:min(86vw,318px);
-  margin:4px auto 0;display:grid;place-items:center;
+  position:relative;width:min(80vw,300px);height:min(80vw,300px);
+  margin:46px auto 0;display:grid;place-items:center;
 }
-.wheel-glow{
-  position:absolute;inset:-12%;border-radius:50%;pointer-events:none;z-index:1;
-  background:radial-gradient(circle,rgba(226,178,90,.36) 0%,transparent 65%);
-  animation:wheelGlow 3.6s ease-in-out infinite;
+/* Le logo du commerce, sur une pastille posée en haut de la roue. Au lancement (sa demande du
+   23/09), la pastille GLISSE jusqu'au centre du bouton et y reste, à la place du mot « Lancer ». */
+.wheel-logo{
+  position:absolute;z-index:6;top:-17%;left:50%;transform:translateX(-50%);
+  width:64px;height:64px;border-radius:50%;background:#fff;
+  box-shadow:0 6px 18px rgba(0,0,0,.22);display:grid;place-items:center;
+  font-size:30px;line-height:1;overflow:hidden;pointer-events:none;
+  transition:top .62s cubic-bezier(.34,1.35,.5,1),transform .62s cubic-bezier(.34,1.35,.5,1);
 }
-@keyframes wheelGlow{0%,100%{opacity:.55;transform:scale(1)}50%{opacity:1;transform:scale(1.09)}}
+.wheel-logo.au-centre{top:50%;transform:translate(-50%,-50%) scale(.9)}
+.wheel-logo img{width:88%;height:88%;object-fit:contain;display:block}
+@media (prefers-reduced-motion:reduce){.wheel-logo{transition:none}}
 
 .wheel-svg{
   position:relative;z-index:2;width:100%;height:100%;display:block;
   transform:rotate(0deg);transform-origin:50% 50%;
-  filter:drop-shadow(0 16px 38px rgba(0,0,0,.42));
+  filter:drop-shadow(0 14px 30px rgba(0,0,0,.30));
   will-change:transform;
 }
 
-/* Pointeur fixe (au-dessus de la roue) */
-.wheel-pointer{
-  position:absolute;z-index:4;top:-4px;left:50%;
-  width:0;height:0;
-  border-left:13px solid transparent;border-right:13px solid transparent;
-  border-top:27px solid var(--cream3);
-  transform:translateX(-50%);transform-origin:50% 0%;
-  /* double ombre = liseré sombre : reste lisible sur secteur crème ET sur secteur doré */
-  filter:drop-shadow(0 0 1.5px rgba(0,0,0,.85)) drop-shadow(0 5px 10px rgba(0,0,0,.55));
-  transition:transform .05s ease-out;pointer-events:none;
-}
-.wheel-pointer::after{
-  content:'';position:absolute;top:-33px;left:-13px;width:26px;height:26px;border-radius:50%;
-  background:linear-gradient(160deg,var(--cream3),#d8cbb0);
-  border:2.5px solid var(--gold);
-  box-shadow:0 3px 10px rgba(0,0,0,.45);
-}
-.wheel-pointer.tick{transform:translateX(-50%) rotate(-12deg)}
+/* L'ancien pointeur du haut : c'est le bouton-goutte qui pointe désormais le lot */
+.wheel-pointer{display:none}
 
-/* Moyeu = bouton TOURNER */
+/* Moyeu = bouton LANCER, en goutte (la pointe désigne le secteur gagnant, en haut) */
 .wheel-hub{
-  position:absolute;z-index:5;width:29%;height:29%;border-radius:50%;
-  background:radial-gradient(circle at 34% 28%,var(--gold3) 0%,var(--gold) 62%,#a5762a 100%);
-  border:3px solid rgba(251,246,238,.92);
+  position:absolute;z-index:5;width:31%;height:31%;border-radius:50%;
+  background:var(--gold2);border:0;padding:0;
   cursor:pointer;display:grid;place-items:center;
-  font-family:'Inter',sans-serif;font-size:11.5px;font-weight:800;letter-spacing:.07em;
-  color:#2a2110;text-transform:uppercase;line-height:1.1;text-align:center;padding:4px;
+  font-family:'Inter',sans-serif;font-size:14px;font-weight:800;letter-spacing:.01em;
+  color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.28);line-height:1;
+  filter:drop-shadow(0 8px 16px rgba(0,0,0,.30));
   transition:transform .18s cubic-bezier(.34,1.6,.64,1);
-  animation:hubBeat 2.1s ease-in-out infinite;
 }
-@keyframes hubBeat{
-  0%,100%{box-shadow:0 8px 24px rgba(0,0,0,.45),inset 0 2px 6px rgba(255,255,255,.45),0 0 0 0 rgba(245,208,122,.55)}
-  50%    {box-shadow:0 8px 24px rgba(0,0,0,.45),inset 0 2px 6px rgba(255,255,255,.45),0 0 0 15px rgba(245,208,122,0)}
+/* La pointe : un carré tourné de 45°, à moitié caché sous le disque */
+.wheel-hub::before{
+  content:'';position:absolute;left:23%;top:-9%;width:54%;height:54%;
+  background:var(--gold2);border-radius:28% 0 0 0;transform:rotate(45deg);z-index:-1;
 }
+/* Le disque intérieur, plus clair, qui respire tant qu'on n'a pas lancé */
+.wheel-hub::after{
+  content:'';position:absolute;inset:15%;border-radius:50%;
+  background:#fff;opacity:.2;box-shadow:inset 0 2px 0 rgba(255,255,255,.22);z-index:-1;
+  animation:hubBeat 1.8s ease-in-out infinite;
+}
+@keyframes hubBeat{0%,100%{opacity:.18}50%{opacity:.36}}
 .wheel-hub:active{transform:scale(.93)}
-.wheel-hub.spinning{animation:none;cursor:default;opacity:.6;font-size:17px}
-.wheel-hub.done{animation:none;cursor:default;font-size:24px}
+.wheel-hub.tick{transform:rotate(-6deg)}
+.wheel-hub.spinning,.wheel-hub.done{cursor:default;color:transparent;text-shadow:none}   /* le logo a pris la place du mot */
+.wheel-hub.spinning::after,.wheel-hub.done::after{animation:none}
 
-.wheel-hint{
-  font-size:12.5px;color:rgba(245,237,216,.6);letter-spacing:.02em;margin-top:14px;
-  animation:blink 2s ease-in-out infinite;
-}
-@keyframes blink{0%,100%{opacity:.42}50%{opacity:.85}}
+/* Les trois étapes sous la roue (comme « Joue · Gagne · Rejoue » chez le concurrent) */
+.wheel-hint{display:flex;gap:14px;justify-content:center;align-items:flex-start;margin-top:28px;padding:0 6px}
+.wheel-hint .etape{display:flex;flex-direction:column;align-items:center;gap:6px;font-size:11.5px;font-weight:600;color:rgba(245,237,216,.78);text-align:center;line-height:1.25;max-width:88px}
+.wheel-hint .etape b{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:var(--gold2);color:#fff;font-size:13px;font-weight:800;box-shadow:0 4px 10px rgba(0,0,0,.22)}
 .wheel-hint.off{display:none}
+
+/* Variante claire (fond crème, comme la page de jeu du concurrent) : classe s2-clair sur #screen2 */
+#screen2.s2-clair .screen-inner{background:#FBF7EF}
+#screen2.s2-clair .s2-bienvenue{color:var(--ink)}
+#screen2.s2-clair .s2-titre{color:var(--gold2)}
+#screen2.s2-clair .s2-sub{color:var(--muted)}
+#screen2.s2-clair .s2-sub b{color:var(--gold2)}
+#screen2.s2-clair .wheel-svg{filter:drop-shadow(0 14px 30px rgba(0,0,0,.16))}
+#screen2.s2-clair .wheel-hint .etape{color:var(--muted)}
+#screen2.s2-clair .btn-fallback{border-color:rgba(0,0,0,.18);color:var(--muted)}
 
 /* ── Carte résultat ── */
 .wheel-result{
-  display:none;width:100%;max-width:308px;margin-top:18px;
+  display:none;width:100%;max-width:308px;margin-top:26px;
   background:var(--cream3);border-radius:22px;padding:22px 20px 20px;text-align:center;
   border:1px solid var(--gold-border);box-shadow:0 18px 48px rgba(0,0,0,.4);
 }
@@ -371,19 +386,25 @@ body::after{
 <div class="s2-wrap">
 
   <div class="s2-header">
-    <div class="s2-eyebrow">Votre cadeau</div>
-    <div class="s2-title">Faites tourner<br>la roue.</div>
-    <div class="s2-sub">Un produit offert vous attend — 100&nbsp;% gagnant 🎁</div>
+    <div class="s2-bienvenue">Bienvenue sur la</div>
+    <div class="s2-titre">
+      <span class="s2-titre-txt">Roue de la Chance&nbsp;! 🎉</span>
+      <svg class="s2-ellipse" viewBox="0 0 300 70" preserveAspectRatio="none" aria-hidden="true"><path d="M150,6 C245,4 296,20 294,37 C292,56 222,66 140,64 C58,62 6,50 8,33 C10,16 70,5 150,6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
+      <span class="s2-croix" aria-hidden="true">× × ×</span>
+    </div>
+    <div class="s2-sub">Tournez la roue pour découvrir votre cadeau — un produit offert, 100&nbsp;% gagnant 🎁<br>Touchez <b>« Lancer »</b> et attendez que la roue s'arrête.</div>
   </div>
 
   <div class="wheel-scene">
-    <div class="wheel-glow"></div>
+    <div class="wheel-logo" id="wheelLogo" aria-hidden="true">🎁</div>
     <svg class="wheel-svg" id="wheelSvg" viewBox="0 0 300 300" aria-hidden="true"></svg>
     <div class="wheel-pointer" id="wheelPointer"></div>
-    <button class="wheel-hub" id="wheelHub" type="button" onclick="spinWheel()" aria-label="Faire tourner la roue">Tourner</button>
+    <button class="wheel-hub" id="wheelHub" type="button" onclick="spinWheel()" aria-label="Lancer la roue">Lancer</button>
   </div>
 
-  <div class="wheel-hint" id="wheelHint">Touchez le bouton pour lancer ✦</div>
+  <div class="wheel-hint" id="wheelHint">
+    <span class="etape"><b>1</b>Lancez la roue</span><span class="etape"><b>2</b>Découvrez votre cadeau</span><span class="etape"><b>3</b>Récupérez-le en boutique</span>
+  </div>
 
   <div class="wheel-result" id="wheelResult">
     <div class="wr-badge">✦ Vous avez gagné</div>
@@ -546,6 +567,12 @@ body::after{
       fb.classList.add('show');
     }
     document.title=N[t];
+    /* 23/09 — le logo du commerce sur la pastille blanche en haut de la roue (logo couleur,
+       pas la version blanche : elle disparaîtrait sur fond blanc). Un commerce sans fichier
+       garde son emoji ; sans rien, le cadeau 🎁 posé dans le HTML reste. */
+    var LR={baps:'assets/baps/logo.png'};
+    var wl=document.getElementById('wheelLogo');
+    if(wl){ if(LR[t]) wl.innerHTML='<img src="'+LR[t]+'" alt="">'; else if(String(E[t]).indexOf('assets/')!==0) wl.textContent=E[t]; }
   });
 })();
 </script>
@@ -961,25 +988,39 @@ function svgEsc(s){
   return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
 }
 
-/* Construit la roue en SVG — les lots suivent PRIZES (donc ?type=) */
+/* Couleur du commerce tirée vers le blanc (f > 0) ou vers le noir (f < 0).
+   N'accepte que #rrggbb — les tables de thème n'écrivent rien d'autre ; sinon renvoyée telle quelle. */
+function teinte(hex, f){
+  const m = String(hex).trim().match(/^#([0-9a-f]{6})$/i);
+  if(!m) return hex;
+  const n = parseInt(m[1],16), c = [(n>>16)&255,(n>>8)&255,n&255];
+  const k = Math.max(-1, Math.min(1, f));
+  return 'rgb('+c.map(function(v){ return Math.round(k >= 0 ? v + (255-v)*k : v*(1+k)); }).join(',')+')';
+}
+
+/* Construit la roue en SVG — les lots suivent PRIZES (donc ?type=).
+   23/09 : dessin plat à deux tons de la couleur du commerce (comme la roue du concurrent),
+   jante sombre à ampoules blanches, plus de trait noir entre les secteurs. */
 function buildWheel(){
   const svg = document.getElementById("wheelSvg");
   if(!svg) return;
-  const CX=150, CY=150, R=138;
+  const CX=150, CY=150, R=126;          /* R = rayon des secteurs ; la jante va jusqu'à 150 */
   let out = "";
 
   /* Palette : lue dans les variables CSS → suit le thème du commerce (?type=) */
   const cs    = getComputedStyle(document.documentElement);
   const cvar  = function(n,fb){ const v = cs.getPropertyValue(n).trim(); return v || fb; };
   const GOLD  = cvar('--gold',  '#C8963E');
-  const GOLD3 = cvar('--gold3', '#F5D07A');
-  const CREAM = cvar('--cream3','#FBF6EE');
+  const GOLD2 = cvar('--gold2', '#E2B25A');
   const INK   = cvar('--ink',   '#1a1a14');
+  const CLAIR = teinte(GOLD, .64);      /* le ton clair des secteurs */
+  const JANTE = teinte(GOLD2, -.18);    /* la jante */
+  const GORGE = teinte(GOLD2, -.34);    /* la gorge entre jante et secteurs */
 
-  /* Jante */
-  out += '<circle cx="'+CX+'" cy="'+CY+'" r="'+(R+6)+'" fill="'+GOLD+'"/>';
-  out += '<circle cx="'+CX+'" cy="'+CY+'" r="'+(R+6)+'" fill="rgba(0,0,0,.28)"/>';
-  out += '<circle cx="'+CX+'" cy="'+CY+'" r="'+(R+2.5)+'" fill="none" stroke="'+GOLD3+'" stroke-width="2.5"/>';
+  /* Jante, gorge, fond des secteurs */
+  out += '<circle cx="'+CX+'" cy="'+CY+'" r="150" fill="'+JANTE+'"/>';
+  out += '<circle cx="'+CX+'" cy="'+CY+'" r="'+(R+8)+'" fill="'+GORGE+'"/>';
+  out += '<circle cx="'+CX+'" cy="'+CY+'" r="'+(R+1)+'" fill="'+GOLD+'"/>';
 
   /* Secteurs */
   for(let i=0;i<WHEEL_SEGMENTS;i++){
@@ -987,12 +1028,11 @@ function buildWheel(){
     const a1 = i*SEG_ANGLE, a2 = (i+1)*SEG_ANGLE;
     const p1 = polar(CX,CY,R,a1), p2 = polar(CX,CY,R,a2);
     const light = (i % 2 === 0);
-    const fill  = light ? CREAM : GOLD;
-    const ink   = light ? INK   : CREAM;
+    const fill  = light ? CLAIR : GOLD;
 
     out += '<path d="M'+CX+','+CY+' L'+p1.x.toFixed(2)+','+p1.y.toFixed(2)
          + ' A'+R+','+R+' 0 0 1 '+p2.x.toFixed(2)+','+p2.y.toFixed(2)+' Z"'
-         + ' fill="'+fill+'" stroke="rgba(0,0,0,.22)" stroke-width="1"/>';
+         + ' fill="'+fill+'"/>';
 
     /* Contenu du secteur, pivoté sur son axe.
        Moitié basse : on pivote de 180° de plus et on miroite les Y,
@@ -1000,9 +1040,9 @@ function buildWheel(){
     const mid   = a1 + SEG_ANGLE/2;
     const flip  = (mid > 90 && mid < 270);
     const rot   = flip ? mid + 180 : mid;
-    const yEmo  = flip ? 2*CY - 54 : 54;
-    const yTxt  = flip ? 2*CY - 78 : 78;
-    const dy    = flip ? -12 : 12;
+    const yEmo  = flip ? 2*CY - 62 : 62;
+    const yTxt  = flip ? 2*CY - 88 : 88;
+    const dy    = flip ? -11 : 11;
 
     const words = String(prize.name).split(/\s+/);
     const l1    = words[0] || "";
@@ -1012,24 +1052,33 @@ function buildWheel(){
             `href` et non `xlink:href` : la forme héritée est dépréciée, et Safari
             accepte les deux depuis longtemps. */
          + (prize.img
-             ? '<image x="'+(CX-19)+'" y="'+(yEmo-30)+'" width="38" height="38" href="'+svgEsc(prize.img)+'" preserveAspectRatio="xMidYMid meet"/>'
-             : '<text x="'+CX+'" y="'+yEmo+'" text-anchor="middle" font-size="26">'+svgEsc(prize.emoji)+'</text>')
-         + '<text x="'+CX+'" y="'+yTxt+'" text-anchor="middle" fill="'+ink+'"'
-         + ' font-family="Inter,sans-serif" font-size="10.5" font-weight="700">'+svgEsc(l1)
+             ? '<image x="'+(CX-18)+'" y="'+(yEmo-28)+'" width="36" height="36" href="'+svgEsc(prize.img)+'" preserveAspectRatio="xMidYMid meet"/>'
+             : '<text x="'+CX+'" y="'+yEmo+'" text-anchor="middle" font-size="25">'+svgEsc(prize.emoji)+'</text>')
+         + '<text x="'+CX+'" y="'+yTxt+'" text-anchor="middle" fill="'+INK+'"'
+         + ' font-family="Inter,sans-serif" font-size="10.5" font-weight="800">'+svgEsc(l1)
          + (l2 ? '<tspan x="'+CX+'" dy="'+dy+'">'+svgEsc(l2)+'</tspan>' : '')
          + '</text></g>';
   }
 
-  /* Ampoules de jante */
-  for(let i=0;i<12;i++){
-    const p = polar(CX,CY,R-4,i*30+15);
-    out += '<circle cx="'+p.x.toFixed(2)+'" cy="'+p.y.toFixed(2)+'" r="3" fill="'+GOLD3+'" opacity=".92"/>';
+  /* Ampoules blanches sur la jante (huit, avec leur halo) */
+  for(let i=0;i<8;i++){
+    const p = polar(CX,CY,R+16,i*45);
+    out += '<circle cx="'+p.x.toFixed(2)+'" cy="'+p.y.toFixed(2)+'" r="8" fill="#fff" opacity=".26"/>'
+         + '<circle cx="'+p.x.toFixed(2)+'" cy="'+p.y.toFixed(2)+'" r="4.2" fill="#fff"/>';
   }
 
-  /* Axe central (masqué derrière le moyeu HTML) */
-  out += '<circle cx="'+CX+'" cy="'+CY+'" r="46" fill="rgba(0,0,0,.18)"/>';
+  /* Ombre sous le bouton-goutte */
+  out += '<circle cx="'+CX+'" cy="'+CY+'" r="50" fill="rgba(0,0,0,.14)"/>';
 
   svg.innerHTML = out;
+}
+
+/* Au lancement, la pastille du logo glisse de son perchoir jusqu'au centre du bouton (CSS .au-centre).
+   Appelée dans spinWheel ; sans logo configuré, c'est l'emoji de la pastille qui descend. */
+function logoAuCentre(){
+  const l = document.getElementById("wheelLogo");
+  if(!l) return;
+  requestAnimationFrame(function(){ l.classList.add("au-centre"); });
 }
 
 /* Angle courant (0-360) lu dans la matrice CSS — sert au tic-tac du pointeur */
@@ -1047,6 +1096,7 @@ function wheelAngleNow(el){
 function startWheelTicks(){
   const svg = document.getElementById("wheelSvg");
   const ptr = document.getElementById("wheelPointer");
+  const hub = document.getElementById("wheelHub");
   if(!svg || !ptr) return;
   let lastBucket = -1;
   (function loop(){
@@ -1054,8 +1104,8 @@ function startWheelTicks(){
     const bucket = Math.floor(wheelAngleNow(svg) / SEG_ANGLE);
     if(bucket !== lastBucket){
       lastBucket = bucket;
-      ptr.classList.add("tick");
-      setTimeout(function(){ ptr.classList.remove("tick"); }, 52);
+      ptr.classList.add("tick"); if(hub) hub.classList.add("tick");
+      setTimeout(function(){ ptr.classList.remove("tick"); if(hub) hub.classList.remove("tick"); }, 52);
       if(navigator.vibrate) navigator.vibrate(6);
     }
     requestAnimationFrame(loop);
@@ -1077,7 +1127,8 @@ function spinWheel(){
   const hub = document.getElementById("wheelHub");
   hub.classList.add("spinning");
   hub.disabled  = true;
-  hub.textContent = "···";
+  hub.textContent = "";          /* le logo prend la place du mot « Lancer » */
+  logoAuCentre();
   document.getElementById("wheelHint").classList.add("off");
   const fb = document.getElementById("fallbackBtn");
   if(fb) fb.classList.remove("show");
@@ -1109,8 +1160,7 @@ function onWheelStop(){
 
   const hub = document.getElementById("wheelHub");
   hub.classList.remove("spinning");
-  hub.classList.add("done");
-  hub.textContent = "🎉";
+  hub.classList.add("done");     /* le logo reste au centre ; la fête est dans la carte-résultat et les confettis */
 
   poserVisuelLot(document.getElementById("wrEmoji"), wonPrize, 62);
   document.getElementById("wrName").textContent  = wonPrize.name;
