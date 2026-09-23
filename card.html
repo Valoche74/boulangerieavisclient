@@ -1253,6 +1253,18 @@ applyPreset(P);
 
 /* Point de passage UNIQUE vers le backend : c'est ici, et nulle part ailleurs,
    qu'on attend le registre. Toute la page en herite. */
+/* 📊 24/09 — la carte signale son ouverture, une fois par chargement (`vue_carte`), pour le tableau
+   de bord du commerçant : « combien de gens ouvrent leur carte ? ». Perify seulement (Apps Script
+   ne connaît pas l'action), jamais bloquant, jamais réessayé, rien de nominatif. */
+let vueSignalee = false;
+function signalerVue(){
+  if(vueSignalee) return; vueSignalee = true;
+  BA.pret().then(function(com){
+    if(String(com && com.apps_script || '').indexOf('https://api.perify.app/') !== 0) return;
+    api('evenement', {type:'vue_carte', card_id:cardId}, false).catch(function(){});
+  }).catch(function(){});
+}
+
 function api(action, extra, retry){
   return BA.pret().then((com)=> new Promise((resolve,reject)=>{
     let url = (com.apps_script || SHEETS_URL) + '?action=' + encodeURIComponent(action);
@@ -2273,6 +2285,7 @@ else{
       if(inchange){ carteVue.client = d.client; cacheSauver(); }
       else { render(d.client); }
       show('stateActive'); renderRewards(d.rewards, d.now);
+      signalerVue();
       try{ renderOffres(d.offres); }catch(e){ console.warn('[carte] offres', e); }   // 🎁 15/09 — jamais bloquant pour la suite
       renderPaniers(d.paniers); applyActions(d.actions);
       $('cMaj').hidden = true;

@@ -308,13 +308,17 @@ body::after{
 .s3-legal{text-align:center;font-size:11px;color:var(--muted2);margin-top:11px;line-height:1.6}
 
 .s4-wrap{text-align:center;max-width:310px}
-.s4-check{width:78px;height:78px;margin:0 auto 20px;background:rgba(61,122,24,.12);border:1.5px solid rgba(100,180,40,.28);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:30px;animation:popIn .6s cubic-bezier(.36,.07,.19,.97) both}
+.s4-check{width:78px;height:78px;margin:0 auto 20px;background:rgba(34,197,94,.16);border:1.5px solid rgba(34,197,94,.45);color:#4ADE80;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:30px;animation:popIn .6s cubic-bezier(.36,.07,.19,.97) both}
 .s4-title{font-family:'Plus Jakarta Sans',sans-serif;font-size:28px;font-weight:700;color:var(--cream);margin-bottom:8px}
 .s4-desc{font-size:13px;color:rgba(245,237,216,.6);line-height:1.75;margin-bottom:20px}
 .s4-code-block{background:rgba(245,237,216,.09);border:1px solid rgba(200,150,62,.22);border-radius:20px;padding:20px;backdrop-filter:blur(10px)}
 .s4-code-label{font-size:10px;font-weight:700;color:rgba(245,237,216,.38);letter-spacing:.15em;text-transform:uppercase;margin-bottom:8px}
 .s4-code-value{font-size:36px;font-weight:800;color:var(--gold3);letter-spacing:.18em;line-height:1;font-variant-numeric:tabular-nums}
 .s4-code-sub{font-size:11px;color:rgba(245,237,216,.4);margin-top:8px}
+.s4-fort{color:var(--gold3);font-weight:700}
+.s4-etapes{display:flex;flex-direction:column;gap:10px;text-align:left}
+.s4-etapes span{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--cream);line-height:1.35}
+.s4-etapes b{flex:none;width:26px;height:26px;border-radius:50%;display:grid;place-items:center;background:var(--gold2);color:#fff;font-size:12px;font-weight:800}
 
 .already-wrap{text-align:center;max-width:280px}
 .already-emoji{font-size:50px;display:block;margin-bottom:14px}
@@ -502,11 +506,29 @@ body::after{
 <div class="s4-wrap">
   <div class="s4-check">✓</div>
   <div class="s4-title">Email envoyé !</div>
-  <div class="s4-desc">Votre code est prêt. Montrez simplement cet écran en caisse, ou retrouvez-le dans votre email.</div>
+  <div class="s4-desc">Votre code est prêt. Montrez simplement cet écran en caisse, ou retrouvez-le dans votre email.<br>Puis <b class="s4-fort">scannez le QR code</b> du présentoir pour <b class="s4-fort">débloquer votre compte fidélité</b>.</div>
   <div class="s4-code-block">
     <div class="s4-code-label">Votre code unique</div>
     <div class="s4-code-value" id="s4code">—</div>
     <div class="s4-code-sub">Valable 30 jours · Usage unique</div>
+  </div>
+</div>
+</div>
+</div>
+
+<!-- ══ FIN — la carte est dans le téléphone : dire quoi faire ensuite (24/09, sa demande) ══
+     Depuis une page web on ne peut pas savoir si le client a vraiment touché « Ajouter » dans
+     Wallet : on affiche donc cet écran 1,5 s après avoir ouvert le pass, avec LA consigne qui
+     compte — scanner le QR du présentoir, ce qui ouvre sa carte et déclenche son premier passage. -->
+<div class="screen" id="screenFin">
+<div class="screen-inner">
+<div class="s4-wrap">
+  <div class="s4-check">✓</div>
+  <div class="s4-title">Carte ajoutée&nbsp;!</div>
+  <div class="s4-desc"><b class="s4-fort">Scannez le QR code</b> du présentoir pour <b class="s4-fort">débloquer votre compte fidélité</b>.<br>Votre cadeau, <b id="finGain">…</b>, vous y attend.</div>
+  <div class="s4-code-block">
+    <div class="s4-code-label">Et ensuite</div>
+    <div class="s4-etapes"><span><b>1</b>Scannez le QR au comptoir</span><span><b>2</b>Votre carte s'ouvre, votre passage est compté</span><span><b>3</b>Récupérez votre cadeau en caisse</span></div>
   </div>
 </div>
 </div>
@@ -806,6 +828,11 @@ function montrerArret(d){
    Le serveur refuserait de toute façon (commerce_arrete) : ceci évite juste un avis pour rien. */
 BA.pret().then(function(com){
   if(com && com.etat === 'arrete'){ montrerArret({ commerce: com.nom, message: com.message_arret, arrete_le: com.arrete_le }); }
+  /* 📊 24/09 — arriver ici, c'est avoir scanné le QR du présentoir : on le compte pour le tableau de
+     bord du commerçant (`scan_qr`, anonyme). Perify seulement, jamais bloquant, sans réponse attendue. */
+  if(com && String(com.apps_script || '').indexOf('https://api.perify.app/') === 0){
+    try{ var xs = new XMLHttpRequest(); xs.open('GET', com.apps_script + '?action=evenement&type=scan_qr', true); xs.send(); }catch(e){}
+  }
 }).catch(function(){});
 function showScreen(id){
   document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
@@ -1357,6 +1384,8 @@ function addToWallet(el){
       btn.disabled = false;
       /* iOS reconnait le type application/vnd.apple.pkpass et ouvre Wallet */
       window.location.href = url;
+      /* 24/09 — la page reste derrière la feuille Wallet : on lui donne la suite à faire */
+      setTimeout(montrerFin, 1500);
     })
 
     .catch(function(err){
@@ -1365,6 +1394,13 @@ function addToWallet(el){
       btn.disabled = false;
       alert("Votre carte n'a pas pu être préparée.\nVous pouvez recevoir votre code par email à la place.");
     });
+}
+
+/* ─── Fin du parcours : la consigne du QR (24/09) ─── */
+function montrerFin(){
+  var g = document.getElementById('finGain');
+  if(g) g.textContent = wonPrize ? wonPrize.name : 'votre cadeau';
+  showScreen('screenFin');
 }
 
 /* ─── S3 formulaire ─── */
