@@ -686,11 +686,11 @@ body{font-family:var(--font-ui);-webkit-font-smoothing:antialiased;color:var(--i
     <button class="wal-badge" id="awBtn" type="button" onclick="ajouterAuWallet(this)" aria-label="Ajouter à l’app Cartes Apple">
       <img src="assets/wallet/apple-wallet-badge-fr.svg" alt="Ajouter à l’app Cartes Apple">
     </button>
-    <!-- 21/09 — GOOGLE WALLET, À L'ESSAI. Caché tant que Google n'a pas accordé la
-         publication : seuls les comptes de test déclarés dans sa console peuvent ajouter
-         la carte, un vrai client tomberait sur un refus. Il n'apparaît qu'avec ?gw=1
-         (retenu ensuite sur l'appareil), hors iPhone, et pour un commerce servi par
-         Perify — l'ancien serveur Google ne connaît pas gwallet_link.
+    <!-- 21/09 — GOOGLE WALLET. À l'essai derrière ?gw=1 tant que Google n'avait pas accordé la
+         publication (seuls les comptes de test pouvaient ajouter la carte). 24/09 — publication
+         ACCORDÉE : visible pour tout téléphone hors iPhone, pour un commerce servi par Perify
+         (l'ancien serveur Google ne connaît pas gwallet_link). ?gw=0 l'éteint sur l'appareil
+         (interrupteur de secours, sans redéploiement), ?gw=1 le rallume.
          22/09 — bouton OFFICIEL de Google (pack « Add to Google Wallet », fr-FR, SVG). -->
     <button class="wal-badge" id="gwBtn" type="button" hidden onclick="ajouterAuGoogleWallet(this)" aria-label="Ajouter au Google Wallet">
       <img src="assets/wallet/google-wallet-bouton-fr.svg" alt="Ajouter au Google Wallet">
@@ -1584,11 +1584,10 @@ function placerLeCommerce(com){
   if (r) r.style.display = 'block';
 }
 
-/* ── Google Wallet, à l'essai (21/09) ────────────────────────────────────────
-   ?gw=1 l'allume et l'appareil s'en souvient ; ?gw=0 l'éteint. Voir le commentaire
-   du bouton #gwBtn : tant que Google n'a pas accordé la publication, un client
-   ordinaire ne doit PAS voir ce bouton. */
-const GW_ESSAI = (function(){
+/* ── Google Wallet (21/09 à l'essai ; 24/09 ouvert à tous : publication accordée) ──────────
+   Visible par défaut hors iPhone, pour un commerce servi par Perify. ?gw=0 l'éteint sur
+   l'appareil (interrupteur de secours, sans redéploiement), ?gw=1 le rallume. */
+const GW_ACTIF = (function(){
   let v = null;
   try {
     const q = new URLSearchParams(location.search).get('gw');
@@ -1597,28 +1596,31 @@ const GW_ESSAI = (function(){
   } catch(e){ /* navigation privée : pas de mémoire, le paramètre seul fait foi */
     v = new URLSearchParams(location.search).get('gw');
   }
-  return v === '1';
+  return v !== '0';
 })();
 
 document.addEventListener('DOMContentLoaded', function(){
   const h = $('walHint');
-  if (h && !EST_IOS) h.textContent = "Depuis un iPhone. Sur Android, la carte arrivera plus tard.";
+  if (h && !EST_IOS && !GW_ACTIF) h.textContent = "Depuis un iPhone. Sur Android, la carte arrivera plus tard.";
 
   /* Le registre des commerces se résout de façon asynchrone : on attend qu'il ait
      rendu le commerce avant de placer le plan. En cas d'échec, le bloc reste
      simplement masqué — mieux vaut pas de plan qu'un plan faux. */
   BA.pret().then(placerLeCommerce).catch(function(){});
 
-  /* Le bouton Google : à l'essai, hors iPhone, et seulement si le commerce est servi
-     par Perify (le registre le dit). Sur Android, le bouton Apple ne sert à rien : on
-     le retire plutôt que de laisser deux boutons dont un inutile. */
-  if (GW_ESSAI && !EST_IOS) BA.pret().then(function(com){
-    if (String(com && com.apps_script || '').indexOf('https://api.perify.app/') !== 0) return;
+  /* Le bouton Google : hors iPhone, et seulement si le commerce est servi par Perify (le
+     registre le dit). Sur Android, le bouton Apple ne sert à rien : on le retire plutôt que
+     de laisser deux boutons dont un inutile. */
+  if (GW_ACTIF && !EST_IOS) BA.pret().then(function(com){
+    if (String(com && com.apps_script || '').indexOf('https://api.perify.app/') !== 0) {
+      if (h) h.textContent = "Depuis un iPhone. Sur Android, la carte arrivera plus tard.";   // commerce encore chez Google
+      return;
+    }
     const g = $('gwBtn'); if (!g) return;
     g.hidden = false;
     const apple = $('awBtn');
     if (apple) apple.hidden = true;
-    if (h) h.textContent = "Carte Google Wallet à l'essai : réservée aux comptes de test pour l'instant.";
+    if (h) h.textContent = '';   // 24/09 : le badge officiel suffit, plus de mention d'essai
   }).catch(function(){});
 });
 

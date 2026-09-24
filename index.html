@@ -450,10 +450,10 @@ body::after{
     <img class="sw-badge" src="assets/wallet/apple-wallet-badge-fr.svg" alt="Ajouter à l’app Cartes Apple">
     <span class="sw-loading"><span class="sw-spin"></span> Préparation…</span>
   </button>
-  <!-- 22/09 — Android : le bouton OFFICIEL de Google. Montré par afterWheel() seulement à
-       l'essai (?gw=1, tant que Google n'a pas accordé la publication) et pour un commerce
-       servi par Perify. Même préparation que pour Apple : wallet_start signe un lien vers
-       /api/gpass au lieu de /api/pass. -->
+  <!-- 22/09 — Android : le bouton OFFICIEL de Google. Montré par afterWheel() pour un commerce
+       servi par Perify ; à l'essai derrière ?gw=1 jusqu'au 24/09 (publication accordée par
+       Google ce jour-là : ouvert à tous, ?gw=0 l'éteint sur l'appareil). Même préparation que
+       pour Apple : wallet_start signe un lien vers /api/gpass au lieu de /api/pass. -->
   <button class="btn-wallet" id="btnGWallet" hidden onclick="addToWallet(this)" aria-label="Ajouter au Google Wallet">
     <img class="sw-badge" src="assets/wallet/google-wallet-bouton-fr.svg" alt="Ajouter au Google Wallet">
     <span class="sw-loading"><span class="sw-spin"></span> Préparation…</span>
@@ -1268,17 +1268,17 @@ function apiGet(params){
    `walletReady` est la promesse en cours — addToWallet() se contente de l'attendre. */
 let walletReady = null;
 
-/* 22/09 — Google Wallet à l'essai : ?gw=1 l'allume (retenu sur l'appareil, même clé que
-   card.html), ?gw=0 l'éteint. Tant que Google n'a pas accordé la publication, seuls les
-   comptes de test déclarés peuvent ajouter la carte : un vrai client tomberait sur un refus. */
-const GW_ESSAI = (function(){
+/* 22/09 — Google Wallet : ?gw=1 / ?gw=0 (retenu sur l'appareil, même clé que card.html).
+   À l'essai jusqu'au 24/09, jour où Google a accordé la publication : depuis, visible par
+   défaut ; ?gw=0 reste l'interrupteur de secours, sans redéploiement. */
+const GW_ACTIF = (function(){
   var v = null;
   try {
     var q = new URLSearchParams(location.search).get('gw');
     if (q === '1' || q === '0') localStorage.setItem('perify.gw', q);
     v = localStorage.getItem('perify.gw');
   } catch(e){ v = new URLSearchParams(location.search).get('gw'); }
-  return v === '1';
+  return v !== '0';
 })();
 /* Le commerce est-il servi par Perify ? L'ancien serveur (Google) ne sait pas signer un lien
    Google Wallet. Et son nom, pour le message d'accueil. */
@@ -1360,7 +1360,7 @@ function prepareWallet(){
    (?gw=1) et que le commerce est servi par Perify ; formulaire e-mail partout ailleurs. */
 function afterWheel(){
   if(DEMO){ goToForm(); return; }
-  var google = !IS_IOS && GW_ESSAI && commercePerify;
+  var google = !IS_IOS && GW_ACTIF && commercePerify;
   if(!IS_IOS && !google){ goToForm(); return; }
   WALLET_CIBLE = google ? 'google' : 'apple';
   document.getElementById('btnWallet').hidden  = google;
