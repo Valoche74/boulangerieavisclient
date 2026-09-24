@@ -2,7 +2,9 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<!-- 24/09 (accessibilité, § 8 du rapport) — le zoom par pincement est autorisé : un client malvoyant doit pouvoir
+     agrandir « Plus que 3 tampons » ou son code. Les champs de saisie font 16 px pour qu'iOS ne zoome pas tout seul. -->
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#FBF7EF">
 <meta name="color-scheme" content="light">
 <title>Ma Fidélité — Falman</title>
@@ -465,7 +467,7 @@ body{font-family:var(--font-ui);-webkit-font-smoothing:antialiased;color:var(--i
 .om-t{font-size:14px;font-weight:600;color:var(--ink);margin-bottom:10px}
 .om-row{display:flex;gap:8px}
 .om-input{flex:1;min-width:0;padding:12px 14px;border-radius:12px;border:1.5px solid var(--line);
-  background:var(--cream);color:var(--ink);font-family:inherit;font-size:15px;outline:none;transition:border-color .15s}
+  background:var(--cream);color:var(--ink);font-family:inherit;font-size:16px;outline:none;transition:border-color .15s}   /* 16 px : pas de zoom automatique iOS (24/09) */
 .om-input:focus{border-color:var(--gold)}
 .om-input.bad{border-color:#d14343}
 .om-btn{flex-shrink:0;padding:12px 18px;border:none;border-radius:12px;background:var(--gold);color:#fff;
