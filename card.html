@@ -16,7 +16,16 @@
      sans cette seconde ligne, on paierait deux poignées de main au lieu d'une. -->
 <link rel="preconnect" href="https://script.google.com" crossorigin>
 <link rel="preconnect" href="https://script.googleusercontent.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<!-- ⚡ 24/09 (audit vitesse) — le serveur Perify est celui du commerce en production : même poignée de
+     main anticipée que pour Google (les deux restent : un commerce encore chez Google en a besoin). -->
+<link rel="preconnect" href="https://api.perify.app" crossorigin>
+<!-- ⚡ 24/09 (audit vitesse) — la feuille Google Fonts était le SEUL chargement bloquant de la page
+     (mesuré dans Chromium : renderBlockingStatus « blocking » ; sur 4G lent, le premier rendu attendait
+     ce fichier). Elle est maintenant PRÉCHARGÉE puis appliquée dès qu'elle arrive : le premier écran se
+     peint avec la police de secours (display=swap le faisait déjà), la vraie police prend le relais sans
+     bloquer. Les graisses jamais utilisées (Plus Jakarta Sans 600, Inter 500) ne sont plus demandées. -->
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@700;800&family=Inter:wght@400;600;700;800&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@700;800&family=Inter:wght@400;600;700;800&display=swap"></noscript>
 <style>
 /* ════════════════════════════════════════════════════════════════
    CARD.HTML v3 — page client ouverte par la carte NFC (?id=card_id)
@@ -93,7 +102,6 @@ body{font-family:var(--font-ui);-webkit-font-smoothing:antialiased;color:var(--i
 .msg h2{font-family:var(--font-display);font-size:25px;font-weight:800;color:var(--surbg);margin-bottom:10px}
 .msg p{font-size:14px;color:var(--surbg-doux);line-height:1.6;margin-bottom:22px}
 .msg .cta{display:inline-block;padding:15px 28px;border:none;border-radius:14px;background:linear-gradient(135deg,var(--gold),var(--gold2));color:#fff;font-family:var(--font-ui);font-size:15px;font-weight:700;cursor:pointer;text-decoration:none;box-shadow:0 6px 18px rgba(200,150,62,.36)}
-.spin{width:32px;height:32px;border:3px solid var(--cream2);border-top-color:var(--gold);border-radius:50%;animation:rot .8s linear infinite}
 
 /* ── Chargement de la carte ─────────────────────────────────────────────────
    Loader « young-goat-78 » de Nawsome sur uiverse.io, licence MIT.
@@ -152,7 +160,6 @@ body{font-family:var(--font-ui);-webkit-font-smoothing:antialiased;color:var(--i
 /* ⚠️ On RALENTIT au lieu de figer : un indicateur de chargement immobile fait
    croire que la page a plante, ce qui est pire que le mouvement qu'on evite. */
 @media(prefers-reduced-motion:reduce){.pl__ring{animation-duration:6s}}
-@keyframes rot{to{transform:rotate(360deg)}}
 
 /* header */
 .head{display:flex;align-items:center;justify-content:space-between}
@@ -181,12 +188,9 @@ body{font-family:var(--font-ui);-webkit-font-smoothing:antialiased;color:var(--i
 .hero::after{content:'';position:absolute;top:-40px;right:-30px;width:140px;height:140px;border-radius:50%;background:radial-gradient(circle,rgba(255,197,61,.35),transparent 70%);pointer-events:none}
 .hero-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px}
 .hero-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--muted2)}
-.badge-lvl{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;color:var(--ink);background:linear-gradient(135deg,var(--gold3),var(--gold));border-radius:99px;padding:5px 12px;box-shadow:0 3px 8px rgba(200,150,62,.3)}
 .hero-pts{display:flex;align-items:baseline;gap:9px}
 .hero-pts .v{font-family:var(--font-ui);font-size:62px;font-weight:800;line-height:.9;letter-spacing:-.02em;background:linear-gradient(135deg,var(--gold),var(--gold2) 60%,#E85A1B);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
 .hero-pts .u{font-size:15px;font-weight:600;color:var(--muted)}
-.hero-sub{font-size:12px;color:var(--muted);margin-top:9px}
-.hero-sub b{color:var(--ink);font-weight:700}
 /* ⚡ 13/09 — « Mise à jour… » : la carte vient d'être redessinée depuis le cache du
    téléphone, et la réponse du serveur n'est pas encore arrivée. Sans ce signal, un
    solde qui passe de 7 à 8 sous les yeux du client se lirait comme un bug.
@@ -319,16 +323,7 @@ body{font-family:var(--font-ui);-webkit-font-smoothing:antialiased;color:var(--i
 
 
 
-/* bonus */
-.bonus{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:4px}
-.bn{background:var(--card);border-radius:18px;padding:15px 8px;box-shadow:var(--shadow);border:1px solid var(--line);text-align:center}
-.bn .ic{font-size:24px;line-height:1}.bn .ic.trust{color:var(--trust-ink)}
-/* Le vrai logo TripAdvisor, à la taille exacte de l'emoji qu'il remplace :
-   posé en 96 px pour rester net sur un écran d'iPhone. */
-.bn .ic.trip{display:flex;justify-content:center}
-.bn .ic.trip img{width:26px;height:26px;display:block}
-.bn .t{font-size:11.5px;font-weight:600;color:var(--ink);margin-top:7px;line-height:1.25}
-.bn .s{font-size:11.5px;color:var(--gold-ink);font-weight:700;margin-top:3px}.bn.green .s{color:var(--green-ink)}
+/* (24/09 — les tuiles « bonus » .bn ont été retirées : depuis le 12/09 les avis sont des rangées .social) */
 
 /* mes cadeaux */
 /* 🎁 15/09 — Offre reçue par e-mail, à activer (bloc « Nouvelle offre »). Rayons en
@@ -354,7 +349,7 @@ body{font-family:var(--font-ui);-webkit-font-smoothing:antialiased;color:var(--i
 .gift .ic{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;font-size:21px;background:var(--gold-soft);flex-shrink:0}
 .gift .meta{flex:1;min-width:0}.gift .meta .n{font-size:14px;font-weight:600;color:var(--ink)}.gift .meta .d{font-size:11.5px;color:var(--muted);margin-top:2px}
 .gift .st{font-size:11px;font-weight:700;padding:5px 10px;border-radius:99px;white-space:nowrap}
-.gift .st.todo{background:var(--gold-soft);color:var(--gold-ink)}.gift .st.done{background:var(--green-soft);color:var(--green-ink)}
+.gift .st.done{background:var(--green-soft);color:var(--green-ink)}
 
 /* Signature de marque en pied. Le fichier est blanc sur transparent et le fond de
    la carte est crème : sans `invert`, le logo serait purement et simplement invisible.
@@ -426,14 +421,7 @@ body{font-family:var(--font-ui);-webkit-font-smoothing:antialiased;color:var(--i
 .confetti{position:fixed;top:-14px;z-index:210;pointer-events:none;will-change:transform,opacity}
 @keyframes confFall{to{transform:translateY(110vh) rotate(720deg);opacity:.85}}
 
-/* tier (par € dépensés) */
-.tier-line{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-top:13px;padding-top:13px;border-top:1px dashed var(--gold-line)}
-.tier-chip{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;padding:4px 11px;border-radius:99px;border:1px solid}
-.tc-bronze{color:#9c6a2f;background:rgba(205,127,50,.12);border-color:rgba(205,127,50,.4)}
-.tc-argent{color:#5f6b78;background:rgba(120,140,160,.14);border-color:rgba(120,140,160,.42)}
-.tc-or{color:#9a6f12;background:rgba(245,208,122,.24);border-color:var(--gold-line)}
-.tc-platine{color:#236680;background:rgba(120,200,230,.16);border-color:rgba(80,170,200,.42)}
-.tier-line .tt{font-size:11.5px;color:var(--muted)}.tier-line .tt b{color:var(--ink);font-weight:700}
+/* (24/09 — les rangs .tier-* ont été retirés : le système de rangs a disparu le 04/09) */
 
 /* bandeau anti-gaspi (alerte paniers du jour) */
 .agb{background:linear-gradient(135deg,rgba(22,163,74,.08),rgba(255,197,61,.12)),var(--card);border:1px solid rgba(63,125,46,.22);border-radius:20px;padding:15px 16px;box-shadow:var(--shadow)}
@@ -447,7 +435,6 @@ body{font-family:var(--font-ui);-webkit-font-smoothing:antialiased;color:var(--i
 .agb-price{text-align:right;flex-shrink:0}
 .agb-price .pr{font-size:18px;font-weight:800;color:var(--green-ink)}
 .agb-price .or{font-size:11px;color:var(--muted2);text-decoration:line-through}
-/* toggle alertes email (opt-in) */
 /* Réinstaller sa carte dans le portefeuille du téléphone.
    Le lien .pkpass n'est signé que pour une heure : on ne peut donc pas le poser
    en dur dans la page, il faut le demander au moment du clic. */
@@ -507,13 +494,32 @@ body{font-family:var(--font-ui);-webkit-font-smoothing:antialiased;color:var(--i
 .optrow .ot{flex:1;min-width:0}
 .optrow .ot .n{font-size:14.5px;font-weight:700;color:var(--ink)}
 .optrow .ot .d{font-size:11.5px;color:var(--muted);margin-top:2px;line-height:1.4}
-.switch{position:relative;width:54px;height:31px;flex-shrink:0;cursor:pointer}
-.switch input{opacity:0;width:0;height:0;position:absolute}
-.switch .sl{position:absolute;inset:0;background:var(--cream2);border:1px solid var(--gold-line);border-radius:99px;transition:.2s}
-.switch .sl::before{content:'';position:absolute;width:25px;height:25px;left:2px;top:2px;background:#fff;border-radius:50%;box-shadow:0 2px 6px rgba(0,0,0,.22);transition:.2s}
-.switch input:checked + .sl{background:linear-gradient(135deg,var(--gold),var(--gold2));border-color:transparent}
-.switch input:checked + .sl::before{transform:translateX(23px)}
+/* (24/09 — l'interrupteur .switch a été retiré : plus d'interrupteur depuis le 12/09, « Valider » fait foi) */
 @media(prefers-reduced-motion:reduce){.fl{animation:none}.cm-overlay.show .cm-card{animation:none;transform:none;opacity:1}}
+
+/* ♿ 24/09 (audit accessibilité, ACCESSIBILITE.md) — rien de visible au toucher, tout pour le clavier
+   et les lecteurs d'écran.
+   · Le focus CLAVIER se voit (:focus-visible ne s'allume jamais sous le doigt) : encre orange sur les
+     cartes claires, jaune sur le fond nuit — deux couleurs déjà dans la charte.
+   · Les petits boutons gagnent une zone tactile de 44 px SANS changer de taille : un pseudo-élément
+     invisible déborde au-dessus et au-dessous (Apple et WCAG 2.5.5 demandent 44 px).
+   · L'écran ou la fenêtre qui s'ouvre reçoit le focus (tabindex="-1"), sans contour : c'est un point
+     d'atterrissage, pas un bouton. */
+a:focus-visible,button:focus-visible{outline:3px solid var(--gold-ink);outline-offset:3px}
+.plink:focus-visible,.cta:focus-visible{outline-color:var(--gold3)}
+/* le carrousel des récompenses défile au clavier (flèches) même quand aucune tuile n'est déblocable */
+.cat:focus-visible{outline:3px solid var(--gold3);outline-offset:3px}
+.wrap:focus,.msg:focus,.cm-card:focus,.use-box:focus{outline:none}
+.plink,.om-lien,.st.use,.st.done.live,.offre-go,.rw .btn,.pv-close,.loc-btn{position:relative}
+.plink::before,.om-lien::before,.st.use::before,.st.done.live::before,.offre-go::before,.rw .btn::before,.pv-close::before,.loc-btn::before{content:'';position:absolute;left:0;right:0}
+.plink::before{top:-9px;bottom:-9px}
+.om-lien::before{top:-9px;bottom:-9px}
+.st.use::before{top:-11px;bottom:-11px}
+.st.done.live::before{top:-2px;bottom:-2px}
+.offre-go::before{top:-5px;bottom:-5px}
+.rw .btn::before{top:-4px;bottom:-4px}
+.pv-close::before{top:-2px;bottom:-2px}
+.loc-btn::before{top:-1px;bottom:-1px}
 </style>
 </head>
 <body>
@@ -524,40 +530,40 @@ body{font-family:var(--font-ui);-webkit-font-smoothing:antialiased;color:var(--i
 </div>
 
 <!-- CHARGEMENT -->
-<div class="screen on" id="loading"><div class="msg">
+<div class="screen on" id="loading"><div class="msg" role="main" tabindex="-1">
   <svg class="pl" viewBox="0 0 240 240" aria-hidden="true">
     <circle class="pl__ring pl__ring--a" cx="120" cy="120" r="105" fill="none" stroke-width="20" stroke-dasharray="0 660" stroke-dashoffset="-330" stroke-linecap="round"/>
     <circle class="pl__ring pl__ring--b" cx="120" cy="120" r="35"  fill="none" stroke-width="20" stroke-dasharray="0 220" stroke-dashoffset="-110" stroke-linecap="round"/>
     <circle class="pl__ring pl__ring--c" cx="85"  cy="120" r="70"  fill="none" stroke-width="20" stroke-dasharray="0 440" stroke-linecap="round"/>
     <circle class="pl__ring pl__ring--d" cx="155" cy="120" r="70"  fill="none" stroke-width="20" stroke-dasharray="0 440" stroke-linecap="round"/>
   </svg>
-  <p style="margin-top:18px">Chargement de ta fidélité…</p>
+  <p style="margin-top:18px" role="status">Chargement de ta fidélité…</p>
 </div></div>
 
 <!-- NOUVELLE CARTE -->
-<div class="screen" id="stateNew"><div class="msg">
-  <div class="mic">🥐</div><h2>Bienvenue !</h2>
+<div class="screen" id="stateNew"><div class="msg" role="main" tabindex="-1">
+  <div class="mic" aria-hidden="true">🥐</div><h2 aria-level="1">Bienvenue !</h2>
   <p>Active ta carte de fidélité en laissant ton avis — tu gagnes aussi une gourmandise offerte.</p>
   <a class="cta" id="avisLink" href="#">Commencer →</a>
 </div></div>
 
 <!-- INCONNUE -->
-<div class="screen" id="stateUnknown"><div class="msg">
-  <div class="mic bad">✕</div><h2>Carte non reconnue</h2>
+<div class="screen" id="stateUnknown"><div class="msg" role="main" tabindex="-1">
+  <div class="mic bad" aria-hidden="true">✕</div><h2 aria-level="1">Carte non reconnue</h2>
   <p>Cette carte n'est pas enregistrée. Demande en boutique de l'associer à ton compte.</p>
 </div></div>
 
 <!-- ERREUR -->
-<div class="screen" id="stateError"><div class="msg">
-  <div class="mic bad">⚠️</div><h2>Connexion impossible</h2>
+<div class="screen" id="stateError"><div class="msg" role="main" tabindex="-1">
+  <div class="mic bad" aria-hidden="true">⚠️</div><h2 aria-level="1">Connexion impossible</h2>
   <p>Impossible de charger ta fidélité. Vérifie ta connexion.</p>
   <button class="cta" onclick="location.reload()">Réessayer</button>
 </div></div>
 
 <!-- PROGRAMME TERMINÉ (23/09) — le serveur répond `commerce_arrete` (fin de contrat,
      article 14) : on le dit avec les mots du commerçant, jamais « connexion impossible ». -->
-<div class="screen" id="stateArrete"><div class="msg">
-  <div class="mic">🏁</div><h2 id="arrTitre">Programme terminé</h2>
+<div class="screen" id="stateArrete"><div class="msg" role="main" tabindex="-1">
+  <div class="mic" aria-hidden="true">🏁</div><h2 id="arrTitre" aria-level="1">Programme terminé</h2>
   <p id="arrMsg">Ce programme de fidélité est terminé. Merci de ta fidélité !</p>
   <p class="small" id="arrDepuis" style="font-size:12px;color:var(--muted2)"></p>
 </div></div>
@@ -565,9 +571,9 @@ body{font-family:var(--font-ui);-webkit-font-smoothing:antialiased;color:var(--i
 <!-- FIDÉLITÉ -->
 <!-- 🎟️ Validation d'un cadeau, devant le vendeur -->
 <div class="use-ov" id="useModal">
-  <div class="use-box">
+  <div class="use-box" role="dialog" aria-modal="true" aria-labelledby="useTitre1" tabindex="-1">
     <div id="useStep1">
-      <h3>Tu es en caisse ?</h3>
+      <h3 id="useTitre1">Tu es en caisse ?</h3>
       <div class="lib" id="useLib">—</div>
       <div class="cd">code <span id="useCode">—</span></div>
       <p>Ne valide que <b>devant le vendeur</b> : une fois validé, ce cadeau est utilisé et reste affiché <b>1 heure</b> seulement.</p>
@@ -577,8 +583,8 @@ body{font-family:var(--font-ui);-webkit-font-smoothing:antialiased;color:var(--i
       </div>
     </div>
     <div id="useStep2" style="display:none">
-      <div class="use-ok">✓</div>
-      <h3>Validé</h3>
+      <div class="use-ok" aria-hidden="true">✓</div>
+      <h3 id="useTitre2">Validé</h3>
       <div class="lib" id="useLib2">—</div>
       <div class="use-clock" id="useClock">—</div>
       <div class="use-left" id="useLeft">—</div>
@@ -587,10 +593,10 @@ body{font-family:var(--font-ui);-webkit-font-smoothing:antialiased;color:var(--i
   </div>
 </div>
 
-<div class="screen" id="stateActive"><div class="wrap">
+<div class="screen" id="stateActive"><div class="wrap" role="main" tabindex="-1">
   <div class="head">
-    <div><div class="eyebrow">✦ Ma fidélité</div><div class="bakery" id="cBakery">Falman</div><div class="greet">Bonjour <span id="cName">—</span> 👋</div></div>
-    <div class="avatar" id="cAv">–</div>
+    <div><div class="eyebrow">✦ Ma fidélité</div><div class="bakery" id="cBakery" role="heading" aria-level="1">Falman</div><div class="greet">Bonjour <span id="cName">—</span> 👋</div></div>
+    <div class="avatar" id="cAv" aria-hidden="true">–</div>
   </div>
 
   <div class="hero">
@@ -604,28 +610,28 @@ body{font-family:var(--font-ui);-webkit-font-smoothing:antialiased;color:var(--i
 
   <div class="prog">
     <div class="prog-top"><span class="l" id="progL">—</span><span class="r" id="progR"></span></div>
-    <div class="bar" id="progBarWrap"><i id="progBar" style="width:0%"></i></div>
-    <div class="stamps" id="stampGrid"></div>
+    <div class="bar" id="progBarWrap" role="progressbar" aria-labelledby="progL" aria-valuemin="0"><i id="progBar" style="width:0%"></i></div>
+    <div class="stamps" id="stampGrid" aria-hidden="true"></div>
   </div>
 
   <!-- 🎁 15/09 — Offres reçues par e-mail, pas encore activées (décision du 14/09,
        option B). Masqué tant qu'il n'y en a pas ; une offre dont la date est passée n'y
        apparaît jamais (option A du 15/09). Rempli par renderOffres(). -->
   <div class="offres-wrap" id="offresWrap" hidden>
-    <div class="sec-h"><span class="t" id="offresTitre">🎁 Nouvelle offre</span></div>
+    <div class="sec-h"><span class="t" id="offresTitre" role="heading" aria-level="2">🎁 Nouvelle offre</span></div>
     <div class="offres" id="offres"></div>
   </div>
 
   <!-- bandeau anti-gaspi : paniers invendus du jour (alerte clients fidélité) -->
   <div class="agb" id="agBanner" style="display:none"></div>
 
-  <div class="sec-h"><span class="t">Mes récompenses</span><span class="a">glisse →</span></div>
-  <div class="cat" id="cat"></div>
+  <div class="sec-h"><span class="t" id="catTitre" role="heading" aria-level="2">Mes récompenses</span><span class="a">glisse →</span></div>
+  <div class="cat" id="cat" role="list" tabindex="0" aria-labelledby="catTitre"></div>
 
   <!-- Titre ET grille masqués ensemble s'il ne reste aucune tuile : depuis le
        retrait de la tuile « Anniversaire » (12/09), un commerce dont aucun lien
        n'est renseigné n'a plus rien à mettre sous ce titre. -->
-  <div class="sec-h" id="bonusTitre"><span class="t">Gagner plus de tampons</span></div>
+  <div class="sec-h" id="bonusTitre"><span class="t" role="heading" aria-level="2">Gagner plus de tampons</span></div>
   <!-- ⚠️ 12/09 — LES DEUX PLATEFORMES D'AVIS SONT DES RANGÉES, plus des tuiles.
        Même forme que le bloc des réseaux : une phrase à gauche, le logo
        cliquable à droite. En petite tuile centrée, TripAdvisor faisait une case
@@ -662,7 +668,7 @@ body{font-family:var(--font-ui);-webkit-font-smoothing:antialiased;color:var(--i
   </div>
 
   <div id="giftsWrap" style="display:none">
-    <div class="sec-h"><span class="t">Mes cadeaux</span></div>
+    <div class="sec-h"><span class="t" role="heading" aria-level="2">Mes cadeaux</span></div>
     <div class="use-warn">⏱️ Un cadeau validé reste valable <b>1 heure</b>. Ne le valide qu'au moment de le récupérer, devant le vendeur.</div>
     <div class="gifts" id="gifts"></div>
   </div>
@@ -670,7 +676,7 @@ body{font-family:var(--font-ui);-webkit-font-smoothing:antialiased;color:var(--i
   <!-- Où nous trouver. Masqué par défaut : révélé seulement si le registre porte
        des coordonnées pour ce commerce (cf. placerLeCommerce). -->
   <div class="loc-row" id="locRow" style="display:none">
-    <div class="loc-t">Où nous trouver</div>
+    <div class="loc-t" role="heading" aria-level="2">Où nous trouver</div>
     <div class="loc-d" id="locNom">—</div>
     <div class="loc-map">
       <iframe id="locFrame" loading="lazy" title="Plan de la boutique" referrerpolicy="no-referrer-when-downgrade"></iframe>
@@ -680,7 +686,7 @@ body{font-family:var(--font-ui);-webkit-font-smoothing:antialiased;color:var(--i
 
   <!-- Réinstaller sa carte : téléphone changé, carte supprimée par erreur. Ajouté le 10/09. -->
   <div class="wal-row">
-    <div class="wal-t">Ta carte dans ton téléphone</div>
+    <div class="wal-t" role="heading" aria-level="2">Ta carte dans ton téléphone</div>
     <div class="wal-d">Change de téléphone ou supprime ta carte par erreur : tu la retrouves ici, avec tes tampons.</div>
     <!-- Badge officiel Apple (pack « Add to Apple Wallet », FR, RGB) — 22/09. -->
     <button class="wal-badge" id="awBtn" type="button" onclick="ajouterAuWallet(this)" aria-label="Ajouter à l’app Cartes Apple">
@@ -695,7 +701,7 @@ body{font-family:var(--font-ui);-webkit-font-smoothing:antialiased;color:var(--i
     <button class="wal-badge" id="gwBtn" type="button" hidden onclick="ajouterAuGoogleWallet(this)" aria-label="Ajouter au Google Wallet">
       <img src="assets/wallet/google-wallet-bouton-fr.svg" alt="Ajouter au Google Wallet">
     </button>
-    <div class="wal-hint" id="walHint"></div>
+    <div class="wal-hint" id="walHint" role="status"></div>
   </div>
 
   <!-- Le libellé est posé par applyPreset() : chez un commerce sans module
@@ -720,8 +726,8 @@ body{font-family:var(--font-ui);-webkit-font-smoothing:antialiased;color:var(--i
        supprimer pour faire plus propre. -->
   <div class="optcard" id="optRow">
     <div class="optrow">
-      <div class="oi">🔔</div>
-      <div class="ot"><div class="n" id="optTitre">Reçois nos offres fidélité</div><div class="d" id="optSous">Produit offert, réduction exclusive</div></div>
+      <div class="oi" aria-hidden="true">🔔</div>
+      <div class="ot"><div class="n" id="optTitre" role="heading" aria-level="2">Reçois nos offres fidélité</div><div class="d" id="optSous">Produit offert, réduction exclusive</div></div>
     </div>
 
     <!-- ⚠️ UNE SEULE RANGÉE, DEUX ÉTATS — pas deux blocs qui se remplacent :
@@ -740,11 +746,12 @@ body{font-family:var(--font-ui);-webkit-font-smoothing:antialiased;color:var(--i
       <div class="om-t" id="omTitre">Ton e-mail</div>
       <div class="om-row">
         <input class="om-input" id="omInput" type="email" inputmode="email" autocomplete="email"
+               aria-labelledby="omTitre" aria-describedby="omNote"
                placeholder="prenom@exemple.fr" enterkeyhint="done"
                onkeydown="if(event.key==='Enter')omAction()">
         <button class="om-btn" id="omBtn" onclick="omAction()">Valider</button>
       </div>
-      <div class="om-note" id="omNote">En validant, tu acceptes de recevoir les offres de la boutique par e-mail. Adresse jamais revendue, suppression possible à tout moment.</div>
+      <div class="om-note" id="omNote" aria-live="polite">En validant, tu acceptes de recevoir les offres de la boutique par e-mail. Adresse jamais revendue, suppression possible à tout moment.</div>
       <!-- ⚡ 13/09 — État « retrouver » seulement (inscrit, adresse inconnue sur ce
            téléphone) : se désinscrire sans avoir à retrouver son adresse. -->
       <button class="om-lien" id="omDesinscrire" type="button" hidden onclick="demanderSuppression()">Ne plus recevoir nos offres</button>
@@ -760,14 +767,14 @@ body{font-family:var(--font-ui);-webkit-font-smoothing:antialiased;color:var(--i
   </div>
 </div></div>
 
-<div class="toast" id="toast"></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <!-- MODAL CADEAU CONFIRMÉ -->
 <div class="cm-overlay" id="cmOverlay" onclick="if(event.target===this)closeRewardModal()">
-  <div class="cm-card">
+  <div class="cm-card" role="dialog" aria-modal="true" aria-labelledby="cmTitle" tabindex="-1">
     <div class="cm-badge" id="cmBadge">✓ Cadeau confirmé</div>
-    <div class="cm-ph" id="cmPh"></div>
-    <div class="cm-title" id="cmTitle">Bravo 🎉</div>
+    <div class="cm-ph" id="cmPh" aria-hidden="true"></div>
+    <div class="cm-title" id="cmTitle" role="heading" aria-level="2">Bravo 🎉</div>
     <div class="cm-lib" id="cmLib">—</div>
     <div class="cm-codebox" id="cmCodebox"><div class="cm-codelbl">Code à présenter en caisse</div><div class="cm-code" id="cmCode">000000</div></div>
     <div class="cm-note" id="cmNote">—</div>
@@ -778,8 +785,8 @@ body{font-family:var(--font-ui);-webkit-font-smoothing:antialiased;color:var(--i
 <!-- Mes données : information (art. 13) et effacement (art. 17). Ajouté le 10/09/2026 —
      avant, un client n'avait aucun moyen de savoir ce qu'on gardait, ni de le faire effacer. -->
 <div class="cm-overlay" id="pvOverlay" onclick="if(event.target===this)closePrivacy()">
-  <div class="cm-card pv-card">
-    <div class="pv-t">Tes données</div>
+  <div class="cm-card pv-card" role="dialog" aria-modal="true" aria-labelledby="pvTitre" tabindex="-1">
+    <div class="pv-t" id="pvTitre" role="heading" aria-level="2">Tes données</div>
     <p class="pv-p">Ta carte garde seulement ce qu'il faut pour fonctionner :</p>
     <ul class="pv-list">
       <li>ton <b>numéro de carte</b>, tes tampons et tes cadeaux</li>
@@ -787,7 +794,7 @@ body{font-family:var(--font-ui);-webkit-font-smoothing:antialiased;color:var(--i
       <li>ton <b>prénom</b>, ton <b>email</b> et ta <b>date de naissance</b> — seulement si tu les as donnés, ils sont facultatifs</li>
     </ul>
     <p class="pv-p">Rien n'est vendu ni transmis à qui que ce soit. Tout est <b>effacé automatiquement 3 ans</b> après ton dernier passage.</p>
-    <div class="pv-warn" id="pvWarn" style="display:none">Tes informations personnelles vont être effacées. <b>Ta carte et tes tampons, eux, restent.</b> Touche à nouveau pour confirmer.</div>
+    <div class="pv-warn" id="pvWarn" role="alert" style="display:none">Tes informations personnelles vont être effacées. <b>Ta carte et tes tampons, eux, restent.</b> Touche à nouveau pour confirmer.</div>
     <button class="pv-danger" id="pvBtn" type="button" onclick="askForget()">Effacer mes informations</button>
     <button class="pv-close" type="button" onclick="closePrivacy()">Fermer</button>
   </div>
@@ -799,8 +806,8 @@ body{font-family:var(--font-ui);-webkit-font-smoothing:antialiased;color:var(--i
      ⚠️ Le texte ne promet QUE ce qui se passe vraiment : l'arrêt des envois.
      L'adresse, elle, reste dans le classeur (cf. montrerEtatEmail). -->
 <div class="cm-overlay" id="delOverlay" onclick="if(event.target===this)fermerSuppression()">
-  <div class="cm-card pv-card">
-    <div class="pv-t">Ne plus recevoir nos offres ?</div>
+  <div class="cm-card pv-card" role="dialog" aria-modal="true" aria-labelledby="delTitre" tabindex="-1">
+    <div class="pv-t" id="delTitre" role="heading" aria-level="2">Ne plus recevoir nos offres ?</div>
     <p class="pv-p">Tu ne recevras plus aucune offre par e-mail. Tu pourras te réinscrire quand tu veux, depuis ta carte.</p>
     <button class="pv-danger armed" id="delOui" type="button" onclick="confirmerSuppression()">Oui, me désinscrire</button>
     <button class="pv-close" type="button" onclick="fermerSuppression()">Annuler</button>
@@ -823,7 +830,6 @@ const AVIS_URL   = 'https://boulangerieavisclient.vercel.app/';
    c'est laisser à portée de main de quoi recâbler la même erreur.
    Les adresses vivent maintenant dans le registre : commerces.json →
    `instagram`, `facebook`, `trustpilot`. Vide = le bloc ne s'affiche pas. */
-const NIVEAUX = [{nom:'Découverte',min:0},{nom:'Fidèle',min:15},{nom:'VIP',min:40}];
 
 // ════ PRESETS MULTI-COMMERCE — 1 base, N verticales. Sélection via ?type= (défaut boulangerie) ════
 // Boulangerie = inchangée (catalogue photos + thème :root). Autres = emoji + thème injecté.
@@ -997,7 +1003,6 @@ var BA = (function(){
 })();
 
 const CATALOGUE = P.catalogue;
-const GIVE = {boulangerie:'un grand panier garni 🧺',fleuriste:'un grand bouquet 💐',pizzeria:'un menu duo 🍕',vape:'un kit premium 🎁',restaurant:'un dîner pour 2 🍽️',primeur:'un grand panier de saison 🧺'};
 const params = new URLSearchParams(location.search);
 
 /* ─── Mémoire locale de la carte ─────────────────────────────────────────
@@ -1305,7 +1310,46 @@ function messageEchec(err){
   if(m === 'timeout')           return 'Le serveur met trop de temps — réessaie dans un instant.';
   return 'Pas de connexion — vérifie ton réseau.';
 }
-function show(id){ ['loading','stateNew','stateUnknown','stateError','stateActive','stateArrete'].forEach(s=>$(s).classList.toggle('on', s===id)); }
+function show(id){
+  const cible = $(id), dejaOn = !!cible && cible.classList.contains('on');
+  ['loading','stateNew','stateUnknown','stateError','stateActive','stateArrete'].forEach(s=>$(s).classList.toggle('on', s===id));
+  /* ♿ 24/09 — le focus suit l'écran qui apparaît (lecteurs d'écran, clavier) — jamais quand l'écran est
+     déjà là : la carte se redessine quand le serveur répond, et ça ne doit pas fermer le clavier d'un
+     client en train de taper son adresse. */
+  if(cible && !dejaOn){ const z = cible.querySelector('.wrap,.msg'); if(z){ try{ z.focus({preventScroll:true}); }catch(e){} } }
+}
+
+/* ♿ 24/09 — FENÊTRES MODALES : le focus entre dans la fenêtre à l'ouverture, y reste (Tab boucle),
+   revient au bouton d'origine à la fermeture (jamais à un champ de saisie : sur un téléphone, ça
+   rouvrirait le clavier) ; Échap ferme. Rien de visible sous le doigt. */
+let dialogueOuvert = null, focusAvant = null;
+function ouvrirDialogue(overlay, fermer){
+  dialogueOuvert = { overlay, fermer };
+  focusAvant = document.activeElement;
+  const boite = overlay.querySelector('[role="dialog"]');
+  if(boite){ try{ boite.focus({preventScroll:true}); }catch(e){} }
+}
+function fermerDialogue(overlay){
+  if(dialogueOuvert && dialogueOuvert.overlay === overlay) dialogueOuvert = null;
+  const f = focusAvant; focusAvant = null;
+  if(f && f !== document.body && f.tagName !== 'INPUT' && document.contains(f)){ try{ f.focus({preventScroll:true}); }catch(e){} }
+}
+document.addEventListener('keydown', function(ev){
+  if(!dialogueOuvert) return;
+  if(ev.key === 'Escape'){ ev.preventDefault(); dialogueOuvert.fermer(); return; }
+  if(ev.key !== 'Tab') return;
+  const boite = dialogueOuvert.overlay.querySelector('[role="dialog"]'); if(!boite) return;
+  const focusables = [...boite.querySelectorAll('button,a[href],input,[tabindex]:not([tabindex="-1"])')].filter(function(el){ return !el.disabled && el.offsetParent !== null; });
+  if(!focusables.length) return;
+  const premier = focusables[0], dernier = focusables[focusables.length - 1];
+  if(ev.shiftKey && (document.activeElement === premier || document.activeElement === boite)){ ev.preventDefault(); dernier.focus(); }
+  else if(!ev.shiftKey && document.activeElement === dernier){ ev.preventDefault(); premier.focus(); }
+});
+/* ♿ 24/09 — la barre de progression annonce sa valeur (aria) ; le texte à côté reste la référence visible. */
+function majBarre(n, max){
+  const b = $('progBarWrap'); if(!b) return;
+  b.setAttribute('aria-valuenow', n); b.setAttribute('aria-valuemax', max);
+}
 /* 🏁 23/09 — programme arrêté (fin de contrat) : l'écran dédié, avec le message du commerçant. */
 function montrerArret(d){
   try{
@@ -1383,9 +1427,10 @@ function showConfirm(o){
   else { $('cmCodebox').style.display = 'none'; }
   $('cmNote').textContent = o.note || '';
   $('cmOverlay').classList.add('show');
+  ouvrirDialogue($('cmOverlay'), window.closeRewardModal);
   spawnConfetti();
 }
-window.closeRewardModal = function(){ $('cmOverlay').classList.remove('show'); };
+window.closeRewardModal = function(){ $('cmOverlay').classList.remove('show'); fermerDialogue($('cmOverlay')); };
 
 /* Grille de tampons vers le prochain palier.
    Au-delà de 25, une grille devient un mur de pastilles illisible : on garde la
@@ -1429,10 +1474,12 @@ function applySolde(n){
     $('progL').innerHTML = 'Plus que <b>'+(next.cout-n)+' tampon'+((next.cout-n)>1?'s':'')+'</b> pour '+esc(next.libelle);
     $('progR').textContent = n+' / '+next.cout;
     $('progBar').style.width = Math.max(4, Math.round(n/next.cout*100))+'%';
+    majBarre(n, next.cout);
   } else {
     $('progL').innerHTML = '🎉 Tu peux débloquer <b>tous</b> les cadeaux !';
     $('progR').textContent = '';
     $('progBar').style.width = '100%';
+    majBarre(n, n);
   }
   renderStamps(n, next);
   renderCatalogue(n);
@@ -1452,12 +1499,15 @@ function renderCatalogue(n){
   c.innerHTML = [...CATALOGUE].sort((a,b)=>a.cout-b.cout).map(r=>{   // trié par palier croissant
     const ok = n >= r.cout;
     const reste = r.cout - n;
-    return '<div class="rw'+(ok?'':' locked')+'">'
-      +(r.img ? '<div class="ph"><img class="ph-img" src="'+r.img+'" alt="" loading="lazy"></div>' : '<div class="ph ph-emoji">'+(r.emoji||'🎁')+'</div>')
+    /* ♿ 24/09 — chaque tuile est un élément de liste ; l'image est décorative (le nom est à côté) ;
+       « Échanger » dit CE QU'on échange (six boutons « Échanger » identiques ne se distinguent pas
+       à l'oreille) ; une tuile verrouillée n'est pas un bouton qu'on peut activer : elle le dit. */
+    return '<div class="rw'+(ok?'':' locked')+'" role="listitem">'
+      +(r.img ? '<div class="ph" aria-hidden="true"><img class="ph-img" src="'+r.img+'" alt="" loading="lazy"></div>' : '<div class="ph ph-emoji" aria-hidden="true">'+(r.emoji||'🎁')+'</div>')
       +'<div class="nm">'+esc(r.libelle)+'</div>'
       +'<div class="cost">'+r.cout+' tampons</div>'
-      +(ok ? '<button class="btn go" onclick="redeem(\''+r.item+'\', this)">Échanger</button>'
-           : '<button class="btn lock">Plus que '+reste+' tampon'+(reste>1?'s':'')+'</button>')
+      +(ok ? '<button class="btn go" aria-label="Échanger '+r.cout+' tampons contre '+esc(r.libelle)+'" onclick="redeem(\''+r.item+'\', this)">Échanger</button>'
+           : '<button class="btn lock" aria-disabled="true" tabindex="-1">Plus que '+reste+' tampon'+(reste>1?'s':'')+'</button>')
       +'</div>';
   }).join('');
 }
@@ -1495,10 +1545,12 @@ function render(c){
     $('progL').innerHTML = 'Plus que <b>'+(next.cout-c.points_solde)+' tampon'+((next.cout-c.points_solde)>1?'s':'')+'</b> pour '+esc(next.libelle);
     $('progR').textContent = c.points_solde+' / '+next.cout;
     $('progBar').style.width = Math.max(4, Math.round(c.points_solde/next.cout*100))+'%';
+    majBarre(c.points_solde, next.cout);
   } else {
     $('progL').innerHTML = '🎉 Tu peux débloquer <b>tous</b> les cadeaux !';
     $('progR').textContent = '';
     $('progBar').style.width = '100%';
+    majBarre(c.points_solde, c.points_solde);
   }
   renderStamps(c.points_solde, next);
   renderCatalogue(c.points_solde);      // même dessinateur que applySolde()
@@ -1685,9 +1737,10 @@ window.openPrivacy = function(){
   if(b){ b.disabled = false; b.classList.remove('armed'); b.textContent = 'Effacer mes informations'; }
   if(w) w.style.display = 'none';
   $('pvOverlay').classList.add('show');
+  ouvrirDialogue($('pvOverlay'), window.closePrivacy);
 };
 
-window.closePrivacy = function(){ $('pvOverlay').classList.remove('show'); };
+window.closePrivacy = function(){ $('pvOverlay').classList.remove('show'); fermerDialogue($('pvOverlay')); };
 
 window.askForget = function(){
   const b = $('pvBtn'), w = $('pvWarn');
@@ -1875,8 +1928,8 @@ window.omAction = function(){
 /* ⚡ 13/09 — POP-UP DE CONFIRMATION avant de se désinscrire (demandée le 12/09).
    Deux chemins y mènent : le bouton « Supprimer » (adresse connue sur ce
    téléphone) et le lien « Ne plus recevoir nos offres » (état « retrouver »). */
-window.demanderSuppression = function(){ $('delOverlay').classList.add('show'); };
-window.fermerSuppression = function(){ $('delOverlay').classList.remove('show'); };
+window.demanderSuppression = function(){ $('delOverlay').classList.add('show'); ouvrirDialogue($('delOverlay'), window.fermerSuppression); };
+window.fermerSuppression = function(){ $('delOverlay').classList.remove('show'); fermerDialogue($('delOverlay')); };
 window.confirmerSuppression = function(){ window.fermerSuppression(); supprimerEmail(); };
 
 /* ⚠️ RETRAIT DU CONSENTEMENT — obligatoire, et aussi simple à exercer que
@@ -2045,7 +2098,7 @@ function renderRewards(list, serverNow){
   $('gifts').innerHTML = shown.map(g=>{
     const done = g.statut==='done';
     const lib = esc(g.libelle).replace(/'/g,"\\'");
-    return '<div class="gift"><div class="ic">🎁</div>'
+    return '<div class="gift"><div class="ic" aria-hidden="true">🎁</div>'
       +'<div class="meta"><div class="n">'+esc(g.libelle)+'</div>'
       +'<div class="d">'+(g.code?('code '+esc(g.code)):'')
       +(!done && g.fin_le ? ' · jusqu’au '+esc(g.fin_le) : '')+'</div></div>'   // 🎁 15/09 — offre promo : sa date
@@ -2091,7 +2144,9 @@ window.showUsed = function(code, libelle, usedAt){
   $('useModal').dataset.code = code;
   $('useStep1').style.display = 'none';
   $('useStep2').style.display = '';
+  $('useModal').querySelector('.use-box').setAttribute('aria-labelledby', 'useTitre2');
   $('useModal').classList.add('on');
+  ouvrirDialogue($('useModal'), window.closeUse);
   startUseClock(toLocal(usedAt) || Date.now());
 };
 
@@ -2105,9 +2160,11 @@ window.askUse = function(code, libelle){
   $('useModal').dataset.code = code;
   $('useStep1').style.display = '';
   $('useStep2').style.display = 'none';
+  $('useModal').querySelector('.use-box').setAttribute('aria-labelledby', 'useTitre1');
   $('useModal').classList.add('on');
+  ouvrirDialogue($('useModal'), window.closeUse);
 }
-window.closeUse = function(){ $("useModal").classList.remove("on"); if(useTimer) clearInterval(useTimer); };
+window.closeUse = function(){ $("useModal").classList.remove("on"); if(useTimer) clearInterval(useTimer); fermerDialogue($("useModal")); };
 
 let useTimer = null;/* Horloge de l'ecran de validation. Ancree sur l'heure LOCALE du client :   l'heure qui defile doit correspondre a celle du telephone que le vendeur   regarde, pas a celle du serveur Google (9 h d'ecart constate). */function startUseClock(startLocalMs){  const tick = ()=>{    const n = new Date();    $('useClock').textContent = n.toLocaleTimeString('fr-FR');    const reste = Math.max(0, REDEEM_WINDOW_MS - (n.getTime() - startLocalMs));    const m = Math.floor(reste/60000), s = Math.floor(reste%60000/1000);    $('useLeft').textContent = reste > 0      ? 'Valable encore ' + m + ' min ' + String(s).padStart(2,'0')      : 'Ce cadeau a expire';  };  tick(); if(useTimer) clearInterval(useTimer); useTimer = setInterval(tick, 1000);}
 window.confirmUse = function(btn){
@@ -2138,6 +2195,7 @@ window.confirmUse = function(btn){
       }
       $('useStep1').style.display = 'none';
       $('useStep2').style.display = '';
+      $('useModal').querySelector('.use-box').setAttribute('aria-labelledby', 'useTitre2');
       setServerNow(d.now);
       startUseClock(toLocal(Number(d.used_at)) || Date.now());
       loadRewards();
@@ -2173,7 +2231,7 @@ function renderOffres(list){
     const enCours = !!offresEnCours[o.id];
     const img = /^https:\/\//.test(o.image || '') ? '<img src="' + esc(o.image) + '" alt="" loading="lazy">' : '🎁';
     return '<div class="offre">'
-      + '<div class="offre-img">' + img + '</div>'
+      + '<div class="offre-img" aria-hidden="true">' + img + '</div>'
       + '<div class="offre-meta">'
       +   '<div class="offre-t">' + esc(o.titre || 'Offre spéciale') + '</div>'
       +   (o.fin_le ? '<div class="offre-d">Valable jusqu’au ' + esc(o.fin_le) + '</div>' : '')
@@ -2236,9 +2294,9 @@ function renderPaniers(list){
   }
   if(!list || !list.length){ el.style.display='none'; el.innerHTML=''; return; }
   el.style.display='';
-  el.innerHTML = '<div class="agb-h">🥖 Paniers anti-gaspi<span class="tag">Aujourd\'hui</span></div>'
+  el.innerHTML = '<div class="agb-h" role="heading" aria-level="2">🥖 Paniers anti-gaspi<span class="tag">Aujourd\'hui</span></div>'
     + '<div class="agb-sub">À récupérer en boutique avant la fermeture — premier arrivé, premier servi&nbsp;!</div>'
-    + list.map(p => '<div class="agb-item">'+(p.emoji ? '<div class="agb-emoji" style="font-size:24px;display:grid;place-items:center">'+p.emoji+'</div>' : '<div class="agb-emoji" style="background-image:url(assets/'+agImg(p.libelle)+')"></div>')
+    + list.map(p => '<div class="agb-item">'+(p.emoji ? '<div class="agb-emoji" aria-hidden="true" style="font-size:24px;display:grid;place-items:center">'+p.emoji+'</div>' : '<div class="agb-emoji" aria-hidden="true" style="background-image:url(assets/'+agImg(p.libelle)+')"></div>')
         + '<div class="agb-meta"><div class="n">'+esc(p.libelle)+'</div><div class="d">'+(p.retrait_avant?('Retrait avant '+esc(p.retrait_avant)+' · '):'')+'<span class="agb-qty">'+p.qty+' dispo</span></div></div>'
         + '<div class="agb-price"><div class="pr">'+eurC(p.prix_reduit)+'</div>'+(p.prix_origine?('<div class="or">'+eurC(p.prix_origine)+'</div>'):'')+'</div></div>').join('');
 }

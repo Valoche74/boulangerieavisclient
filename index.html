@@ -7,7 +7,15 @@
 <meta name="color-scheme" content="light">
 <title>Falman Emmanuelle et Flavien</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<!-- ⚡ 24/09 (audit vitesse) — les fichiers de police viennent de fonts.gstatic.com, pas de googleapis :
+     sans cette ligne, la poignée de main (DNS + TLS) n'était anticipée que pour la feuille de style. -->
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://api.perify.app" crossorigin>
+<!-- ⚡ 24/09 (audit vitesse) — feuille Google Fonts PRÉCHARGÉE puis appliquée (elle était le seul
+     chargement bloquant : le premier rendu l'attendait). Graisses jamais utilisées retirées de la
+     demande : Plus Jakarta Sans 600, Inter 300. Voir card.html, même mécanisme. -->
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@700;800&family=Inter:wght@400;500;600;700;800&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@700;800&family=Inter:wght@400;500;600;700;800&display=swap"></noscript>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 :root{
@@ -68,14 +76,10 @@ body::after{
 .viewer-block{position:relative;width:100%;max-width:320px;margin:0 auto 0;display:flex;flex-direction:column;align-items:center}
 .viewer-glow{position:absolute;width:260px;height:200px;top:50%;left:50%;transform:translate(-50%,-52%);border-radius:50%;background:radial-gradient(circle,rgba(226,178,90,.32) 0%,transparent 68%);pointer-events:none;animation:glowPulse 3.5s ease-in-out infinite}
 @keyframes glowPulse{0%,100%{opacity:.5;transform:translate(-50%,-52%) scale(1)}50%{opacity:1;transform:translate(-50%,-52%) scale(1.12)}}
-#threeCanvas{display:block;width:280px!important;height:240px!important;cursor:grab;touch-action:none;border-radius:12px}
-#threeCanvas:active{cursor:grabbing}
-.croissant-fallback{display:none;font-size:110px;line-height:1;animation:float3d 4s ease-in-out infinite;filter:drop-shadow(0 16px 32px rgba(0,0,0,.3));user-select:none}
+.croissant-fallback{display:block;font-size:110px;line-height:1;animation:float3d 4s ease-in-out infinite;filter:drop-shadow(0 16px 32px rgba(0,0,0,.3));user-select:none}
 @keyframes float3d{0%,100%{transform:translateY(0) rotate(-3deg)}25%{transform:translateY(-9px) rotate(0deg)}50%{transform:translateY(-13px) rotate(3deg)}75%{transform:translateY(-5px) rotate(1deg)}}
-.croissant-fallback.show{display:block}
-.viewer-loading{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:12px;color:rgba(245,237,216,.5);letter-spacing:.05em;pointer-events:none;animation:fadePulse 1.5s ease-in-out infinite}
-@keyframes fadePulse{0%,100%{opacity:.3}50%{opacity:.8}}
-.viewer-loading.gone{display:none}
+/* (24/09 — le canvas 3D, son « Chargement… » et .croissant-fallback.show ont été retirés : l'aperçu 3D est
+   mort depuis le 08/09, le repli est TOUJOURS ce qu'on voit — il s'affiche maintenant dès le premier rendu) */
 .viewer-name{margin-top:6px;font-family:'Plus Jakarta Sans',sans-serif;font-size:17px;font-weight:800;font-style:normal;color:var(--cream);text-shadow:0 2px 14px rgba(0,0,0,.4);text-align:center;line-height:1.2;letter-spacing:.02em}
 .s1-stars{display:flex;gap:4px;justify-content:center;margin:16px 0 20px}
 .s1-star{font-size:20px;opacity:0;transform:translateY(5px) scale(.75);animation:starIn .4s ease forwards}
@@ -245,10 +249,7 @@ body::after{
 .sw-prize-emoji{font-size:44px;line-height:1;display:block;margin-bottom:6px;filter:drop-shadow(0 6px 12px rgba(0,0,0,.15))}
 .sw-prize-name{font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:19px;color:var(--ink);line-height:1.2}
 
-.sw-title{
-  font-family:'Inter',sans-serif;font-weight:600;font-size:19px;letter-spacing:-.01em;
-  color:var(--cream);line-height:1.4;margin-bottom:24px;
-}
+/* (24/09 — .sw-title retiré : remplacé par .sw-welcome le 22/09) */
 /* 22/09 — le message d'accueil (texte validé par l'utilisateur), à la place de « Votre cadeau
    vous attend dans votre carte ». Le nom du commerce et le cadeau sont posés par le script. */
 .sw-welcome{font-family:'Inter',sans-serif;font-size:15px;color:var(--cream);line-height:1.5;margin:-6px 0 22px;opacity:.94}
@@ -334,6 +335,20 @@ body::after{
 .particle{position:fixed;pointer-events:none;border-radius:50%;animation:pfly 1.4s ease-out forwards;z-index:999}
 @keyframes pfly{0%{transform:translate(0,0) scale(1);opacity:1}100%{transform:translate(var(--tx),var(--ty)) scale(0);opacity:0}}
 
+/* ♿ 24/09 (audit accessibilité, ACCESSIBILITE.md) — même principe que card.html : focus clavier visible
+   (jaune sur le fond nuit, encre orange sur les cartes claires), zones tactiles de 44 px sans changer la
+   taille des boutons, écran qui reçoit le focus sans contour. « Continuer sans laisser d'avis » devient
+   un vrai bouton (clavier, lecteur d'écran) : mêmes lettres, même place, même couleur. */
+a:focus-visible,button:focus-visible{outline:3px solid var(--gold3);outline-offset:3px}
+.btn-google:focus-visible,.s3-submit:focus-visible{outline-color:var(--gold-ink)}
+.screen-inner:focus{outline:none}
+.s1-skip{display:block;background:none;border:0;padding:0;font-family:inherit;line-height:inherit;-webkit-appearance:none;appearance:none}
+.s1-skip,.sw-alt,.btn-fallback{position:relative}
+.s1-skip::before,.sw-alt::before,.btn-fallback::before{content:'';position:absolute;left:0;right:0}
+.s1-skip::before{top:-15px;bottom:-15px}
+.sw-alt::before{top:-7px;bottom:-7px}
+.btn-fallback::before{top:-5px;bottom:-5px}
+
 /* Reduced motion */
 @media(prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
@@ -344,23 +359,21 @@ body::after{
 
 <!-- ══ S1 — ACCUEIL ══ -->
 <div class="screen active" id="screen1">
-<div class="screen-inner">
+<div class="screen-inner" role="main" tabindex="-1">
 <div class="s1-wrap">
   <img class="marque" src="assets/perify-logo.png" alt="Perify" width="359" height="156">
   <div class="viewer-block">
     <div class="viewer-glow"></div>
-    <canvas id="threeCanvas"></canvas>
-    <div class="croissant-fallback" id="croissantFallback">🥐</div>
-    <div class="viewer-loading" id="viewerLoading">Chargement…</div>
-    <div class="viewer-name">Falman<br>Emmanuelle &amp; Flavien</div>
+    <div class="croissant-fallback" id="croissantFallback" aria-hidden="true">🥐</div>
+    <div class="viewer-name" role="heading" aria-level="1">Falman<br>Emmanuelle &amp; Flavien</div>
   </div>
-  <div class="s1-stars">
+  <div class="s1-stars" aria-hidden="true">
     <span class="s1-star">⭐</span><span class="s1-star">⭐</span>
     <span class="s1-star">⭐</span><span class="s1-star">⭐</span><span class="s1-star">⭐</span>
   </div>
   <div class="s1-card">
     <div class="s1-card-top">
-      <div class="s1-heading">Un cadeau vous<br>attend <span class="accent">ici.</span></div>
+      <div class="s1-heading" role="heading" aria-level="2">Un cadeau vous<br>attend <span class="accent">ici.</span></div>
       <div class="s1-subtext">Laissez votre avis Google et repartez avec un <b>produit offert</b> 🎁</div>
     </div>
     <div class="s1-card-bottom">
@@ -370,32 +383,34 @@ body::after{
          onclick="openGoogle(event)">
         🌟&nbsp; Laisser votre avis Google
       </a>
-      <div class="s1-unlock" id="unlockMsg">
+      <div class="s1-unlock" id="unlockMsg" role="status">
         <div class="s1-unlock-dot"></div>
         Parfait — la roue est débloquée !
       </div>
       <div class="s1-optional">
-        <span class="s1-optional-icon">💛</span>
+        <span class="s1-optional-icon" aria-hidden="true">💛</span>
         <span class="s1-optional-text">Quand vous avez terminé, revenez découvrir votre cadeau. L'avis est libre et optionnel.</span>
       </div>
     </div>
   </div>
-  <div class="s1-skip" id="skipReviewBtn" onclick="goToWheel()">Continuer sans laisser d'avis</div>
+  <button class="s1-skip" id="skipReviewBtn" type="button" onclick="goToWheel()">Continuer sans laisser d'avis</button>
 </div>
 </div>
 </div>
 
 <!-- ══ S2 — ROUE DE LA CHANCE ══ -->
 <div class="screen" id="screen2">
-<div class="screen-inner">
+<div class="screen-inner" role="main" tabindex="-1">
 <div class="s2-wrap">
 
   <div class="s2-header">
+    <div role="heading" aria-level="1">
     <div class="s2-bienvenue">Bienvenue sur la</div>
     <div class="s2-titre">
       <span class="s2-titre-txt">Roue de la Chance&nbsp;! 🎉</span>
       <svg class="s2-ellipse" viewBox="0 0 300 70" preserveAspectRatio="none" aria-hidden="true"><path d="M150,6 C245,4 296,20 294,37 C292,56 222,66 140,64 C58,62 6,50 8,33 C10,16 70,5 150,6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
       <span class="s2-croix" aria-hidden="true">× × ×</span>
+    </div>
     </div>
     <div class="s2-sub">Tournez la roue pour découvrir votre cadeau — un produit offert, 100&nbsp;% gagnant 🎁<br>Touchez <b>« Lancer »</b> et attendez que la roue s'arrête.</div>
   </div>
@@ -411,10 +426,10 @@ body::after{
     <span class="etape"><b>1</b>Lancez la roue</span><span class="etape"><b>2</b>Découvrez votre cadeau</span><span class="etape"><b>3</b>Récupérez-le en boutique</span>
   </div>
 
-  <div class="wheel-result" id="wheelResult">
+  <div class="wheel-result" id="wheelResult" role="status">
     <div class="wr-badge">✦ Vous avez gagné</div>
-    <span class="wr-emoji" id="wrEmoji">🥐</span>
-    <div class="wr-name" id="wrName">Croissant Artisanal</div>
+    <span class="wr-emoji" id="wrEmoji" aria-hidden="true">🥐</span>
+    <div class="wr-name" id="wrName" role="heading" aria-level="2">Croissant Artisanal</div>
     <div class="wr-divider"></div>
     <div class="wr-msg">Produit à présenter en caisse 🎁</div>
   </div>
@@ -429,17 +444,17 @@ body::after{
 
 <!-- ══ S2b — AJOUTER LA CARTE AU WALLET ══ -->
 <div class="screen" id="screenWallet">
-<div class="screen-inner">
+<div class="screen-inner" role="main" tabindex="-1">
 <div class="sw-wrap">
 
   <div class="sw-prize">
-    <span class="sw-prize-emoji" id="swEmoji">🥐</span>
+    <span class="sw-prize-emoji" id="swEmoji" aria-hidden="true">🥐</span>
     <div class="sw-prize-name" id="swName">Croissant Artisanal</div>
   </div>
 
   <!-- 22/09 — message d'accueil, texte validé par l'utilisateur. -->
   <div class="sw-welcome" id="swWelcome">
-    <span class="sw-w-titre">Voici ta carte de fidélité <span id="swShop">…</span>.</span>
+    <span class="sw-w-titre" role="heading" aria-level="1">Voici ta carte de fidélité <span id="swShop">…</span>.</span>
     À chaque passage, tu cumules des tampons et tu gagnes des produits offerts.
     Ton premier cadeau, <b id="swGain">…</b>, t'attend déjà dessus : ajoute ta carte à ton téléphone pour le récupérer en boutique.
   </div>
@@ -464,25 +479,23 @@ body::after{
 </div>
 </div>
 </div>
-</div>
-</div>
 <!-- ══ S3 — FORMULAIRE ══ -->
 <div class="screen" id="screen3">
-<div class="screen-inner">
+<div class="screen-inner" role="main" tabindex="-1">
 <div class="s3-wrap">
   <div class="s3-card">
     <div class="s3-hero">
-      <span class="s3-emoji-big" id="s3Emoji">🥐</span>
-      <div class="s3-congrats">Félicitations !</div>
+      <span class="s3-emoji-big" id="s3Emoji" aria-hidden="true">🥐</span>
+      <div class="s3-congrats" role="heading" aria-level="1">Félicitations !</div>
       <div class="s3-prize-pill" id="s3PrizeLabel">Votre cadeau</div>
     </div>
     <div class="s3-body">
-      <div class="s3-section-title">Recevez votre coupon</div>
+      <div class="s3-section-title" role="heading" aria-level="2">Recevez votre coupon</div>
       <div class="s3-section-sub">Un code unique vous sera envoyé par email</div>
-      <div class="field"><label class="field-label">Prénom</label><input class="field-input" type="text" id="fieldPrenom" placeholder="Jean" autocomplete="given-name"></div>
-      <div class="field"><label class="field-label">Nom</label><input class="field-input" type="text" id="fieldNom" placeholder="Dupont" autocomplete="family-name"></div>
-      <div class="field"><label class="field-label">Email</label><input class="field-input" type="email" id="fieldEmail" placeholder="jean@exemple.fr" autocomplete="email"></div>
-      <div class="field"><label class="field-label">Date de naissance <span style="text-transform:none;letter-spacing:0;font-weight:400;color:var(--muted2)">— pour votre cadeau 🎂 (facultatif)</span></label><input class="field-input" type="date" id="fieldNaissance" autocomplete="bday"></div>
+      <div class="field"><label class="field-label" for="fieldPrenom">Prénom</label><input class="field-input" type="text" id="fieldPrenom" placeholder="Jean" autocomplete="given-name"></div>
+      <div class="field"><label class="field-label" for="fieldNom">Nom</label><input class="field-input" type="text" id="fieldNom" placeholder="Dupont" autocomplete="family-name"></div>
+      <div class="field"><label class="field-label" for="fieldEmail">Email</label><input class="field-input" type="email" id="fieldEmail" placeholder="jean@exemple.fr" autocomplete="email"></div>
+      <div class="field"><label class="field-label" for="fieldNaissance">Date de naissance <span style="text-transform:none;letter-spacing:0;font-weight:400;color:var(--muted2)">— pour votre cadeau 🎂 (facultatif)</span></label><input class="field-input" type="date" id="fieldNaissance" autocomplete="bday"></div>
       <!-- Consentement RGPD (opt-in explicite, non pré-coché). Ne conditionne PAS le coupon (email transactionnel). -->
       <label class="s3-consent" for="fieldOptin">
         <input type="checkbox" id="fieldOptin">
@@ -502,10 +515,10 @@ body::after{
 
 <!-- ══ S4 — SUCCÈS ══ -->
 <div class="screen" id="screen4">
-<div class="screen-inner">
+<div class="screen-inner" role="main" tabindex="-1">
 <div class="s4-wrap">
-  <div class="s4-check">✓</div>
-  <div class="s4-title">Email envoyé !</div>
+  <div class="s4-check" aria-hidden="true">✓</div>
+  <div class="s4-title" role="heading" aria-level="1">Email envoyé !</div>
   <div class="s4-desc">Votre code est prêt. Montrez simplement cet écran en caisse, ou retrouvez-le dans votre email.<br>Puis <b class="s4-fort">scannez le QR code</b> du présentoir pour <b class="s4-fort">débloquer votre compte fidélité</b>.</div>
   <div class="s4-code-block">
     <div class="s4-code-label">Votre code unique</div>
@@ -521,10 +534,10 @@ body::after{
      Wallet : on affiche donc cet écran 1,5 s après avoir ouvert le pass, avec LA consigne qui
      compte — scanner le QR du présentoir, ce qui ouvre sa carte et déclenche son premier passage. -->
 <div class="screen" id="screenFin">
-<div class="screen-inner">
+<div class="screen-inner" role="main" tabindex="-1">
 <div class="s4-wrap">
-  <div class="s4-check">✓</div>
-  <div class="s4-title">Carte ajoutée&nbsp;!</div>
+  <div class="s4-check" aria-hidden="true">✓</div>
+  <div class="s4-title" role="heading" aria-level="1">Carte ajoutée&nbsp;!</div>
   <div class="s4-desc"><b class="s4-fort">Scannez le QR code</b> du présentoir pour <b class="s4-fort">débloquer votre compte fidélité</b>.<br>Votre cadeau, <b id="finGain">…</b>, vous y attend.</div>
   <div class="s4-code-block">
     <div class="s4-code-label">Et ensuite</div>
@@ -542,10 +555,10 @@ body::after{
      serait la deuxième pire option — la pire étant de le laisser tourner la roue
      pour lui retirer le lot ensuite. -->
 <div class="screen" id="screenAlready">
-<div class="screen-inner">
+<div class="screen-inner" role="main" tabindex="-1">
 <div class="already-wrap">
-  <span class="already-emoji">🎫</span>
-  <div class="already-title">Votre carte vous attend</div>
+  <span class="already-emoji" aria-hidden="true">🎫</span>
+  <div class="already-title" role="heading" aria-level="1">Votre carte vous attend</div>
   <div class="already-desc" id="alreadyDesc">Vous avez déjà reçu votre cadeau de bienvenue. Ouvrez votre carte pour votre tampon du jour.</div>
   <a class="already-cta" id="alreadyCta" href="#">Ouvrir ma carte →</a>
 </div>
@@ -555,10 +568,10 @@ body::after{
 <!-- PROGRAMME TERMINÉ (23/09) — le serveur répond `commerce_arrete` (fin de contrat) :
      plus de roue, plus de carte à créer ; on le dit avec les mots du commerçant. -->
 <div class="screen" id="screenArrete">
-<div class="screen-inner">
+<div class="screen-inner" role="main" tabindex="-1">
 <div class="already-wrap">
-  <span class="already-emoji">🏁</span>
-  <div class="already-title" id="arreteTitre">Programme terminé</div>
+  <span class="already-emoji" aria-hidden="true">🏁</span>
+  <div class="already-title" id="arreteTitre" role="heading" aria-level="1">Programme terminé</div>
   <div class="already-desc" id="arreteDesc">Ce programme de fidélité est terminé. Merci de votre fidélité !</div>
 </div>
 </div>
@@ -577,8 +590,6 @@ body::after{
   r.setProperty('--gold',T[t][0]); r.setProperty('--gold2',T[t][1]); r.setProperty('--gold3',T[t][2]); r.setProperty('--gold-border',hx(T[t][0],.35));
   document.addEventListener('DOMContentLoaded',function(){
     var vn=document.querySelector('.viewer-name'); if(vn) vn.textContent=N[t];
-    var cv=document.getElementById('threeCanvas'); if(cv) cv.style.setProperty('display','none','important');
-    var vl=document.getElementById('viewerLoading'); if(vl) vl.classList.add('gone');
     var fb=document.getElementById('croissantFallback');
     if(fb){
       /* Un commerce peut fournir un vrai visuel plutot qu'un emoji. */
@@ -587,7 +598,6 @@ body::after{
          ce qui a casse tout le script la premiere fois. indexOf ne peut pas. */
       if(String(E[t]).indexOf('assets/') === 0) fb.innerHTML='<img src="'+E[t]+'" alt="" style="width:150px;height:150px;object-fit:contain;display:block;filter:drop-shadow(0 14px 26px rgba(0,0,0,.45))">';
       else fb.textContent=E[t];
-      fb.classList.add('show');
     }
     document.title=N[t];
     /* 23/09 — le logo du commerce sur la pastille blanche en haut de la roue (logo couleur,
@@ -599,7 +609,6 @@ body::after{
   });
 })();
 </script>
-<!-- Three.js -->
 
 <script>
 /* ═══════════════════════════════════════════
@@ -734,7 +743,6 @@ var BA = (function(){
 })();
 
 const DEMO = new URLSearchParams(location.search).get('demo')==='1';   // démo showroom : pas d'appel backend
-const GLB_PATH   = "/assets/croissant-ai-textured.glb";
 
 let wonPrize = null;
 let googleOpened = false;
@@ -836,8 +844,11 @@ BA.pret().then(function(com){
 }).catch(function(){});
 function showScreen(id){
   document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
-  document.getElementById(id).classList.add("active");
+  const ecran = document.getElementById(id);
+  ecran.classList.add("active");
   window.scrollTo(0,0);
+  /* ♿ 24/09 — le focus suit l'écran qui apparaît (lecteurs d'écran, clavier) ; sans contour (.screen-inner:focus). */
+  const zone = ecran.querySelector('.screen-inner'); if(zone){ try{ zone.focus({preventScroll:true}); }catch(e){} }
 }
 /* ⚠️ 11/09 — LE LIEN D'AVIS ÉTAIT ÉCRIT EN DUR vers la fiche Google de la
    boulangerie. Chez tout autre commerce, le client était envoyé noter Falman.
@@ -911,7 +922,6 @@ window.addEventListener("load",()=>{
   }
   drawPrize();
   buildWheel();
-  initThree();
 });
 
 /* ─── Tirage ─── */
@@ -966,6 +976,7 @@ function openGoogle(e){
   const btn=document.getElementById("googleBtn");
   btn.innerHTML='✓&nbsp; Merci — votre avis est précieux !';
   btn.style.opacity=".6";btn.style.pointerEvents="none";
+  btn.setAttribute('aria-disabled','true');   // ♿ 24/09 — le lien ne fait plus rien : on le dit aux lecteurs d'écran
   document.getElementById("unlockMsg").classList.add("show");
   spawnParticles();
   setTimeout(allerVersRoue,1400);      // 🎡 passe par le garde-fou, plus jamais direct
@@ -986,13 +997,10 @@ function goToWheel(){ allerVersRoue(); }
    Retirer tout ça ne change RIEN à l’écran : le repli était déjà ce que tout le
    monde voyait. Pour restaurer l’aperçu un jour : déposer le .glb dans
    `assets/`, remettre la balise three.js, et reprendre ce bloc dans git.
+   24/09 (audit) — le reste de la chaîne (canvas, « Chargement… », initThree,
+   showFallback) est parti aussi : le croissant de repli s'affiche dès le premier
+   rendu, au lieu d'attendre l'événement load.
 ════════════════════════════════════════════ */
-function initThree(){ showFallback(); }
-function showFallback(){
-  const c=document.getElementById("threeCanvas"); if(c) c.style.display="none";
-  document.getElementById("viewerLoading").classList.add("gone");
-  document.getElementById("croissantFallback").classList.add("show");
-}
 
 /* ═══════════════════════════════════════════
    S2 — ROUE DE LA CHANCE
@@ -1537,7 +1545,11 @@ function activateFidelite(prenom, nom, email, gain, code, naissance, optin){
 }
 
 /* ─── Particules ─── */
+/* ♿ 24/09 — pas de particules ni de confettis pour qui a demandé moins de mouvement (la feuille de
+   style les figeait déjà en 0,01 ms : autant ne pas créer 55 éléments pour rien). */
+const MOINS_DE_MOUVEMENT = () => !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
 function spawnParticles(){
+  if(MOINS_DE_MOUVEMENT()) return;
   const c=["#C8963E","#E2B25A","#F5D07A","#fff","#b5d98a"];
   for(let i=0;i<30;i++){
     const p=document.createElement("div");p.className="particle";
@@ -1547,6 +1559,7 @@ function spawnParticles(){
   }
 }
 function spawnConfetti(){
+  if(MOINS_DE_MOUVEMENT()) return;
   const c=["#C8963E","#E2B25A","#F5D07A","#fff","#b5d98a","#f4c4d0"];
   for(let i=0;i<55;i++)setTimeout(()=>{
     const p=document.createElement("div");p.className="particle";
