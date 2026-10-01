@@ -409,7 +409,7 @@ body{font-family:var(--font-ui);-webkit-font-smoothing:antialiased;color:var(--i
 .slink.done::after{content:'✓';position:absolute;right:-6px;top:-6px;width:19px;height:19px;border-radius:50%;
   background:var(--green,#16a34a);color:#fff;font-size:11px;font-weight:800;line-height:19px;text-align:center;
   box-shadow:0 2px 6px rgba(0,0,0,.25);opacity:1}
-.social-txt.done{color:var(--muted)}.social-txt.done b{color:var(--green,#16a34a)}
+.social-txt.done{color:var(--muted)}.social-txt.done b{color:var(--green-ink,#15803D)}  /* 01/10 : --green-ink (5,1:1 sur blanc) au lieu de --green (3,3:1) */
 .slink.ig{background:linear-gradient(45deg,#f09433,#e6683c 28%,#dc2743 50%,#cc2366 72%,#bc1888)}
 .slink.fb{background:#1877F2}
 .slink.tt{background:#010101}
@@ -454,17 +454,16 @@ body{font-family:var(--font-ui);-webkit-font-smoothing:antialiased;color:var(--i
 .wal-badge[hidden]{display:none}   /* `display:inline-block` l'emporterait sur l'attribut hidden */
 .wal-hint{font-size:12px;color:var(--muted);margin-top:10px;line-height:1.45}
 
-/* UNE seule carte : l'interrupteur en haut, la saisie d'e-mail qui s'ouvre en
-   dessous quand on le coche. Deux cartes séparées se lisaient comme deux
-   réglages indépendants — c'en est un seul, en deux temps. */
-.optcard{background:var(--card);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);overflow:hidden;transition:border-color .2s,box-shadow .2s}
-/* Le client a dit oui : la carte s'allume aux couleurs du commerce et la saisie
-   s'ouvre dessous. Sans ce changement visible, cocher n'avait l'air de rien. */
-.optcard.ouverte{border-color:var(--gold);box-shadow:0 0 0 3px var(--gold-soft,rgba(200,150,62,.14)),var(--shadow)}
-.optcard.ouverte .om-t{color:var(--gold-ink)}
-.optrow{display:flex;align-items:center;gap:13px;padding:15px 16px}
-.optmail{padding:0 16px 15px;border-top:1px solid var(--line);margin-top:2px;padding-top:14px}
-.om-t{font-size:14px;font-weight:600;color:var(--ink);margin-bottom:10px}
+/* ✉️ 01/10/2026 — LA RANGÉE E-MAIL. Demande de l'utilisateur : « que le mail apparaisse au même
+   niveau que les offres TripAdvisor, et qu'il y ait bien une notion de gagné 1 point ». Elle EST
+   une rangée .social (même carte blanche, mêmes marges, même rayon, même ombre, même phrase en
+   .social-txt, même forme « ✓ … gagné » en .social-txt.done), mais en COLONNE : la phrase en
+   haut, le champ et « Valider » dessous — la place d'un logo ne suffit pas à un champ de saisie.
+   L'ancienne carte .optcard (cloche, « Reçois nos offres fidélité », sous-titre, bord orange une
+   fois inscrit) a disparu avec son emplacement en bas de page : le « gagné » de la phrase et le
+   champ figé bordé de vert disent maintenant que c'est fait. */
+.social.social-mail{flex-direction:column;align-items:stretch;justify-content:flex-start;gap:11px}
+.optmail{min-width:0}
 .om-row{display:flex;gap:8px}
 .om-input{flex:1;min-width:0;padding:12px 14px;border-radius:12px;border:1.5px solid var(--line);
   background:var(--cream);color:var(--ink);font-family:inherit;font-size:16px;outline:none;transition:border-color .15s}   /* 16 px : pas de zoom automatique iOS (24/09) */
@@ -492,10 +491,7 @@ body{font-family:var(--font-ui);-webkit-font-smoothing:antialiased;color:var(--i
    l'accord), mais sans la couleur d'appel du bouton d'action. */
 .om-btn-off{background:transparent;color:var(--muted);border:1.5px solid var(--line);font-weight:600}
 .om-btn-off:active{background:rgba(0,0,0,.04)}
-.optrow .oi{font-size:24px;flex-shrink:0}
-.optrow .ot{flex:1;min-width:0}
-.optrow .ot .n{font-size:14.5px;font-weight:700;color:var(--ink)}
-.optrow .ot .d{font-size:11.5px;color:var(--muted);margin-top:2px;line-height:1.4}
+/* (01/10/2026 — les styles .optrow (cloche, titre, sous-titre) ont été retirés avec la carte .optcard) */
 /* (24/09 — l'interrupteur .switch a été retiré : plus d'interrupteur depuis le 12/09, « Valider » fait foi) */
 @media(prefers-reduced-motion:reduce){.fl{animation:none}.cm-overlay.show .cm-card{animation:none;transform:none;opacity:1}}
 
@@ -632,8 +628,50 @@ a:focus-visible,button:focus-visible{outline:3px solid var(--gold-ink);outline-o
 
   <!-- Titre ET grille masqués ensemble s'il ne reste aucune tuile : depuis le
        retrait de la tuile « Anniversaire » (12/09), un commerce dont aucun lien
-       n'est renseigné n'a plus rien à mettre sous ce titre. -->
+       n'est renseigné n'a plus rien à mettre sous ce titre.
+       01/10/2026 — la rangée e-mail (toujours présente) est maintenant sous ce titre :
+       il s'affiche donc chez tous les commerces (cf. brancherLiens). -->
   <div class="sec-h" id="bonusTitre"><span class="t" role="heading" aria-level="2">Gagner plus de tampons</span></div>
+  <!-- ✉️ 01/10/2026 — LA RANGÉE E-MAIL, EN PREMIER : c'est le seul gain que TOUT client peut
+       avoir (les autres rangées dépendent des liens du commerce). Demande de l'utilisateur :
+       « que le mail apparaisse au même niveau que les offres TripAdvisor, et qu'il y ait bien
+       une notion de gagné 1 point ». Avant, c'était une carte à part, tout en bas de la page,
+       sous « Ta carte dans ton téléphone ».
+       Même forme que les rangées d'avis et de réseaux : une phrase (#optTitre, écrite par
+       titresEmail() — le nombre de tampons vient de TAMPONS, la phrase devient « ✓ … gagné »
+       une fois le tampon touché), puis le geste : le champ et « Valider ».
+
+       ⚠️ UNE SEULE RANGÉE, DEUX ÉTATS — pas deux blocs qui se remplacent :
+         « saisie »  : champ vide et modifiable, bouton « Valider »
+         « inscrit » : l'adresse FIGÉE et relisible, bouton « Supprimer »
+       Figée exprès : une faute de frappe dans une adresse ne se repère nulle part
+       ailleurs, et le client ne recevrait rien sans comprendre pourquoi.
+       (Plus d'interrupteur depuis le 12/09 : l'adresse et « Valider », un seul geste ; le
+       tampon n'est crédité qu'au « Valider » — une case cochée sans adresse ne vaut rien.)
+
+       ⚠️ LE CONSENTEMENT REPOSE SUR « Valider ». C'est un acte positif et sans ambiguïté
+       (RGPD art. 4-11) À CONDITION que la mention juste sous le champ (#omNote, MENTION_EMAIL)
+       dise à quoi on s'engage : ne pas la raccourcir, ne pas l'éloigner du champ.
+       ⚠️ ET LE RETRAIT DOIT RESTER AUSSI SIMPLE QUE L'ACCORD (art. 7-3) : « Supprimer » et le
+       lien « Ne plus recevoir nos offres » en sont la raison d'être. Ne pas les enterrer.
+       Le champ est nommé par la phrase (aria-labelledby="optTitre") et décrit par la mention. -->
+  <div class="social social-mail" id="optRow">
+    <div class="social-txt" id="optTitre">Ton e-mail pour recevoir nos offres</div>
+    <div class="optmail" id="optMailRow">
+      <div class="om-row">
+        <input class="om-input" id="omInput" type="email" inputmode="email" autocomplete="email"
+               aria-labelledby="optTitre" aria-describedby="omNote"
+               placeholder="prenom@exemple.fr" enterkeyhint="done"
+               onkeydown="if(event.key==='Enter')omAction()">
+        <button class="om-btn" id="omBtn" onclick="omAction()">Valider</button>
+      </div>
+      <div class="om-note" id="omNote" aria-live="polite">En validant, tu acceptes de recevoir les offres de la boutique par e-mail. Adresse jamais revendue, suppression possible à tout moment.</div>
+      <!-- ⚡ 13/09 — État « retrouver » seulement (inscrit, adresse inconnue sur ce
+           téléphone) : se désinscrire sans avoir à retrouver son adresse. -->
+      <button class="om-lien" id="omDesinscrire" type="button" hidden onclick="demanderSuppression()">Ne plus recevoir nos offres</button>
+    </div>
+  </div>
+
   <!-- ⚠️ 12/09 — LES DEUX PLATEFORMES D'AVIS SONT DES RANGÉES, plus des tuiles.
        Même forme que le bloc des réseaux : une phrase à gauche, le logo
        cliquable à droite. En petite tuile centrée, TripAdvisor faisait une case
@@ -706,59 +744,8 @@ a:focus-visible,button:focus-visible{outline:3px solid var(--gold-ink);outline-o
     <div class="wal-hint" id="walHint" role="status"></div>
   </div>
 
-  <!-- Le libellé est posé par applyPreset() : chez un commerce sans module
-       invendus, parler de paniers n'aurait aucun sens. -->
-  <!-- ⚠️ UN SEUL BLOC, pas deux réglages distincts (demande du 12/09).
-       Cocher l'interrupteur ouvre la saisie d'e-mail DANS la même carte : c'est
-       une seule décision du client, pas deux. Et le tampon n'est crédité qu'au
-       « Valider » — cocher une case sans laisser d'adresse ne vaut rien à la
-       boutique, ça ne doit donc rien rapporter. -->
-  <!-- ⚠️ 12/09 — PLUS D'INTERRUPTEUR. Cocher une case puis saisir une adresse,
-       c'était deux gestes pour une seule décision, et la case seule ne valait
-       rien : sans adresse, la boutique n'avait nulle part où écrire.
-       Il reste UN geste : l'adresse et « Valider ».
-
-       ⚠️ LE CONSENTEMENT REPOSE MAINTENANT SUR CE BOUTON. C'est un acte positif
-       et sans ambiguïté (RGPD art. 4-11), à condition que la mention juste en
-       dessous dise clairement à quoi on s'engage — d'où sa présence, et d'où le
-       fait qu'elle ne doit pas être raccourcie.
-
-       ⚠️ ET LE RETRAIT DOIT RESTER AUSSI SIMPLE QUE L'ACCORD (art. 7-3) : c'est
-       la raison d'être du lien « Ne plus recevoir » de l'état 2. Ne pas le
-       supprimer pour faire plus propre. -->
-  <div class="optcard" id="optRow">
-    <div class="optrow">
-      <div class="oi" aria-hidden="true">🔔</div>
-      <div class="ot"><div class="n" id="optTitre" role="heading" aria-level="2">Reçois nos offres fidélité</div><div class="d" id="optSous">Produit offert, réduction exclusive</div></div>
-    </div>
-
-    <!-- ⚠️ UNE SEULE RANGÉE, DEUX ÉTATS — pas deux blocs qui se remplacent :
-         la carte ne saute pas, seuls le champ et le bouton changent.
-           « saisie »  : champ vide et modifiable, bouton « Valider »
-           « inscrit » : l'adresse FIGÉE et relisible, bouton « Supprimer »
-         Figée exprès : une faute de frappe dans une adresse ne se repère nulle
-         part ailleurs, et le client ne recevrait rien sans comprendre pourquoi.
-
-         ⚠️ LE CONSENTEMENT REPOSE SUR « Valider ». C'est un acte positif et sans
-         ambiguïté (RGPD art. 4-11) À CONDITION que la mention en dessous dise à
-         quoi on s'engage : ne pas la raccourcir.
-         ⚠️ Et « Supprimer » est le retrait, qui doit rester aussi simple que
-         l'accord (art. 7-3). Ne pas l'enterrer dans un sous-menu. -->
-    <div class="optmail" id="optMailRow">
-      <div class="om-t" id="omTitre">Ton e-mail</div>
-      <div class="om-row">
-        <input class="om-input" id="omInput" type="email" inputmode="email" autocomplete="email"
-               aria-labelledby="omTitre" aria-describedby="omNote"
-               placeholder="prenom@exemple.fr" enterkeyhint="done"
-               onkeydown="if(event.key==='Enter')omAction()">
-        <button class="om-btn" id="omBtn" onclick="omAction()">Valider</button>
-      </div>
-      <div class="om-note" id="omNote" aria-live="polite">En validant, tu acceptes de recevoir les offres de la boutique par e-mail. Adresse jamais revendue, suppression possible à tout moment.</div>
-      <!-- ⚡ 13/09 — État « retrouver » seulement (inscrit, adresse inconnue sur ce
-           téléphone) : se désinscrire sans avoir à retrouver son adresse. -->
-      <button class="om-lien" id="omDesinscrire" type="button" hidden onclick="demanderSuppression()">Ne plus recevoir nos offres</button>
-    </div>
-  </div>
+  <!-- ✉️ 01/10/2026 — le bloc e-mail était ici (carte .optcard, tout en bas) : il est devenu
+       la première rangée de « Gagner plus de tampons » (#optRow, plus haut). Pas de doublon. -->
 
   <div class="foot">
     <img class="marque" src="assets/perify-logo.png" alt="Perify" width="359" height="156">
@@ -1157,9 +1144,14 @@ function brancherLiens(com){
   /* Le titre « Gagner plus de tampons » couvre les TROIS rangées : il ne
      disparaît que si aucune n'est affichée. Le masquer sur un seul critère
      laissait les autres orphelines, sans en-tête — repéré par le test des
-     combinaisons, pas à l'œil. */
-  const t = $('bonusTitre');
-  if(t) t.hidden = !(v.ta || v.tp || v.ig || v.fb || v.tt);
+     combinaisons, pas à l'œil.
+     01/10/2026 — QUATRE rangées : la rangée e-mail (#optRow) est passée sous ce titre, en
+     premier. Elle ne dépend d'aucun lien du registre et n'est jamais masquée : le titre
+     s'affiche donc partout. La règle reste écrite en entier — si un jour la rangée e-mail
+     peut être masquée, le titre ne restera pas seul au-dessus de rien. */
+  const t = $('bonusTitre'), mail = $('optRow');
+  const avecEmail = !!(mail && !mail.hidden);
+  if(t) t.hidden = !(avecEmail || v.ta || v.tp || v.ig || v.fb || v.tt);
 }
 
 /* 21/09 — Les textes des trois rangées disent ce qu'il RESTE à gagner. Une action
@@ -1245,12 +1237,12 @@ function applyPreset(p){
   }
   /* ⚠️ LA RÉCOMPENSE EST ANNONCÉE AVANT LE CLIC, pas découverte après.
      « Active les e-mails » ne dit rien au client : ce qu'il veut savoir, c'est
-     ce qu'il gagne (un tampon) et ce qu'il recevra (un produit offert, une
-     réduction réservée). Les deux sont donc écrits noir sur blanc. */
-  const ot=$('optTitre'), os=$('optSous');
-  if(ot) ot.innerHTML = 'Gagne <b>' + tampon(TAMPONS.optin_email) + '</b> en activant les e-mails';
-  if(os) os.textContent = 'Reçois nos offres fidélité : produit offert, réduction exclusive'
-    + (avecAg ? ', paniers invendus' : '');
+     ce qu'il gagne (un tampon). C'est donc écrit noir sur blanc.
+     01/10/2026 — la phrase de la rangée e-mail n'est plus posée ici mais par titresEmail() :
+     elle dépend de l'état du client (inscrit ou non) et du tampon déjà gagné, que applyPreset
+     ne connaît pas. Le sous-titre « Reçois nos offres fidélité : produit offert, réduction
+     exclusive, paniers invendus » (#optSous) a disparu avec l'ancienne carte : la rangée suit
+     le modèle des rangées d'avis et de réseaux, une phrase puis le geste. */
   const ft=$('cFoot'); if(ft) ft.textContent = p.foot;
   const eb=document.querySelector('.eyebrow'); if(eb) eb.textContent = DEMO ? '✦ Démo fidélité' : (p.eyebrow||'✦ Ma fidélité');
   const fzone=$('floaties'); if(fzone && p.fl) fzone.innerHTML = p.fl.map((e,i)=>'<span class="fl fl'+(i+1)+'">'+e+'</span>').join('');
@@ -1822,12 +1814,29 @@ let demandeEmail = false;
 /* ⚡ 13/09 — un enregistrement ou une suppression d'adresse attend déjà les données
    fraîches (cf. apresFraiches) : ne pas en empiler un second. */
 let emailDiffere = false;
+/* 01/10/2026 — la mention sur laquelle repose le consentement (cf. le commentaire au-dessus du
+   champ), en un seul endroit : montrerEtatEmail l'affiche, l'écouteur ci-dessous la rétablit. */
+const MENTION_EMAIL = 'En validant, tu acceptes de recevoir les offres de la boutique par e-mail. Adresse jamais revendue, suppression possible à tout moment.';
 /* ⚡ 13/09 — le client TAPE son adresse : c'est une intention, que le rendu doit
    respecter. Avec le cache, la réponse du serveur peut arriver en pleine frappe ;
    sans ce drapeau, elle figerait le champ si le serveur le croit déjà inscrit. */
 (function(){
   const ch = document.getElementById('omInput');
-  if(ch) ch.addEventListener('input', function(){ if(etatEmail === 'saisie') demandeEmail = true; });
+  if(ch) ch.addEventListener('input', function(){
+    if(etatEmail === 'inscrit') return;           // champ figé : rien ne se tape
+    if(etatEmail === 'saisie') demandeEmail = true;   // en « retrouver », le rendu ne touche déjà pas à la saisie
+    /* 01/10/2026 — LA MENTION REVIENT DÈS QUE LE CLIENT RETAPE. Après « Oui, me désinscrire »,
+       la note dit « C'est fait : tu ne recevras plus nos offres. » à la place de la mention (de
+       même après « adresse pas valide »). Elle restait affichée pendant qu'il retapait son adresse :
+       il pouvait se réinscrire par « Valider » sans avoir sous les yeux ce qu'il acceptait.
+       Vu sur la capture iPhone de l'utilisateur, sa carte d'essai, le 01/10.
+       01/10/2026 (relecture) — AUSSI en « retrouver » (inscrit, adresse inconnue sur ce téléphone) :
+       la note y explique « pas sur ce téléphone, saisis-la », mais le client peut y taper une
+       AUTRE adresse et « Valider » (fid_activate l'enregistre, opt-in « on »). Sans ce cas,
+       la mention n'apparaissait jamais dans cet état. */
+    const n = document.getElementById('omNote');
+    if(n && n.textContent !== MENTION_EMAIL){ n.classList.remove('bad'); n.textContent = MENTION_EMAIL; ch.classList.remove('bad'); }
+  });
 })();
 /* ⚠️ ON MÉMORISE L'ADRESSE ELLE-MÊME, PAS SEULEMENT « il en a donné une ».
    Le client doit pouvoir revenir et RELIRE ce qu'il a saisi : une faute de
@@ -1870,7 +1879,7 @@ let etatEmail = 'saisie';
                    le retrait doit rester aussi simple que l'accord (RGPD art. 7-3).
    « inscrit » ne fige donc plus que si l'on a réellement l'adresse à montrer. */
 function montrerEtatEmail(etat, motif){
-  const champ = $('omInput'), bouton = $('omBtn'), carte = $('optRow');
+  const champ = $('omInput'), bouton = $('omBtn');
   if(!champ || !bouton) return;
   const connue = emailMemorise(cardId);
   etatEmail = (etat === 'inscrit') ? (connue ? 'inscrit' : 'retrouver') : 'saisie';
@@ -1883,20 +1892,10 @@ function montrerEtatEmail(etat, motif){
   bouton.textContent = fige ? 'Supprimer' : 'Valider';
   bouton.classList.toggle('om-btn-off', fige);
   bouton.disabled = false;
-  if(carte) carte.classList.toggle('ouverte', abonne);
+  /* 01/10/2026 — plus de bord orange « carte allumée » (.optcard.ouverte) : la rangée suit le
+     modèle des autres rangées, c'est la phrase « ✓ … gagné » qui dit que c'est fait. */
 
-  const t = $('omTitre');
-  if(t) t.innerHTML = fige ? 'Tu reçois nos offres à cette adresse'
-    : abonne ? 'Tu reçois déjà nos offres'
-    : 'Ton e-mail — <b>' + tampon(TAMPONS.optin_email) + '</b> une fois validé';
-
-  /* L'en-tête de la carte suit : promettre « gagne +1 tampon en activant » à
-     quelqu'un qui est déjà inscrit et qui l'a déjà touché, c'est lui proposer
-     une récompense qu'il ne peut plus avoir. */
-  const h = $('optTitre');
-  if(h) h.innerHTML = abonne
-    ? 'Tes offres fidélité'
-    : 'Gagne <b>' + tampon(TAMPONS.optin_email) + '</b> en activant les e-mails';
+  titresEmail();
 
   /* Figé : on montre l'adresse. Sinon on ne touche PAS à la valeur — le client est
      peut-être en train de taper, et un rendu tardif ne doit pas l'effacer. */
@@ -1910,14 +1909,52 @@ function montrerEtatEmail(etat, motif){
      faux. fid_optin ne fait que passer l'envoi à « off », l'adresse reste dans le
      classeur (vérifié en production le 13/09 sur deux cartes). Effacer vraiment
      ou garder cette phrase : décision laissée à l'utilisateur. */
+  /* 01/10/2026 (relecture) — en « retrouver », dès qu'une adresse est dans le champ, c'est la
+     MENTION qui s'affiche (cf. l'écouteur « input ») : un rendu tardif pendant la frappe ne doit
+     pas la remplacer par l'explication, puisque « Valider » est à portée de doigt. */
   const n = $('omNote');
   if(n){
     n.classList.remove('bad');
     n.textContent = motif ? motif
       : fige   ? 'Tu peux la supprimer quand tu veux : tu ne recevras plus nos offres.'
-      : abonne ? 'Ton adresse est bien enregistrée, mais pas sur ce téléphone. Saisis-la pour la retrouver ici.'
-      : 'En validant, tu acceptes de recevoir les offres de la boutique par e-mail. Adresse jamais revendue, suppression possible à tout moment.';
+      : (abonne && !String(champ.value || '').trim()) ? 'Ton adresse est bien enregistrée, mais pas sur ce téléphone. Saisis-la pour la retrouver ici.'
+      : MENTION_EMAIL;
   }
+}
+
+/* 01/10/2026 — LES DEUX TITRES DU BLOC, sortis de montrerEtatEmail pour être recalculés aussi
+   quand on apprend quelles actions sont déjà gagnées (applyActions : elles arrivent APRÈS le
+   premier rendu). Le tampon de l'e-mail n'est donné qu'UNE fois par carte (le serveur répond
+   « already ») : un client qui s'est désinscrit puis retape son adresse ne le regagne pas. Lui
+   promettre « +1 tampon une fois validé » était faux — même règle que les rangées avis et
+   réseaux depuis le 21/09 (rafraichirTextes). Textes de repli : ceux qui existaient déjà. */
+/* 01/10/2026 (suite) — LA RANGÉE E-MAIL N'A PLUS QU'UNE PHRASE, #optTitre, sur le modèle des
+   rangées d'avis (rafraichirTextes › avis) : ce qu'il reste à gagner, ou « ✓ … gagné » en
+   .social-txt.done (gris, montant en vert) une fois le tampon touché. L'ancien sous-titre du
+   champ (#omTitre, « Ton e-mail — +1 tampon une fois validé ») a été retiré : il répétait la
+   phrase juste au-dessus. C'est la phrase qui nomme le champ (aria-labelledby="optTitre").
+     saisie,    pas gagné → « Inscris ton e-mail et gagne +1 tampon 🎁 »
+     saisie,    déjà gagné (désinscrit) → « Ton e-mail pour recevoir nos offres » : JAMAIS de
+                nouveau « +1 tampon », le serveur ne le donne qu'une fois par carte
+     inscrit,   gagné → « ✓ E-mail validé : +1 tampon gagné, merci ! »
+     inscrit,   pas (encore) gagné → « Tu reçois nos offres à cette adresse » — rien n'est
+                annoncé tant que le serveur n'a pas crédité (fid_action peut échouer)
+     retrouver, gagné → « ✓ Tu reçois déjà nos offres : +1 tampon gagné »
+     retrouver, pas gagné → « Tu reçois déjà nos offres »
+   Le nombre vient de TAMPONS.optin_email, jamais écrit en dur. */
+function titresEmail(){
+  const fige = (etatEmail === 'inscrit'), abonne = (etatEmail !== 'saisie');
+  const dejaGagne = !!(actionsState && actionsState.optin_email);
+  const n = TAMPONS.optin_email;
+  const gagne = '<b>' + tampon(n) + ' gagné' + (n > 1 ? 's' : '') + '</b>';
+  const coche = '<span aria-hidden="true">✓</span> ';
+  const h = $('optTitre');
+  if(!h) return;
+  h.innerHTML = fige ? (dejaGagne ? coche + 'E-mail validé : ' + gagne + ', merci !' : 'Tu reçois nos offres à cette adresse')
+    : abonne ? (dejaGagne ? coche + 'Tu reçois déjà nos offres : ' + gagne : 'Tu reçois déjà nos offres')
+    : dejaGagne ? 'Ton e-mail pour recevoir nos offres'
+    : 'Inscris ton e-mail et gagne <b>' + tampon(n) + '</b> <span aria-hidden="true">🎁</span>';
+  h.classList.toggle('done', abonne && dejaGagne);
 }
 
 /* Le bouton fait l'un ou l'autre selon l'état. Un seul bouton, donc aucun risque
@@ -2007,11 +2044,18 @@ window.enregistrerEmail = function(){
       if(r && r.status === 'ok' && r.points_delta > 0){
         applySolde(solde + r.points_delta); celebrerTampons(r.points_delta, solde);
         actionsState.optin_email = true;
+        /* 01/10/2026 — la phrase de la rangée passe tout de suite à « ✓ E-mail validé : +1 tampon
+           gagné » (et le cache le retient), comme claimAction() pour les avis et les réseaux.
+           Avant, l'en-tête ne changeait qu'à l'ouverture suivante de la carte. */
+        applyActions(actionsState);
         showConfirm({ badge:'🎉 +' + r.points_delta + ' tampon' + (r.points_delta > 1 ? 's' : '') + ' !',
                       emoji:'🔔', title:'C’est noté !',
                       lib:'+' + r.points_delta + ' tampon' + (r.points_delta > 1 ? 's' : '') + ' offert' + (r.points_delta > 1 ? 's' : ''),
                       note:'Tu seras prévenu des offres de la boutique 🎉' });
       } else {
+        /* 01/10/2026 — « already » : le tampon a déjà été donné à cette carte (réinscription).
+           La rangée le dit (« gagné ») au lieu de rester sans rien. */
+        if(r && r.status === 'already'){ actionsState.optin_email = true; applyActions(actionsState); }
         toast('✉️ C\'est noté, tu recevras les offres');
       }
     }).catch(function(){ toast('✉️ C\'est noté, tu recevras les offres'); });
@@ -2032,6 +2076,7 @@ function applyActions(st){
   actionsState = st || {};
   carteVue.actions = actionsState; cacheSauver();     // ⚡ 13/09 — cf. CLE_CACHE
   rafraichirTextes();                                 // 21/09 — coches et textes « déjà gagné »
+  titresEmail();                                      // 01/10/2026 — et le bloc e-mail (cf. titresEmail)
 }
 /* ⚡ 13/09 — crédits demandés pendant que la carte vient du cache, un par réseau. */
 const actionsDifferees = {};
