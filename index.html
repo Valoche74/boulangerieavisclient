@@ -1244,6 +1244,20 @@ function rememberCard(id){
   try{ if(id) localStorage.setItem('boostavis.card.' + TYPE_PARAM, String(id)); }catch(e){}
 }
 
+/* 07/10/2026 — L'ADRESSE DONNÉE À L'INSCRIPTION, RETENUE DANS LE TÉLÉPHONE (défaut repéré en
+   relecture le 01/10, il existait avant). card.html ne peut pas relire l'adresse depuis le
+   serveur (il la caviarde pour la carte du client, à raison) : il la lit sous cette clé, que
+   seul son propre « Valider » écrivait. Un client qui donnait son e-mail ICI voyait donc, sur
+   le MÊME téléphone, « Ton adresse est bien enregistrée, mais pas sur ce téléphone ».
+   Même clé et même format que card.html (CLE_EMAIL + numéro de carte → l'adresse elle-même),
+   écrite seulement quand le serveur a confirmé ET que le client a accepté les offres :
+   c'est exactement ce que fait card.html, et ce que son « Supprimer » efface. */
+const CLE_EMAIL = 'perify_email_donne_';
+function retenirEmail(id, adresse){
+  const v = String(adresse || '').trim();
+  try{ if(id && v) localStorage.setItem(CLE_EMAIL + id, v); }catch(e){}
+}
+
 /* Code du coupon — partage entre le chemin Wallet et le formulaire,
    pour qu'un client qui essaie les deux ne genere pas deux coupons. */
 let claimCode = null;
@@ -1539,6 +1553,8 @@ function activateFidelite(prenom, nom, email, gain, code, naissance, optin){
     try{
       var d = JSON.parse(ax.responseText);
       if(d && d.card_id) rememberCard(d.card_id);
+      /* 07/10/2026 — et l'adresse, pour que la carte la reconnaisse (cf. retenirEmail) */
+      if(d && d.status === 'ok' && d.card_id && optin === 'on') retenirEmail(d.card_id, email);
     }catch(e){}
   };
   ax.onerror = ()=>console.warn("[BoostAvis] fid_activate échec réseau");

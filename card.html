@@ -1356,7 +1356,12 @@ function montrerArret(d){
 }
 function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 let tT=null;
-function toast(msg){ const t=$('toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(tT); tT=setTimeout(()=>t.classList.remove('show'),3200); }
+/* 07/10/2026 — `toastJusqua` : l'heure où le message en cours disparaît. Lu par apresToast()
+   (rattrapage du tampon de l'e-mail) pour ne pas écraser « +1 tampon pour ton passage ! ».
+   Le message lui-même ne change pas. */
+let toastJusqua = 0;
+function toast(msg){ const t=$('toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(tT); tT=setTimeout(()=>t.classList.remove('show'),3200); toastJusqua = Date.now() + 3200; }
+function apresToast(fn){ const reste = toastJusqua - Date.now(); if(reste > 0) setTimeout(fn, reste + 300); else fn(); }
 
 function spawnConfetti(){
   if(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) return;
@@ -1814,6 +1819,10 @@ let demandeEmail = false;
 /* ⚡ 13/09 — un enregistrement ou une suppression d'adresse attend déjà les données
    fraîches (cf. apresFraiches) : ne pas en empiler un second. */
 let emailDiffere = false;
+/* 07/10/2026 (relecture) — le client a touché au bloc e-mail pendant CETTE ouverture (« Valider » avec
+   une adresse plausible, ou « Supprimer ») : le rattrapage du tampon (rattraperTamponEmail) lui laisse
+   la main. « Valider » demande lui-même son tampon ; après « Supprimer », il n'y a rien à rattraper. */
+let gesteEmail = false;
 /* 01/10/2026 — la mention sur laquelle repose le consentement (cf. le commentaire au-dessus du
    champ), en un seul endroit : montrerEtatEmail l'affiche, l'écouteur ci-dessous la rétablit. */
 const MENTION_EMAIL = 'En validant, tu acceptes de recevoir les offres de la boutique par e-mail. Adresse jamais revendue, suppression possible à tout moment.';
@@ -1976,6 +1985,7 @@ window.confirmerSuppression = function(){ window.fermerSuppression(); supprimerE
    On coupe l'envoi côté serveur ET on oublie l'adresse ici. */
 function supprimerEmail(){
   const bouton = $('omBtn'), note = $('omNote');
+  gesteEmail = true;                  // 07/10/2026 (relecture) — cf. rattraperTamponEmail
   bouton.disabled = true; bouton.textContent = '…';
   /* ⚡ 13/09 — carte issue du cache : le retrait attend les données fraîches (cf.
      apresFraiches). Il part quel que soit l'état qu'elles montrent : c'est la
@@ -2016,6 +2026,7 @@ window.enregistrerEmail = function(){
     return;
   }
   champ.classList.remove('bad'); note.classList.remove('bad');
+  gesteEmail = true;                  // 07/10/2026 (relecture) — cf. rattraperTamponEmail
   btn.disabled = true; btn.textContent = '…';
   /* ⚡ 13/09 — carte issue du cache : l'enregistrement attend les données fraîches
      (cf. apresFraiches), et demandeEmail garde la saisie ouverte quand elles
@@ -2058,6 +2069,8 @@ window.enregistrerEmail = function(){
         if(r && r.status === 'already'){ actionsState.optin_email = true; applyActions(actionsState); }
         toast('✉️ C\'est noté, tu recevras les offres');
       }
+    /* 07/10/2026 — si ce crédit échoue, l'adresse est quand même enregistrée : le tampon est
+       redemandé à l'ouverture suivante (rattraperTamponEmail). */
     }).catch(function(){ toast('✉️ C\'est noté, tu recevras les offres'); });
   }).catch(function(e){
     btn.disabled = false; btn.textContent = 'Valider';
@@ -2098,6 +2111,73 @@ window.claimAction = function(key){
     else if(d.code==='commerce_arrete'){ montrerArret(d); }
   }).catch(()=>{});
 };
+
+/* 07/10/2026 — RATTRAPAGE DU TAMPON DE L'E-MAIL (défaut repéré en relecture le 01/10, il
+   existait avant). « Valider » fait DEUX appels : fid_activate enregistre l'adresse et
+   l'accord, PUIS fid_action crédite le tampon. Si le second échoue (réseau coupé entre les
+   deux, erreur du serveur), le client reste inscrit SANS son tampon, et rien ne permettait
+   de le récupérer : « Valider » ne s'affiche plus, la rangée dit « Tu reçois nos offres ».
+   Même trou à l'inscription (index.html) quand le profil existait déjà : fid_activate y
+   enregistre l'adresse sans créditer le tampon.
+
+   Donc, à l'ouverture SUIVANTE, avec les données FRAÎCHES du serveur (jamais celles du
+   cache) : si le serveur dit « inscrit » (accord « on » ET adresse en fiche) et que
+   l'action optin_email n'est pas gagnée (actions.optin_email === false, pas « absent »),
+   on redemande le crédit, UNE fois.
+   Jamais de double tampon : le serveur n'écrit l'action qu'une fois par carte (index
+   unique action_une_fois_par_carte, migration 006 ; crediterAction répond « already »).
+   Jamais en rafale : une tentative par ouverture au plus, et une trace dans le téléphone
+   (CLE_RATTRAPAGE_EMAIL + carte = heure de la dernière tentative) qui l'espace de 24 h.
+   Un téléphone sans stockage (navigation privée) retente donc à chaque ouverture, une
+   fois : le serveur tranche.
+   Perify seulement : Falman (Apps Script) n'est pas concerné, rien ne part vers Google.
+   Pas de fenêtre « C'est noté ! » : la carte s'ouvre souvent au comptoir, un message
+   discret suffit, APRÈS celui du passage (apresToast). */
+const CLE_RATTRAPAGE_EMAIL = 'perify_email_rattrapage_';
+const RATTRAPAGE_EMAIL_MS = 24 * 3600 * 1000;
+let rattrapageEmailVu = false;            // une seule évaluation par ouverture de la carte
+function doitRattraperEmail(c, actions, derniere, maintenant){
+  if(!c || !actions || actions.optin_email !== false) return false;   // déjà gagné, ou serveur muet là-dessus
+  const oi = String(c.email_opt_in || '').trim().toLowerCase();       // même lecture que render()
+  if(!(oi === 'on' || oi === 'oui' || oi === '1' || oi === 'true')) return false;
+  if(!(c.a_email === true || String(c.email || '').trim())) return false;   // l'adresse selon le SERVEUR, pas la trace locale
+  return !(derniere > 0 && maintenant - derniere < RATTRAPAGE_EMAIL_MS);
+}
+function rattraperTamponEmail(c, actions){
+  if(rattrapageEmailVu || DEMO || !cardId || !donneesFraiches) return;
+  rattrapageEmailVu = true;
+  let derniere = 0;
+  try{ derniere = Number(localStorage.getItem(CLE_RATTRAPAGE_EMAIL + cardId)) || 0; }catch(e){}
+  if(!doitRattraperEmail(c, actions, derniere, Date.now())) return;
+  BA.pret().then(function(com){
+    if(String(com && com.apps_script || '').indexOf('https://api.perify.app/') !== 0) return;
+    apresToast(function(){
+      /* 07/10/2026 (relecture adverse) — TOUT EST REVÉRIFIÉ ICI, au moment de l'appel : la décision a
+         été prise à l'ouverture, et l'attente du message du passage dure jusqu'à 3,5 s. Avant, seul le
+         bouton désactivé l'était : un client qui se désinscrivait pendant ce temps (« Supprimer » parti
+         avec les gestes différés, revenu du serveur) recevait quand même la demande de tampon — et
+         fid_action ne regarde pas l'accord, il l'aurait crédité. Donc on ne part pas si :
+           - le client a touché au bloc e-mail pendant cette ouverture (gesteEmail) : « Valider » demande
+             lui-même son tampon, « Supprimer » n'en appelle aucun ;
+           - un geste e-mail est en cours (bouton désactivé le temps de l'appel) ;
+           - la fiche À L'ÉCRAN ne dit plus « inscrit, tampon pas gagné » : désinscrit (accord « off »),
+             informations effacées (carteVue.client vidé par askForget), tampon gagné entre-temps.
+         Même règle qu'à l'ouverture (doitRattraperEmail), sans le délai de 24 h déjà jugé plus haut. */
+      const b = $('omBtn');
+      if(gesteEmail || (b && b.disabled) || !doitRattraperEmail(carteVue.client, actionsState, 0, Date.now())) return;
+      try{ localStorage.setItem(CLE_RATTRAPAGE_EMAIL + cardId, String(Date.now())); }catch(e){}
+      api('fid_action', { card_id: cardId, key: 'optin_email' }, 2).then(function(r){
+        if(r && r.status === 'ok' && r.points_delta > 0){
+          actionsState.optin_email = true;
+          applySolde(solde + r.points_delta); celebrerTampons(r.points_delta, solde);
+          toast('🎉 ' + tampon(r.points_delta) + ' pour ton e-mail, merci !');
+          applyActions(actionsState);
+        } else if(r && r.status === 'already'){ actionsState.optin_email = true; applyActions(actionsState); }
+        // autre réponse : rien à l'écran ; nouvelle tentative possible dans 24 h
+      }).catch(function(){});
+    });
+  }).catch(function(){});
+}
 
 function creditPassage(){
   api('fid_passage',{card_id:cardId, source:'scan'}).then(d=>{
@@ -2404,6 +2484,9 @@ else{
           lib:'Cadeau offert : '+d.anniv.libelle, code:d.anniv.code, note:'Montre ce code en caisse pour récupérer ton cadeau d\'anniversaire 🎂'});
       } else if(d.passage){ celebrerTampons(d.passage.points_delta, d.client.points_solde); toast('🎉 '+tampon(d.passage.points_delta)+' pour ton passage !'); }
       lancerGestesDifferes();        // ⚡ 13/09 — les gestes faits pendant l'attente, sur le vrai solde
+      /* 07/10/2026 — APRÈS les gestes différés (un « Valider » en attente passe d'abord), et sous
+         try/catch : une erreur ici tomberait dans le .catch() d'en bas, qui affiche l'écran d'erreur. */
+      try{ rattraperTamponEmail(d.client, d.actions); }catch(e){ console.warn('[carte] rattrapage e-mail', e); }
     }
     else if(d.code==='commerce_arrete'){ quandFraiches = []; montrerArret(d); }
     else if(d.status==='new'){ quandFraiches = []; cacheOublier(cardId); show('stateNew'); }
