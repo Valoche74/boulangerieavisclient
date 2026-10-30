@@ -7,7 +7,8 @@ Les pages que **le client** d'un commerce ouvre dans son téléphone (Perify, ca
   carte) → ajout de la carte au Wallet → écran « Scannez le QR code pour débloquer votre compte ».
 - `commerces.json` — **le registre des commerces**, servi en statique, lu par toutes les pages, le
   service Wallet et la nuit. Il est PRODUIT depuis la base du serveur : ne pas l'éditer à la main.
-- `valider.html`, `showroom.html`, `card-pulse.html`, `card-v3-maquette.html` : annexes et essais.
+- `valider.html`, `showroom.html`, `card-pulse.html`, `card-v3-maquette.html` : anciens annexes et essais,
+  gardés dans le dépôt mais **pas publiés** (`.vercelignore`, 30/10) — n'y faire aucun lien.
 
 HTML / CSS / JS simple, **sans framework ni build**. Hébergé sur Vercel (déploiement à chaque push
 sur `main`). Un seul commerce en production : Le Bap's. Le propriétaire, Valentin CARRILLO, n'est pas

@@ -1,0 +1,11 @@
+# Fichiers gardés dans le dépôt mais jamais publiés sur carte.perify.app (30/10).
+# Notes de travail : CLAUDE.md (consignes des sessions Claude), ACCESSIBILITE.md.
+*.md
+# Anciennes pages reliées à rien, qui chargeaient encore leur police chez Google (adresse IP du téléphone).
+# valider.html (13/05) appelait aussi un ancien déploiement Apps Script de Falman sans secret vendeur, et
+# affichait « Coupon valide ! » quand le serveur ne répondait pas : les cadeaux se valident au kiosque.
+# card-pulse.html reste ici : _outils/skin-pulse.mjs la refait et lancer-tous la vérifie.
+valider.html
+showroom.html
+card-pulse.html
+card-v3-maquette.html
