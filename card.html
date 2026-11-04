@@ -2,6 +2,98 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
+<script>
+/* 30/10/2026 — LE RELAIS VERS carte.perify.app (« que tout soit propre pour les prochains clients » : le client
+   ne doit plus voir que des adresses perify.app). MÊME bloc dans card.html et index.html, TOUT EN HAUT de la
+   page, avant tout le reste : _outils/tests/test-relais-adresse.mjs le vérifie.
+
+   LE PIÈGE : la mémoire du navigateur (localStorage) est PAR ADRESSE. Le numéro de carte d'un client (clé
+   « boostavis.card.<type> » : CARD_KEY de card.html, fidCardId d'index.html) est gardé sous
+   boulangerieavisclient.vercel.app. Envoyé tel quel sur carte.perify.app, son téléphone ne le reconnaît plus :
+   il retombe sur l'inscription et se crée une DEUXIÈME CARTE. Donc :
+
+   1. Sur l'ANCIENNE adresse (exactement boulangerieavisclient.vercel.app) : on repart aussitôt vers
+      https://carte.perify.app, même chemin, mêmes paramètres, même #ancre. Si l'adresse n'a pas de ?id= et que
+      ce téléphone garde une carte pour ce ?type= (la même clé que les pages), le numéro voyage avec, dans
+      ?carte_memoire=<numéro>. window.stop() AVANT de partir : le reste de la page ne tourne pas sur l'ancienne
+      adresse (sans lui, fid_open y partait aussi : le tampon du passage y était pris, et la carte ouverte sur
+      carte.perify.app n'aurait plus fêté le « +1 tampon »).
+      Juste avant de partir, les copies PERSONNELLES gardées sous l'ancienne adresse sont effacées (adresse e-mail
+      perify_email_donne_<carte>, dernière carte en cache perify_fid_cache_<carte>, trace
+      perify_email_rattrapage_<carte>) : plus aucune page ne tournera là-bas pour les effacer, et « Effacer mes
+      informations » n'agit plus que sur carte.perify.app (le défaut corrigé le 07/10, audit légal point 15, serait
+      revenu). Le numéro de carte (boostavis.card.<type>) n'est JAMAIS effacé : c'est lui qui voyage.
+   2. Sur toute autre adresse (carte.perify.app ; et localhost, file://, prévisualisations Vercel, où il n'y a
+      JAMAIS de relais, donc jamais de boucle) : ?carte_memoire= est retiré de l'adresse, et le numéro est RANGÉ
+      dans la mémoire de cette adresse, sous la même clé — seulement si elle est vide, et une seule fois par type
+      (marque « perify.relais.<clé> »). Ensuite la page lit sa mémoire comme avant : client connu → sa carte.
+
+   Pourquoi pas ?id=<numéro> : ?id= passe AVANT la mémoire. Une carte périmée (effacée du serveur) ne serait
+   plus jamais oubliée — card.html oublie la mémoire de carte.perify.app, pas celle de l'ancienne adresse, qui
+   la renverrait à chaque passage (« Carte non reconnue » pour toujours) ; et une carte faite depuis sur
+   carte.perify.app serait écrasée par l'ancienne. Rangé dans la mémoire, tout se passe EXACTEMENT comme avant,
+   oubli d'une carte inconnue compris.
+
+   Ce qui ne suit PAS le client (assumé, cf. journal) : l'adresse e-mail (jamais dans une adresse web) — un client
+   inscrit aux e-mails voit l'état « retrouver » de sa carte À CHAQUE ouverture, tant qu'il n'a pas ressaisi son
+   adresse ; le cache de la carte (la première ouverture sur carte.perify.app attend le serveur, une fois) ; la
+   fiche de secours du registre (perify_fiches_v1) ; l'interrupteur Google Wallet ?gw=0 (perify.gw).
+
+   Si quoi que ce soit échoue (mémoire bloquée, numéro d'une forme inattendue, adresse illisible), on RESTE sur
+   l'ancienne adresse, comme avant le 30/10 : jamais d'écran blanc, jamais de carte perdue.
+   ⚠️ RETOUR ARRIÈRE : retirer ce bloc n'est sans perte QUE tant que personne ne s'est inscrit sur carte.perify.app.
+   Dès qu'un client s'y inscrit, son numéro n'existe QUE dans la mémoire de carte.perify.app ; les portes menant à
+   l'ancienne adresse, il s'y referait une carte sans relais. Après la mise en ligne, on corrige donc en avançant ;
+   un vrai retour arrière demande un relais inverse (carte.perify.app → ancienne adresse, même ?carte_memoire=)
+   ou des portes tournées d'abord vers carte.perify.app. Les portes baps./falman.perify.app restent vers l'ancienne
+   adresse tant que Falman a de vrais clients — cf. MEMOIRE/JOURNAL-BUGS.md, 30/10/2026. */
+var PERIFY_RELAIS = (function(){
+  var ANCIENNE = 'boulangerieavisclient.vercel.app', NOUVELLE = 'https://carte.perify.app';
+  var PARAM = 'carte_memoire', FORME = /^[A-Za-z0-9][A-Za-z0-9_-]{0,63}$/;
+  var PERSO = /^perify_(email_donne|fid_cache|email_rattrapage)_/;   // les copies personnelles (cf. 1.) — jamais boostavis.card.*
+  var r = { parti: false, cible: '', range: '', efface: 0 };
+  try {
+    var q = new URLSearchParams(location.search);
+    var CLE = 'boostavis.card.' + (q.get('type') || 'boulangerie').toLowerCase();   // = CARD_KEY (card.html), fidCardId (index.html)
+    if (location.hostname === ANCIENNE) {
+      var ajout = '';
+      if (!(q.get('id') || '').trim() && !q.has(PARAM)) {
+        var id = String(localStorage.getItem(CLE) || '').trim();   // mémoire bloquée : lève, on reste
+        if (id && !FORME.test(id)) return r;                        // numéro d'une forme inattendue : on reste
+        if (id) ajout = PARAM + '=' + encodeURIComponent(id);
+      }
+      var s = location.search || '';
+      var cible = NOUVELLE + location.pathname + (ajout ? (s ? s + '&' : '?') + ajout : s) + location.hash;
+      if (new URL(cible).hostname !== 'carte.perify.app') return r;   // adresse illisible : on reste
+      r.cible = cible;
+      window.stop();               // AVANT location.replace : après, il annulerait le départ
+      try {   // APRÈS window.stop() (absent : on reste, copies comprises) ; à part : un échec n'empêche pas le départ
+        var perso = [];
+        for (var i = 0; i < localStorage.length; i++) { var k = String(localStorage.key(i) || ''); if (PERSO.test(k)) perso.push(k); }
+        for (var j = 0; j < perso.length; j++) { localStorage.removeItem(perso[j]); r.efface++; }
+      } catch (e) {}
+      location.replace(cible);     // replace : le bouton retour ne ramène pas ici
+      r.parti = true;
+      return r;
+    }
+    if (!q.has(PARAM)) return r;
+    var m = String(q.get(PARAM) || '').trim();
+    try {
+      /* L'adresse sans ?carte_memoire= ; les autres paramètres restent écrits tels quels. */
+      var reste = (location.search || '').replace(/^\?/, '').split('&').filter(function(x){
+        return x && decodeURIComponent(x.split('=')[0].replace(/\+/g, ' ')) !== PARAM;
+      }).join('&');
+      history.replaceState(history.state, '', location.pathname + (reste ? '?' + reste : '') + location.hash);
+    } catch (e) {}
+    var MARQUE = 'perify.relais.' + CLE;
+    if (FORME.test(m) && !localStorage.getItem(MARQUE)) {
+      if (!String(localStorage.getItem(CLE) || '').trim()) { localStorage.setItem(CLE, m); r.range = m; }
+      localStorage.setItem(MARQUE, '1');
+    }
+  } catch (e) {}
+  return r;
+})();
+</script>
 <!-- 24/09 (accessibilité, § 8 du rapport) — le zoom par pincement est autorisé : un client malvoyant doit pouvoir
      agrandir « Plus que 3 tampons » ou son code. Les champs de saisie font 16 px pour qu'iOS ne zoome pas tout seul. -->
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -64,6 +156,11 @@ var PERIFY_ADRESSE = (function(){
 <!-- ⚡ 24/09 (audit vitesse) — le serveur Perify est celui du commerce en production : même poignée de
      main anticipée que pour Google. -->
 <link rel="preconnect" href="https://api.perify.app" crossorigin>
+<!-- 30/10/2026 — sur carte.perify.app, le registre (BA, plus bas : REGISTRE) vient d'un AUTRE site, l'ancienne adresse :
+     sans cette ligne, une poignée de main de plus (DNS + TLS) sur le chemin de l'ouverture, à chaque fois. crossorigin :
+     le registre est lu sans cookies (XMLHttpRequest), donc par la connexion « anonyme ». À retirer le jour où le
+     registre est lu sur la même adresse que la page. -->
+<link rel="preconnect" href="https://boulangerieavisclient.vercel.app" crossorigin>
 <!-- 07/10/2026 (audit légal, point 10) — LES POLICES SONT SERVIES PAR CE SITE, plus par Google.
      Avant, chaque ouverture de carte faisait télécharger Inter et Plus Jakarta Sans chez Google
      (fonts.googleapis.com, fonts.gstatic.com) : le téléphone du client envoyait son adresse IP à Google,
@@ -905,7 +1002,12 @@ a:focus-visible,button:focus-visible{outline:3px solid var(--gold-ink);outline-o
    pouvait se déclencher que pour un commerce SANS serveur connu… et il l'envoyait alors chez Falman (ou chez
    Au Jardin de Rose) : exactement la fuite corrigée ce jour-là (cf. le registre, BA, plus bas). L'adresse du
    serveur vient du registre, et de lui seul ; le commerce historique garde son repli dans BA_REPLI. */
-const AVIS_URL   = 'https://boulangerieavisclient.vercel.app/';
+/* 30/10/2026 — RELATIF (avant : https://boulangerieavisclient.vercel.app/). Le lien « Commencer → » vers
+   l'inscription reste sur l'adresse de la page : sur carte.perify.app il n'affiche plus l'ancienne adresse (aller-retour
+   par le relais), et le relais pourra être retiré un jour sans qu'une inscription lancée depuis la carte se range
+   sous l'ancienne adresse (où la porte ne la retrouverait pas → deuxième carte). Marche aussi en prévisualisation et
+   en local. card.html et index.html sont dans le même dossier. */
+const AVIS_URL   = './';
 /* 🗑️ 12/09 — INSTA_URL / FB_URL / TRUST_URL SUPPRIMÉES.
    Elles contenaient les comptes de deux boulangeries parisiennes et l'accueil de
    Trustpilot, servis à tous les commerces. Les laisser en place, même inutilisées,
@@ -2154,7 +2256,7 @@ function montrerEtatEmail(etat, motif){
     n.classList.remove('bad');
     n.textContent = motif ? motif
       : fige   ? 'Tu peux la supprimer quand tu veux : tu ne recevras plus nos offres.'
-      : (abonne && !String(champ.value || '').trim()) ? 'Ton adresse est bien enregistrée, mais pas sur ce téléphone. Saisis-la pour la retrouver ici.'
+      : (abonne && !String(champ.value || '').trim()) ? 'Ton adresse est bien enregistrée. Saisis-la pour la retrouver ici.'
       : MENTION_EMAIL;
   }
 }
