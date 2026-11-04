@@ -97,7 +97,8 @@ var PERIFY_RELAIS = (function(){
 <!-- 24/09 (accessibilité, § 8 du rapport) — le zoom par pincement est autorisé : un client malvoyant doit pouvoir
      agrandir « Plus que 3 tampons » ou son code. Les champs de saisie font 16 px pour qu'iOS ne zoome pas tout seul. -->
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="theme-color" content="#3a7a1e">
+<!-- 04/11/2026 (D1) — la barre du navigateur prend le fond clair de la page (avant : #3a7a1e, le vert de Falman). -->
+<meta name="theme-color" content="#F2F2F7">
 <meta name="color-scheme" content="light">
 <title>Falman Emmanuelle et Flavien</title>
 <script>
@@ -139,6 +140,7 @@ var PERIFY_ADRESSE = (function(){
   return a;
 })();
 </script>
+<script>/* 04/11/2026 — D1 « APP NATIVE ÉPURÉE » (choix de Valentin du 30/10) : LA COULEUR DU COMMERCE, POSÉE AVANT LE PREMIER RENDU. MÊME bloc dans card.html et index.html (_outils/tests/d1/test-d1-habillage.mjs le vérifie et mesure les contrastes). Sept jetons par métier, rien d'autre ; 'perify' = :root. Clé (corrigée à la relecture du 04/11 : le COMMERCE désigné passe avant le métier, comme dans le registre) : un commerce encore chez Google (?c= ou préfixe de carte, listes PERIFY_ADRESSE.google) → le métier qui lui répond (falman, FAL-… → 'boulangerie' ; jardin-de-rose, JDR-… → 'fleuriste') ; un AUTRE commerce → son ?type= s'il est connu et n'est pas un métier Google, 'perify' sinon (?c=baps&type=boulangerie, la redirection d'une inscription sans &type=, ou une future boulangerie Perify ?c=dupont&type=boulangerie : jamais le vert de Falman, qui est SA couleur, chez un autre) ; sans commerce désigné : ?type= connu → son entrée, ?type= inconnu → 'perify', rien → 'boulangerie' (Falman, défaut du registre). Seule l'APPARENCE en dépend : lots, catalogue, nom et serveur ne changent pas. */ var PERIFY_HABILLAGE = (function(){ var HABILLAGES = { perify:{marque:'#FF6B2C',surMarque:'#1B1F3B',marqueClair:'#FFEDE4',marqueEncre:'#C2410C',marqueProfond:'#1B1F3B',surProfond:'#FFFFFF',profondLibelle:'#FF6B2C',bandeau:''}, boulangerie:{marque:'#3A7A1E',surMarque:'#FFFFFF',marqueClair:'#EBF2E9',marqueEncre:'#3A7A1E',marqueProfond:'#3E7A1A',surProfond:'#FFFFFF',profondLibelle:'#FBEECF',bandeau:'assets/boulangerie/bandeau.webp'}, baps:{marque:'#A04E27',surMarque:'#FFFFFF',marqueClair:'#F6EAE3',marqueEncre:'#A04E27',marqueProfond:'#581816',surProfond:'#FFFFFF',profondLibelle:'#F3B068',bandeau:'assets/baps/bandeau.webp'}, fleuriste:{marque:'#BC5185',surMarque:'#FFFFFF',marqueClair:'#F8EEF3',marqueEncre:'#AD4B7A',marqueProfond:'#6E1A44',surProfond:'#FFFFFF',profondLibelle:'#F4B6D2',bandeau:''}, pizzeria:{marque:'#C8442E',surMarque:'#FFFFFF',marqueClair:'#FAECEA',marqueEncre:'#C0412C',marqueProfond:'#702014',surProfond:'#FFFFFF',profondLibelle:'#F2A07E',bandeau:''}, vape:{marque:'#6D5AE0',surMarque:'#FFFFFF',marqueClair:'#F0EFFC',marqueEncre:'#6B58DC',marqueProfond:'#2C2366',surProfond:'#FFFFFF',profondLibelle:'#B6ABFF',bandeau:''}, restaurant:{marque:'#9A3F4C',surMarque:'#FFFFFF',marqueClair:'#F5ECED',marqueEncre:'#9A3F4C',marqueProfond:'#4E1C23',surProfond:'#FFFFFF',profondLibelle:'#D78F99',bandeau:''}, primeur:{marque:'#E0892E',surMarque:'#1B1F3B',marqueClair:'#FCF3EA',marqueEncre:'#9D6020',marqueProfond:'#703E0C',surProfond:'#FFFFFF',profondLibelle:'#F8C87C',bandeau:''} }; var JETONS = {marque:'--marque',surMarque:'--sur-marque',marqueClair:'--marque-clair',marqueEncre:'--marque-encre',marqueProfond:'--marque-profond',surProfond:'--sur-profond',profondLibelle:'--profond-libelle'}; var cle = 'perify'; try { var A = (typeof PERIFY_ADRESSE !== 'undefined' && PERIFY_ADRESSE) || { metier: '', sorte: 'historique' }; var G = A.google || { cles: [], metiers: [], prefixes: [] }; var t = A.metier || ''; var connu = function(m){ return Object.prototype.hasOwnProperty.call(HABILLAGES, m); }; var iC = A.cle ? G.cles.indexOf(A.cle) : -1, iP = (!A.cle && !t && A.prefixe) ? G.prefixes.indexOf(A.prefixe) : -1; if (iC >= 0) cle = G.metiers[iC]; else if (A.sorte === 'autre') cle = (t && connu(t) && G.metiers.indexOf(t) < 0) ? t : 'perify'; else if (t) cle = connu(t) ? t : 'perify'; else if (iP >= 0) cle = G.metiers[iP]; else cle = 'boulangerie'; if (!connu(cle)) cle = 'perify'; var h = HABILLAGES[cle], r = document.documentElement; for (var k in JETONS) r.style.setProperty(JETONS[k], h[k]); r.setAttribute('data-habillage', cle); } catch (e) {} return { cle: cle, couleurs: HABILLAGES[cle] }; })();</script>
 <link rel="preconnect" href="https://api.perify.app" crossorigin>
 <!-- 30/10/2026 — sur carte.perify.app, le registre (BA, plus bas : REGISTRE) vient d'un AUTRE site, l'ancienne adresse :
      sans cette ligne, une poignée de main de plus (DNS + TLS) sur le chemin de l'ouverture, à chaque fois. crossorigin :
@@ -154,9 +156,10 @@ var PERIFY_ADRESSE = (function(){
      graisses (Plus Jakarta Sans 700/800, Inter 400/500/600/700/800), mêmes plages de caractères, même
      font-display:swap. Même aspect, aucune requête vers Google.
      Vitesse (24/09) : rien de bloquant — les règles sont dans la page (aucune feuille à attendre) et les deux
-     fichiers « latin » (tout le français) sont préchargés : ils arrivent plus tôt qu'avant, depuis le même site. -->
+     fichiers « latin » (tout le français) sont préchargés : ils arrivent plus tôt qu'avant, depuis le même site.
+     04/11/2026 (D1, « Inter seule ») — Plus Jakarta Sans n'est plus utilisée : ses 8 règles et son préchargement
+     sont retirés (une police de moins à charger) ; ses fichiers et OFL.txt restent dans assets/polices/. -->
 <link rel="preload" as="font" type="font/woff2" href="assets/polices/inter-v20-latin.woff2" crossorigin>
-<link rel="preload" as="font" type="font/woff2" href="assets/polices/plus-jakarta-sans-v12-latin.woff2" crossorigin>
 <style id="polices">
 @font-face{font-family:'Inter';font-style:normal;font-weight:400;font-display:swap;src:url(assets/polices/inter-v20-cyrillic-ext.woff2) format('woff2');unicode-range:U+0460-052F,U+1C80-1C8A,U+20B4,U+2DE0-2DFF,U+A640-A69F,U+FE2E-FE2F}
 @font-face{font-family:'Inter';font-style:normal;font-weight:400;font-display:swap;src:url(assets/polices/inter-v20-cyrillic.woff2) format('woff2');unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116}
@@ -193,527 +196,475 @@ var PERIFY_ADRESSE = (function(){
 @font-face{font-family:'Inter';font-style:normal;font-weight:800;font-display:swap;src:url(assets/polices/inter-v20-vietnamese.woff2) format('woff2');unicode-range:U+0102-0103,U+0110-0111,U+0128-0129,U+0168-0169,U+01A0-01A1,U+01AF-01B0,U+0300-0301,U+0303-0304,U+0308-0309,U+0323,U+0329,U+1EA0-1EF9,U+20AB}
 @font-face{font-family:'Inter';font-style:normal;font-weight:800;font-display:swap;src:url(assets/polices/inter-v20-latin-ext.woff2) format('woff2');unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C4,U+2113,U+2C60-2C7F,U+A720-A7FF}
 @font-face{font-family:'Inter';font-style:normal;font-weight:800;font-display:swap;src:url(assets/polices/inter-v20-latin.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
-@font-face{font-family:'Plus Jakarta Sans';font-style:normal;font-weight:700;font-display:swap;src:url(assets/polices/plus-jakarta-sans-v12-cyrillic-ext.woff2) format('woff2');unicode-range:U+0460-052F,U+1C80-1C8A,U+20B4,U+2DE0-2DFF,U+A640-A69F,U+FE2E-FE2F}
-@font-face{font-family:'Plus Jakarta Sans';font-style:normal;font-weight:700;font-display:swap;src:url(assets/polices/plus-jakarta-sans-v12-vietnamese.woff2) format('woff2');unicode-range:U+0102-0103,U+0110-0111,U+0128-0129,U+0168-0169,U+01A0-01A1,U+01AF-01B0,U+0300-0301,U+0303-0304,U+0308-0309,U+0323,U+0329,U+1EA0-1EF9,U+20AB}
-@font-face{font-family:'Plus Jakarta Sans';font-style:normal;font-weight:700;font-display:swap;src:url(assets/polices/plus-jakarta-sans-v12-latin-ext.woff2) format('woff2');unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C4,U+2113,U+2C60-2C7F,U+A720-A7FF}
-@font-face{font-family:'Plus Jakarta Sans';font-style:normal;font-weight:700;font-display:swap;src:url(assets/polices/plus-jakarta-sans-v12-latin.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
-@font-face{font-family:'Plus Jakarta Sans';font-style:normal;font-weight:800;font-display:swap;src:url(assets/polices/plus-jakarta-sans-v12-cyrillic-ext.woff2) format('woff2');unicode-range:U+0460-052F,U+1C80-1C8A,U+20B4,U+2DE0-2DFF,U+A640-A69F,U+FE2E-FE2F}
-@font-face{font-family:'Plus Jakarta Sans';font-style:normal;font-weight:800;font-display:swap;src:url(assets/polices/plus-jakarta-sans-v12-vietnamese.woff2) format('woff2');unicode-range:U+0102-0103,U+0110-0111,U+0128-0129,U+0168-0169,U+01A0-01A1,U+01AF-01B0,U+0300-0301,U+0303-0304,U+0308-0309,U+0323,U+0329,U+1EA0-1EF9,U+20AB}
-@font-face{font-family:'Plus Jakarta Sans';font-style:normal;font-weight:800;font-display:swap;src:url(assets/polices/plus-jakarta-sans-v12-latin-ext.woff2) format('woff2');unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C4,U+2113,U+2C60-2C7F,U+A720-A7FF}
-@font-face{font-family:'Plus Jakarta Sans';font-style:normal;font-weight:800;font-display:swap;src:url(assets/polices/plus-jakarta-sans-v12-latin.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
 </style>
 <style>
+/* D1-JETONS:debut — 04/11/2026, direction D1 du 30/10, MÊME bloc dans card.html et index.html (_outils/tests/d1/test-d1-habillage.mjs) */
+:root{--fond:#F2F2F7;--surface:#FFFFFF;--encre:#16171D;--encre-2:#5C5F6A;--trait:#E4E4EA;--bord-champ:#868893;--succes:#1A7F37;--succes-clair:#EDF7EF;--danger:#B42318;--danger-clair:#FDECEA;--ombre-pass:0 1px 2px rgb(22 23 29 / .10),0 14px 34px rgb(22 23 29 / .16);--ombre-douce:0 1px 2px rgb(22 23 29 / .06);--police:'Inter',-apple-system,'Segoe UI',system-ui,sans-serif;--t-16:16px;--t-17:17px;--t-20:20px;--t-22:22px;--t-28:28px;--t-34:34px;--t-52:52px;--e-1:4px;--e-2:8px;--e-3:12px;--e-4:16px;--e-5:24px;--e-6:32px;--e-7:48px;--r-surface:20px;--r-controle:14px;--r-vignette:12px;--r-pilule:999px;--h-bouton:56px;--h-cible:48px;--marque:#FF6B2C;--sur-marque:#1B1F3B;--marque-clair:#FFEDE4;--marque-encre:#C2410C;--marque-profond:#1B1F3B;--sur-profond:#FFFFFF;--profond-libelle:#FF6B2C} html,body{overflow-x:hidden;overflow-x:clip}
+/* D1-JETONS:fin */
+
+/* ════════════════════════════════════════════════════════════════════════════════════════════════════
+   04/11/2026 — DIRECTION D1 « APP NATIVE ÉPURÉE, AVEC UNE TOUCHE DES COULEURS DU COMMERCE » (choix de Valentin
+   du 30/10 ; maquettes : IMAGE/livraisons/2026-10-30-refonte-site-client/D1-natif-epure/). Elle REMPLACE la
+   direction nuit du 23/09 (fond #1B1F3B, halos, grain, Plus Jakarta Sans, dégradés orange, jaune).
+   Fond gris clair, surfaces blanches, Inter seule (servie par le site), rien sous 16 px, cibles de 48 px au
+   moins, plat (plus d'ombres dorées). La couleur du commerce ne vit que dans les 7 jetons --marque… posés par
+   PERIFY_HABILLAGE (en tête de page) : bouton principal, jante et teinte de la roue, aperçu de son pass.
+   Règles mesurées : --marque est un REMPLISSAGE (toujours avec --sur-marque dessus) ; la marque EN TEXTE ou en
+   trait sur du blanc, c'est --marque-encre (≥ 4,5:1 partout). Grilles en minmax(0,1fr), jamais une colonne
+   « auto » ou « 1fr » seule : Safari iPhone zoome toute la page sinon (règle du 29/10).
+   ════════════════════════════════════════════════════════════════════════════════════════════════════ */
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-:root{
-  /* 🎨 23/09 — direction B « vitaminé » (son choix) : nuit, orange, orange foncé, jaune ; Plus Jakarta Sans + Inter. */
-  --cream:#FFF8F0;--cream3:#FFFFFF;
-  --gold:#FF6B2C;--gold2:#E85A1B;--gold3:#FFC53D;--gold-ink:#C2410C;
-  --gold-border:rgba(255,107,44,.35);
-  --ink:#1B1F3B;--muted:#5B5F7A;--muted2:#6B7086;
-  --green-dk:#15803D;
-  /* ⚠️ 11/09 — le fond était écrit EN DUR en sept endroits : l'écran d'accueil
-     restait vert boulangerie chez tous les commerces, alors que la carte, elle, se
-     re-colorait déjà. Passé en variables pour qu'un commerce puisse l'habiller
-     (cf. le bloc « habillage par commerce » plus bas). Valeurs boulangerie inchangées. */
-  --bg:#1B1F3B;
-  --bg-a:rgba(255,107,44,.30);
-  --bg-b:rgba(0,0,0,.45);
-  --bg-c:rgba(255,197,61,.12);
-  --bg-d:rgba(255,107,44,.10);
-}
-html{background:var(--bg);min-height:100%}
-body{
-  font-family:'Inter',sans-serif;-webkit-font-smoothing:antialiased;
-  background:var(--bg);min-height:100vh;
-  overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;
-}
-body::before{
-  content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
-  background:
-    radial-gradient(ellipse 70% 55% at 22% 28%,var(--bg-a) 0%,transparent 58%),
-    radial-gradient(ellipse 50% 65% at 82% 72%,var(--bg-b) 0%,transparent 52%),
-    radial-gradient(ellipse 75% 38% at 50% 88%,var(--bg-c) 0%,transparent 58%),
-    radial-gradient(ellipse 55% 55% at 12% 78%,var(--bg-d) 0%,transparent 48%);
-}
-body::after{
-  content:'';position:fixed;inset:0;z-index:1;pointer-events:none;opacity:.52;
-  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='280' height='280'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.78' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='280' height='280' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
-  background-size:160px 160px;
-}
-
+html{background:var(--fond);-webkit-text-size-adjust:100%;text-size-adjust:100%}
+body{font:400 17px/1.45 var(--police);color:var(--encre);background:var(--fond);min-height:100vh;min-height:100svh;-webkit-font-smoothing:antialiased}
+img{display:block;max-width:100%}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer}
+ul,ol{list-style:none}
+/* ♿ Focus clavier : un contour d'encre, visible sur le fond comme sur les surfaces et la couleur du commerce
+   (avant : jaune sur nuit). L'écran qui reçoit le focus (showScreen) n'a pas de contour. */
+:focus-visible{outline:3px solid var(--encre);outline-offset:3px}
+.screen-inner:focus{outline:none}
 .screen{display:none}.screen.active{display:block}
-.screen-inner{
-  min-height:100vh;display:flex;flex-direction:column;
-  align-items:center;justify-content:center;
-  padding:32px 20px 56px;position:relative;z-index:2;
-}
 
-/* ══════════════════════════════════
-   S1 — ACCUEIL (inchangé)
-══════════════════════════════════ */
-.s1-wrap{width:100%;max-width:380px;display:flex;flex-direction:column;align-items:center}
-/* Logo de marque, en tête d'écran — c'est l'emplacement où viendra celui du
-   commerçant. Le fichier est blanc sur transparent : sur ce fond vert il se pose
-   tel quel, sans filtre. L'ombre portée le décolle du dégradé. */
-.marque{display:block;height:62px;width:auto;max-width:78%;margin:0 auto 18px;
-  filter:drop-shadow(0 3px 14px rgba(0,0,0,.38));user-select:none}
-@media(max-height:700px){.marque{height:50px;margin-bottom:12px}}
+/* ── La colonne d'un écran : 430 px au plus, gouttière de 16 px, le bas (« Propulsé par ») poussé en bas ── */
+.ecran{width:100%;max-width:430px;min-height:100vh;min-height:100svh;margin:0 auto;padding:0 var(--e-4) var(--e-5);display:flex;flex-direction:column}
+.ecran > *{min-width:0}
+.pousse{margin-top:auto}
+.centre{text-align:center}
+.mt-2{margin-top:var(--e-2)}.mt-3{margin-top:var(--e-3)}.mt-4{margin-top:var(--e-4)}.mt-5{margin-top:var(--e-5)}.mt-6{margin-top:var(--e-6)}
 
-.viewer-block{position:relative;width:100%;max-width:320px;margin:0 auto 0;display:flex;flex-direction:column;align-items:center}
-.viewer-glow{position:absolute;width:260px;height:200px;top:50%;left:50%;transform:translate(-50%,-52%);border-radius:50%;background:radial-gradient(circle,rgba(226,178,90,.32) 0%,transparent 68%);pointer-events:none;animation:glowPulse 3.5s ease-in-out infinite}
-@keyframes glowPulse{0%,100%{opacity:.5;transform:translate(-50%,-52%) scale(1)}50%{opacity:1;transform:translate(-50%,-52%) scale(1.12)}}
-.croissant-fallback{display:block;font-size:110px;line-height:1;animation:float3d 4s ease-in-out infinite;filter:drop-shadow(0 16px 32px rgba(0,0,0,.3));user-select:none}
-@keyframes float3d{0%,100%{transform:translateY(0) rotate(-3deg)}25%{transform:translateY(-9px) rotate(0deg)}50%{transform:translateY(-13px) rotate(3deg)}75%{transform:translateY(-5px) rotate(1deg)}}
-/* (24/09 — le canvas 3D, son « Chargement… » et .croissant-fallback.show ont été retirés : l'aperçu 3D est
-   mort depuis le 08/09, le repli est TOUJOURS ce qu'on voit — il s'affiche maintenant dès le premier rendu) */
-.viewer-name{margin-top:6px;font-family:'Plus Jakarta Sans',sans-serif;font-size:17px;font-weight:800;font-style:normal;color:var(--cream);text-shadow:0 2px 14px rgba(0,0,0,.4);text-align:center;line-height:1.2;letter-spacing:.02em}
-.s1-stars{display:flex;gap:4px;justify-content:center;margin:16px 0 20px}
-.s1-star{font-size:20px;opacity:0;transform:translateY(5px) scale(.75);animation:starIn .4s ease forwards}
-.s1-star:nth-child(1){animation-delay:.12s}.s1-star:nth-child(2){animation-delay:.22s}.s1-star:nth-child(3){animation-delay:.32s}.s1-star:nth-child(4){animation-delay:.42s}.s1-star:nth-child(5){animation-delay:.52s}
-@keyframes starIn{to{opacity:1;transform:none}}
-.s1-card{width:100%;background:rgba(255,255,255,.97);border-radius:26px;overflow:hidden;box-shadow:0 20px 56px rgba(0,0,0,.38),0 0 0 1px rgba(200,150,62,.18) inset}
-.s1-card-top{padding:24px 22px 18px;background:linear-gradient(180deg,rgba(200,150,62,.07) 0%,transparent 100%);border-bottom:1px solid var(--gold-border);text-align:center}
-.s1-heading{font-family:'Plus Jakarta Sans',sans-serif;font-size:23px;font-weight:800;color:var(--ink);line-height:1.2;letter-spacing:-.01em;margin-bottom:7px}
-.s1-heading .accent{color:var(--gold-ink)}
-.s1-subtext{font-size:13px;color:var(--muted);line-height:1.65}
-.s1-card-bottom{padding:18px 22px 22px;display:flex;flex-direction:column;gap:10px}
-.btn-google{display:flex;align-items:center;justify-content:center;gap:9px;width:100%;padding:15px 18px;background:linear-gradient(135deg,var(--gold) 0%,var(--gold2) 100%);color:#fff;border:none;border-radius:15px;font-family:'Inter',sans-serif;font-size:15px;font-weight:700;cursor:pointer;text-decoration:none;text-align:center;box-shadow:0 6px 22px rgba(200,150,62,.48),0 2px 6px rgba(0,0,0,.14);transition:transform .15s ease;position:relative;overflow:hidden;letter-spacing:.01em}
-.btn-google:active{transform:scale(.97)}
-.s1-optional{display:flex;align-items:flex-start;gap:8px;background:rgba(200,150,62,.05);border:1px solid rgba(200,150,62,.15);border-radius:11px;padding:10px 13px}
-.s1-optional-icon{font-size:13px;flex-shrink:0;margin-top:1px}
-.s1-optional-text{font-size:12px;color:var(--muted);line-height:1.55}
-.s1-skip{text-align:center;font-size:12px;color:rgba(245,237,216,.45);margin-top:13px;cursor:pointer;text-decoration:underline;text-underline-offset:3px;opacity:0;visibility:hidden;pointer-events:none;transform:translateY(6px);transition:opacity .35s ease,visibility .35s ease,transform .35s ease,color .2s ease}
-.s1-skip.show{opacity:1;visibility:visible;pointer-events:auto;transform:translateY(0)}
-.s1-skip:hover{color:rgba(245,237,216,.8)}
-.s1-unlock{display:none;align-items:center;justify-content:center;gap:8px;padding:10px 16px;background:rgba(61,122,24,.14);border:1px solid rgba(100,180,40,.32);border-radius:11px;font-size:13px;color:#7ecb40;font-weight:600}
-.s1-unlock.show{display:flex;animation:fadeUp .4s ease}
-.s1-unlock-dot{width:7px;height:7px;border-radius:50%;background:#7ecb40;animation:pulse2 1.5s ease-in-out infinite}
-@keyframes pulse2{0%,100%{opacity:1}50%{opacity:.3}}
-@keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+/* ── La barre du commerce (logo ou monogramme, et son nom) en tête de chaque écran sauf l'accueil ── */
+.barre{display:flex;align-items:center;justify-content:center;gap:var(--e-2);min-height:60px;font-weight:600;font-size:var(--t-17);line-height:1.25;text-align:center}
+.barre [data-barre-logo]{display:flex;flex:none}
+.barre [data-barre-logo]:empty{display:none}
+.barre img{width:34px;height:34px;object-fit:contain}
+/* Monogramme : l'initiale du commerce quand il n'a pas de logo (jamais un emoji) */
+.monogramme{display:grid;grid-template-columns:minmax(0,1fr);place-items:center;width:34px;height:34px;border-radius:10px;background:var(--marque);color:var(--sur-marque);font-weight:800;font-size:var(--t-17);line-height:1}
 
-/* ══════════════════════════════════
-   S2 — ROUE DE LA CHANCE
-══════════════════════════════════ */
-.s2-wrap{width:100%;max-width:400px;display:flex;flex-direction:column;align-items:center}
-/* 23/09 — écran refait « à la TheGiftsClub » (demande de Valentin : « un truc plus similaire ») :
-   titre « Bienvenue sur la… » cerclé à la main, roue plate à deux tons de la couleur du commerce,
-   ampoules blanches sur la jante, anneau pointillé avec le logo du commerce en haut, bouton
-   « Lancer » en goutte au centre (c'est sa pointe qui désigne le lot), trois étapes sous la roue.
-   Mécanique inchangée : lots et seuils (PRIZES), une roue par carte, visuels réels des produits. */
-.s2-header{text-align:center;margin-bottom:8px}
-.s2-bienvenue{font-family:'Plus Jakarta Sans',sans-serif;font-size:22px;font-weight:800;letter-spacing:-.01em;color:var(--cream);line-height:1.15}
-.s2-titre{position:relative;display:inline-block;padding:6px 18px 8px;margin-top:2px;color:var(--gold3)}
-.s2-titre-txt{position:relative;z-index:1;font-family:'Plus Jakarta Sans',sans-serif;font-size:clamp(20px,6.2vw,25px);font-weight:800;letter-spacing:-.01em;line-height:1.15;white-space:nowrap}
-.s2-ellipse{position:absolute;left:-6px;top:-2px;width:calc(100% + 12px);height:calc(100% + 4px);overflow:visible;transform:rotate(-2deg)}
-.s2-croix{position:absolute;right:-2px;bottom:-15px;font-size:13px;font-weight:700;letter-spacing:.18em;opacity:.9}
-.s2-sub{font-size:13.5px;color:rgba(245,237,216,.78);margin-top:16px;line-height:1.55}
-.s2-sub b{font-weight:700;color:var(--gold3)}
+/* ── Textes : rien sous 16 px, plus de capitales espacées ── */
+.titre{font-weight:700;font-size:var(--t-28);line-height:1.15;letter-spacing:-.02em;text-wrap:balance;overflow-wrap:break-word}
+.titre-carte{font-weight:700;font-size:var(--t-20);line-height:1.3;letter-spacing:-.01em;text-wrap:pretty}
+.titre-section{font-weight:700;font-size:var(--t-22);line-height:1.2;letter-spacing:-.01em;margin:var(--e-6) var(--e-1) var(--e-3)}
+.chapo{color:var(--encre-2);font-size:var(--t-17)}
+.chapo b,.note b{color:var(--encre);font-weight:600}
+.note{color:var(--encre-2);font-size:var(--t-16);line-height:1.45}
+.titre-section + .note{margin:calc(-1 * var(--e-1)) var(--e-1) 0}
+.etiquette{font-weight:600;font-size:var(--t-17);margin:0 var(--e-1) var(--e-2)}
 
-/* ── Scène ── */
-.wheel-scene{
-  position:relative;width:min(80vw,300px);height:min(80vw,300px);
-  margin:46px auto 0;display:grid;place-items:center;
-}
-/* Le logo du commerce, sur une pastille posée en haut de la roue. Au lancement (sa demande du
-   23/09), la pastille GLISSE jusqu'au centre du bouton et y reste, à la place du mot « Lancer ». */
-.wheel-logo{
-  position:absolute;z-index:6;top:-17%;left:50%;transform:translateX(-50%);
-  width:64px;height:64px;border-radius:50%;background:#fff;
-  box-shadow:0 6px 18px rgba(0,0,0,.22);display:grid;place-items:center;
-  font-size:30px;line-height:1;overflow:hidden;pointer-events:none;
-  transition:top .62s cubic-bezier(.34,1.35,.5,1),transform .62s cubic-bezier(.34,1.35,.5,1);
-}
-.wheel-logo.au-centre{top:50%;transform:translate(-50%,-50%) scale(.9)}
-.wheel-logo img{width:88%;height:88%;object-fit:contain;display:block}
-@media (prefers-reduced-motion:reduce){.wheel-logo{transition:none}}
+/* ── Boutons ── */
+.bouton{display:flex;align-items:center;justify-content:center;gap:var(--e-2);width:100%;min-height:var(--h-bouton);padding:var(--e-2) var(--e-5);border:0;border-radius:var(--r-controle);background:var(--marque);color:var(--sur-marque);font-weight:600;font-size:var(--t-17);line-height:1.25;text-align:center;text-decoration:none;cursor:pointer;transition:transform 120ms ease-out,filter 120ms ease-out}
+.bouton:hover{filter:brightness(.96)}
+.bouton:active{transform:scale(.98)}
+/* Grisé : jamais la seule opacité (encre-2 sur trait : 5,03:1) */
+.bouton:disabled,.bouton[aria-disabled="true"]{background:var(--trait);color:var(--encre-2);cursor:default;filter:none;transform:none}
+.bouton.secondaire{background:var(--surface);color:var(--encre);box-shadow:inset 0 0 0 1px var(--bord-champ)}
+.bouton-texte{display:flex;align-items:center;justify-content:center;width:100%;min-height:var(--h-cible);padding:0 var(--e-3);border:0;background:none;color:var(--marque-encre);font-weight:600;font-size:var(--t-17);line-height:1.25;text-align:center;text-decoration:none;cursor:pointer}
+.bouton-texte.discret{color:var(--encre-2);font-weight:500;text-decoration:underline;text-underline-offset:3px}
 
-.wheel-svg{
-  position:relative;z-index:2;width:100%;height:100%;display:block;
-  transform:rotate(0deg);transform-origin:50% 50%;
-  filter:drop-shadow(0 14px 30px rgba(0,0,0,.30));
-  will-change:transform;
-}
+/* ── Surfaces, listes groupées, vignettes, pictogrammes ── */
+.surface{background:var(--surface);border-radius:var(--r-surface);padding:var(--e-5) var(--e-4)}
+.liste{background:var(--surface);border-radius:var(--r-surface);overflow:hidden}
+.rangee{display:grid;grid-template-columns:48px minmax(0,1fr) max-content;align-items:center;gap:var(--e-3);min-height:60px;padding:var(--e-3) var(--e-4)}
+.rangee + .rangee{box-shadow:inset 0 1px 0 var(--trait)}
+.etapes .rangee{grid-template-columns:34px minmax(0,1fr)}
+.num{display:grid;grid-template-columns:minmax(0,1fr);place-items:center;width:34px;height:34px;border-radius:50%;background:var(--marque-clair);color:var(--marque-encre);font-weight:700;font-size:var(--t-17)}
+/* 04/11/2026 — la vignette d'un lot : sa photo ENTIÈRE, ou le pictogramme cadeau (jamais un emoji).
+   ⚠️ La canette coupée de la maquette : display:grid + img{height:100%} agrandissait l'image au-delà de sa
+   boîte (même piège que card.html le 11/09). En flex, avec max-width/max-height et object-fit:contain, la photo
+   tient toujours entière dans sa boîte, quelle que soit sa forme (boisson.png : 169 × 300). */
+.vignette{display:flex;align-items:center;justify-content:center;flex:none;width:48px;height:48px;border-radius:var(--r-vignette);background:var(--marque-clair);color:var(--marque-encre);overflow:hidden}
+.vignette img{max-width:100%;max-height:100%;width:auto;height:auto;object-fit:contain}
+.vignette.photo{background:none}
+.vignette .picto{width:52%;height:52%}
+.picto,.icone{display:block;flex:none}
+.icone{width:22px;height:22px}
 
-/* L'ancien pointeur du haut : c'est le bouton-goutte qui pointe désormais le lot */
+/* ══ 1. ACCUEIL — l'avis Google ══════════════════════════════════════════════════════════════════ */
+/* Le commerce d'abord : son logo seul (il porte son nom ; le nom reste lu par les lecteurs d'écran), ou, sans
+   logo, son monogramme puis son nom. Masqué tant que poserIdentite() n'a pas choisi : jamais le nom écrit dans
+   le HTML (Falman) affiché un instant chez un autre commerce. */
+.identite{display:grid;grid-template-columns:minmax(0,1fr);justify-items:center;gap:var(--e-3);padding-top:var(--e-6);text-align:center}
+.identite:not(.prete){visibility:hidden}
+#identiteVisuel{display:flex}
+#identiteVisuel:empty{display:none}
+#identiteVisuel img{width:96px;height:96px;object-fit:contain}
+#identiteVisuel .monogramme{width:80px;height:80px;border-radius:22px;font-size:var(--t-34)}
+.viewer-name{font-weight:600;font-size:var(--t-20);line-height:1.25;overflow-wrap:break-word}
+.identite.avec-logo .viewer-name{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0,0,0,0);clip-path:inset(50%);white-space:nowrap;border:0}
+.a-gagner{margin-top:var(--e-6)}
+.a-gagner[hidden]{display:none}
+.lots{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--e-2)}
+.lots li{display:flex;flex-direction:column;align-items:center;gap:var(--e-2);min-width:0;padding:var(--e-3) var(--e-2);background:var(--surface);border-radius:var(--r-controle);font-weight:600;font-size:var(--t-16);line-height:1.25;text-align:center;overflow-wrap:break-word;-webkit-hyphens:auto;hyphens:auto}
+.lots .vignette{width:80px;height:80px}
+.lots li > span:last-child{max-width:100%}
+/* « Merci — votre avis est précieux ! » (openGoogle) : l'état confirmé, lisible (plus l'opacité .6 posée par le
+   script) ; le bouton GRISÉ d'un commerce sans fiche Google (griserAvisSiBesoin, 29/10) garde le gris de
+   .bouton[aria-disabled], lisible lui aussi (5,03:1). Les styles en ligne des scripts ne sont pas touchés :
+   seule l'opacité est reprise ici. */
+#googleBtn[aria-disabled="true"]{opacity:1!important}
+#googleBtn[aria-disabled="true"]:not([tabindex="-1"]){background:var(--surface);color:var(--succes);box-shadow:inset 0 0 0 1.5px var(--succes)}
+.s1-unlock{display:none;align-items:center;justify-content:center;gap:var(--e-2);min-height:var(--h-cible);margin-top:var(--e-3);padding:var(--e-2) var(--e-4);border-radius:var(--r-controle);background:var(--succes-clair);color:var(--succes);font-weight:600;font-size:var(--t-16);line-height:1.3;text-align:center}
+.s1-unlock.show{display:flex;animation:apparaitre .3s ease-out both}
+.s1-unlock .icone{width:20px;height:20px}
+@keyframes apparaitre{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+/* « Continuer sans laisser d'avis » : au bout de 15 s (ou tout de suite sans fiche Google). Sa place est gardée
+   (visibility), la page ne saute pas quand il apparaît. 48 px de haut : plus besoin d'élargir sa zone tactile. */
+.s1-skip{margin-top:var(--e-2);opacity:0;visibility:hidden;pointer-events:none;transform:translateY(6px);transition:opacity .35s ease,visibility .35s ease,transform .35s ease}
+.s1-skip.show{opacity:1;visibility:visible;pointer-events:auto;transform:none}
+.propulse{display:flex;align-items:center;justify-content:center;gap:var(--e-2);min-height:40px;margin-top:var(--e-5);color:var(--encre-2);font-size:var(--t-16)}
+.propulse img{height:22px;width:auto}
+
+/* ══ 2. LA ROUE ══════════════════════════════════════════════════════════════════════════════════ */
+/* Deux tons doux (teinte claire du commerce, blanc), une jante fine à sa couleur avec 12 ampoules, les lots
+   DROITS (ils tournent à contre-sens de la roue : jamais un lot gagné à l'envers), un bouton-goutte « Lancer »
+   dont la pointe désigne le lot du haut. Mécanique inchangée (lot tiré AVANT, la roue le montre). */
+/* overflow:hidden + rayon : la roue tournée reste dans son cercle (sans lui, les coins de son carré, en diagonale,
+   débordaient de l'écran pendant la rotation : page plus large que le téléphone). */
+.roue{position:relative;width:min(100%,344px);aspect-ratio:1/1;margin:var(--e-5) auto var(--e-4);border-radius:50%;overflow:hidden}
+@supports not (aspect-ratio:1/1){.roue{height:min(calc(100vw - 32px),344px)}}
+/* 04/11/2026 (relecture) — AU REPOS, la roue est tournée de −30° (et chaque lot de +30°, il reste droit) : un secteur
+   est centré sous la pointe de « Lancer », comme sur la maquette D1 (avant : la pointe tombait sur une limite entre
+   deux lots). Purement visuel : spinWheel() écrit ensuite des angles ABSOLUS (target), le lot désigné à l'arrêt, les
+   secteurs candidats et le tic-tac (wheelAngleNow, multiples de 60°) ne changent pas. */
+.wheel-svg{display:block;width:100%;height:100%;transform:rotate(-30deg);transform-origin:50% 50%;will-change:transform}
+.wheel-svg .jante{fill:var(--marque)}
+.wheel-svg .ampoule{fill:var(--surface)}
+.wheel-svg .secteur-a{fill:var(--marque-clair)}
+.wheel-svg .secteur-b{fill:var(--surface)}
+.wheel-svg .lisere{fill:none;stroke:var(--marque-profond);stroke-opacity:.18;stroke-width:1}
+.wheel-svg text{fill:var(--encre);font:700 17px var(--police)}
+.wheel-svg .lot{transform-box:fill-box;transform-origin:50% 50%;transform:rotate(30deg)}
+/* L'ancien pointeur : gardé dans la page (startWheelTicks s'arrête sans lui), jamais montré */
 .wheel-pointer{display:none}
+/* Le bouton « Lancer » en goutte : le bouton est le disque (::after), ::before la pointe (carré tourné de 45°,
+   ses deux côtés tangents au disque), le liseré blanc fait le tour des deux (drop-shadow), l'ombre est légère.
+   Il n'a AUCUN enfant : spinWheel() vide son texte. */
+.wheel-hub{position:absolute;z-index:5;left:50%;top:50%;width:28%;height:28%;transform:translate(-50%,-50%);display:grid;grid-template-columns:minmax(0,1fr);place-items:center;padding:0;border:0;border-radius:50%;background:none;color:var(--sur-marque);font-weight:700;font-size:var(--t-17);line-height:1;cursor:pointer;
+  filter:drop-shadow(2px 0 0 var(--surface)) drop-shadow(-2px 0 0 var(--surface)) drop-shadow(0 2px 0 var(--surface)) drop-shadow(0 -2px 0 var(--surface)) drop-shadow(0 6px 10px rgb(22 23 29 / .2));
+  transition:transform .18s ease-out}
+.wheel-hub::before{content:'';position:absolute;z-index:-1;left:25%;top:-10.36%;width:50%;height:50%;background:var(--marque);border-radius:14% 0 0 0;transform:rotate(45deg)}
+.wheel-hub::after{content:'';position:absolute;z-index:-1;inset:0;border-radius:50%;background:var(--marque)}
+.wheel-hub:active{transform:translate(-50%,-50%) scale(.95)}
+.wheel-hub.tick{transform:translate(-50%,-50%) rotate(-6deg)}
+.wheel-hub.spinning,.wheel-hub.done{cursor:default}
+/* Le logo du commerce (monogramme sans logo) : invisible au repos, il apparaît DANS le bouton au lancement
+   (logoAuCentre, .au-centre) et y reste — la pastille perchée au-dessus de la roue n'existe plus. */
+.wheel-logo{position:absolute;z-index:6;left:50%;top:50%;width:21%;height:21%;display:grid;grid-template-columns:minmax(0,1fr);place-items:center;opacity:0;transform:translate(-50%,-50%) scale(.6);pointer-events:none;transition:opacity .4s ease-out,transform .5s cubic-bezier(.34,1.35,.5,1)}
+.wheel-logo.au-centre{opacity:1;transform:translate(-50%,-50%) scale(1)}
+.wheel-logo img{width:100%;height:100%;object-fit:contain}
+.wheel-logo .monogramme{width:100%;height:100%;background:none;color:var(--sur-marque);font-size:var(--t-28)}
+/* « Touchez « Lancer »… » : masqué au lancement sans que la page saute */
+#wheelHint.off{visibility:hidden}
+/* … et quand le lot est annoncé, sa place est rendue au résultat (Safari 15.4+, Chrome 105+ ; sinon elle reste vide) */
+#screen2:has(.wheel-result.show) #wheelHint{display:none}
+/* Le résultat : la vignette du lot, « Vous avez gagné », son nom */
+.wheel-result{display:none;margin-top:var(--e-2)}
+.wheel-result.show{display:grid;grid-template-columns:84px minmax(0,1fr);align-items:center;gap:var(--e-4);animation:apparaitre .45s ease-out both}
+.wheel-result .vignette{width:84px;height:84px;border-radius:var(--r-surface)}
+.wr-badge{color:var(--encre-2);font-size:var(--t-17)}
+.wr-name{font-weight:700;font-size:var(--t-28);line-height:1.15;letter-spacing:-.02em;overflow-wrap:break-word}
+.wr-msg{margin-top:var(--e-1)}
+.btn-fallback{display:none;margin-top:var(--e-3)}
+.btn-fallback.show{display:flex}
+.btn-claim{display:none;margin-top:var(--e-4)}
+.btn-claim.show{display:flex;animation:apparaitre .4s ease-out both}
 
-/* Moyeu = bouton LANCER, en goutte (la pointe désigne le secteur gagnant, en haut) */
-.wheel-hub{
-  position:absolute;z-index:5;width:31%;height:31%;border-radius:50%;
-  background:var(--gold2);border:0;padding:0;
-  cursor:pointer;display:grid;place-items:center;
-  font-family:'Inter',sans-serif;font-size:14px;font-weight:800;letter-spacing:.01em;
-  color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.28);line-height:1;
-  filter:drop-shadow(0 8px 16px rgba(0,0,0,.30));
-  transition:transform .18s cubic-bezier(.34,1.6,.64,1);
-}
-/* La pointe : un carré tourné de 45°, à moitié caché sous le disque */
-.wheel-hub::before{
-  content:'';position:absolute;left:23%;top:-9%;width:54%;height:54%;
-  background:var(--gold2);border-radius:28% 0 0 0;transform:rotate(45deg);z-index:-1;
-}
-/* Le disque intérieur, plus clair, qui respire tant qu'on n'a pas lancé */
-.wheel-hub::after{
-  content:'';position:absolute;inset:15%;border-radius:50%;
-  background:#fff;opacity:.2;box-shadow:inset 0 2px 0 rgba(255,255,255,.22);z-index:-1;
-  animation:hubBeat 1.8s ease-in-out infinite;
-}
-@keyframes hubBeat{0%,100%{opacity:.18}50%{opacity:.36}}
-.wheel-hub:active{transform:scale(.93)}
-.wheel-hub.tick{transform:rotate(-6deg)}
-.wheel-hub.spinning,.wheel-hub.done{cursor:default;color:transparent;text-shadow:none}   /* le logo a pris la place du mot */
-.wheel-hub.spinning::after,.wheel-hub.done::after{animation:none}
-
-/* Les trois étapes sous la roue (comme « Joue · Gagne · Rejoue » chez le concurrent) */
-.wheel-hint{display:flex;gap:14px;justify-content:center;align-items:flex-start;margin-top:28px;padding:0 6px}
-.wheel-hint .etape{display:flex;flex-direction:column;align-items:center;gap:6px;font-size:11.5px;font-weight:600;color:rgba(245,237,216,.78);text-align:center;line-height:1.25;max-width:88px}
-.wheel-hint .etape b{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:var(--gold2);color:#fff;font-size:13px;font-weight:800;box-shadow:0 4px 10px rgba(0,0,0,.22)}
-.wheel-hint.off{display:none}
-
-/* Variante claire (fond crème, comme la page de jeu du concurrent) : classe s2-clair sur #screen2 */
-#screen2.s2-clair .screen-inner{background:#FBF7EF}
-#screen2.s2-clair .s2-bienvenue{color:var(--ink)}
-#screen2.s2-clair .s2-titre{color:var(--gold2)}
-#screen2.s2-clair .s2-sub{color:var(--muted)}
-#screen2.s2-clair .s2-sub b{color:var(--gold2)}
-#screen2.s2-clair .wheel-svg{filter:drop-shadow(0 14px 30px rgba(0,0,0,.16))}
-#screen2.s2-clair .wheel-hint .etape{color:var(--muted)}
-#screen2.s2-clair .btn-fallback{border-color:rgba(0,0,0,.18);color:var(--muted)}
-
-/* ── Carte résultat ── */
-.wheel-result{
-  display:none;width:100%;max-width:308px;margin-top:26px;
-  background:var(--cream3);border-radius:22px;padding:22px 20px 20px;text-align:center;
-  border:1px solid var(--gold-border);box-shadow:0 18px 48px rgba(0,0,0,.4);
-}
-.wheel-result.show{display:block;animation:resultPop .55s cubic-bezier(.2,.9,.3,1.28) both}
-@keyframes resultPop{from{opacity:0;transform:translateY(18px) scale(.93)}to{opacity:1;transform:none}}
-.wr-badge{
-  display:inline-block;font-size:9.5px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;
-  color:var(--gold-ink);border:1px solid var(--gold-border);border-radius:999px;padding:5px 12px;margin-bottom:12px;
-}
-.wr-emoji{
-  font-size:60px;line-height:1;display:block;margin-bottom:6px;
-  filter:drop-shadow(0 8px 16px rgba(0,0,0,.18));animation:wrFloat 3s ease-in-out infinite;
-}
-@keyframes wrFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
-.wr-name{font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:23px;color:var(--ink);line-height:1.2}
-.wr-divider{width:44px;height:1px;background:var(--gold-border);margin:13px auto}
-.wr-msg{font-size:12.5px;color:var(--muted);line-height:1.5}
-
-/* Boutons */
-.btn-fallback{
-  display:none;background:none;border:1.5px solid rgba(245,237,216,.25);
-  border-radius:11px;padding:10px 18px;margin-top:14px;
-  font-size:13px;color:rgba(245,237,216,.6);cursor:pointer;font-family:'Inter',sans-serif;transition:all .2s;
-}
-.btn-fallback.show{display:block}
-.btn-fallback:hover{border-color:rgba(245,237,216,.55);color:var(--cream)}
-.btn-claim{
-  display:none;width:100%;max-width:300px;padding:15px;margin-top:16px;
-  background:linear-gradient(135deg,var(--gold),var(--gold2));
-  color:#fff;border:none;border-radius:15px;
-  font-family:'Inter',sans-serif;font-size:15px;font-weight:700;cursor:pointer;
-  box-shadow:0 6px 22px rgba(200,150,62,.42);
-}
-.btn-claim.show{display:block;animation:slideUp .5s ease both}
-@keyframes slideUp{from{transform:translateY(12px);opacity:0}to{transform:none;opacity:1}}
-.btn-claim:active{transform:scale(.97)}
-
-/* ══════════════════════════════════
-   S2b — AJOUTER LA CARTE (Wallet)
-   Ecran d'action : typo sans-serif, texte reduit au minimum,
-   badge Apple officiel. Volontairement different des ecrans
-   « emotion » (S1/S2) qui eux sont en Playfair.
-══════════════════════════════════ */
-.sw-wrap{width:100%;max-width:340px;display:flex;flex-direction:column;align-items:center;text-align:center}
-
-.sw-prize{
-  background:var(--cream3);border-radius:20px;padding:18px 18px 16px;width:100%;
-  border:1px solid var(--gold-border);box-shadow:0 14px 40px rgba(0,0,0,.35);margin-bottom:26px;
-}
-.sw-prize-emoji{font-size:44px;line-height:1;display:block;margin-bottom:6px;filter:drop-shadow(0 6px 12px rgba(0,0,0,.15))}
-.sw-prize-name{font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:19px;color:var(--ink);line-height:1.2}
-
-/* (24/09 — .sw-title retiré : remplacé par .sw-welcome le 22/09) */
-/* 22/09 — le message d'accueil (texte validé par l'utilisateur), à la place de « Votre cadeau
-   vous attend dans votre carte ». Le nom du commerce et le cadeau sont posés par le script. */
-.sw-welcome{font-family:'Inter',sans-serif;font-size:15px;color:var(--cream);line-height:1.5;margin:-6px 0 22px;opacity:.94}
-.sw-welcome b{font-weight:700}
-.sw-welcome .sw-w-titre{display:block;font-weight:700;font-size:18.5px;letter-spacing:-.01em;margin-bottom:8px;opacity:1}
-/* Le bouton Google est plus bas que le badge Apple : 320 px de large = 50 px de haut (Google exige ≥ 48). */
-#btnGWallet{max-width:320px}
+/* ══ 3. LE CADEAU ET LA CARTE (Wallet) ═══════════════════════════════════════════════════════════ */
+.gain{display:grid;grid-template-columns:84px minmax(0,1fr);align-items:center;gap:var(--e-4);margin-top:var(--e-2)}
+.gain .vignette{width:84px;height:84px;border-radius:var(--r-surface)}
+.gain .sur{color:var(--encre-2);font-size:var(--t-17)}
+.gain .lot{font-weight:700;font-size:var(--t-34);line-height:1.1;letter-spacing:-.02em;overflow-wrap:break-word}
+/* Le message d'accueil (texte validé le 22/09, passé au « vous » le 30/10) : ses enfants se rangent dans la
+   colonne de l'écran (display:contents), pour que la note puisse passer sous le badge sur un petit écran. */
+.sw-welcome{display:contents}
+.sw-w-titre{display:block;margin-top:var(--e-5)}
+/* L'espace avant le nom, seulement quand il y en a un (sans nom : « Voici votre carte de fidélité. ») */
+#swShop:not(:empty)::before{content:" "}
+.sw-welcome .note{margin-top:var(--e-4)}
+/* L'aperçu du pass : un DESSIN du vrai pass Wallet (fond, libellés et bandeau du commerce, lib/theme.js et
+   buildPass.js) — jamais le compteur de tampons (on ne l'invente pas). */
+.pass{margin:var(--e-3) 0 0;border-radius:16px;overflow:hidden;background:var(--marque-profond);color:var(--sur-profond);box-shadow:var(--ombre-pass)}
+.pass-tete{display:flex;align-items:center;justify-content:space-between;gap:var(--e-3);min-height:60px;padding:var(--e-2) var(--e-4)}
+.pass-marque{display:flex;align-items:center;min-width:0}
+.pass-tete .logo{width:40px;height:40px;object-fit:contain}
+.pass-tete .nom{display:flex;align-items:center;gap:var(--e-2);min-width:0;font-weight:700;font-size:var(--t-17);line-height:1.2;overflow-wrap:anywhere}
+.pass-tete .nom .monogramme{flex:none;background:var(--sur-profond);color:var(--marque-profond)}
+.pass-tete .type{flex:none;color:var(--profond-libelle);font-size:var(--t-16)}
+.pass-bandeau{aspect-ratio:750/288;background:rgb(0 0 0 / .18)}
+.pass-bandeau[hidden]{display:none}
+.pass-bandeau img{width:100%;height:100%;object-fit:cover}
+.pass-champs{padding:var(--e-3) var(--e-4) var(--e-4)}
+.pass-champs .libelle{color:var(--profond-libelle);font-size:var(--t-16)}
+.pass-champs .valeur{font-size:var(--t-22);font-weight:500;line-height:1.25;overflow-wrap:break-word}
+.pass-zone{position:relative;margin-top:var(--e-2)}
+.pass-zone .pass{margin-top:0}
+.pass-coche{position:absolute;right:-6px;bottom:-14px;display:grid;grid-template-columns:minmax(0,1fr);place-items:center;width:52px;height:52px;border-radius:50%;background:var(--succes);color:var(--surface);box-shadow:0 0 0 4px var(--fond)}
+.pass-coche .icone{width:28px;height:28px}
+/* Les badges OFFICIELS (assets/wallet/), tels quels : Apple en grand (280 px de large ≈ 87 px de haut),
+   Google à 320 px (50 px de haut, son minimum est 48). Jamais redessinés, jamais recolorés. */
+.btn-wallet{display:block;width:min(100%,280px);margin:var(--e-4) auto 0;padding:0;border:0;border-radius:var(--r-controle);background:none;line-height:0;cursor:pointer;transition:transform .16s ease-out}
+#btnGWallet{width:min(100%,320px)}
 /* `display:block` ci-dessus l'emporterait sur l'attribut hidden : on le dit explicitement. */
 .btn-wallet[hidden]{display:none}
-
-/* ── Badge officiel « Ajouter à Apple Cartes » ── */
-.btn-wallet{
-  width:100%;max-width:300px;padding:0;border:none;background:none;cursor:pointer;
-  display:block;line-height:0;transition:transform .16s;
-}
 .btn-wallet:active{transform:scale(.97)}
-.btn-wallet[disabled]{opacity:.5;cursor:default;transform:none}
+.btn-wallet[disabled]{cursor:default;transform:none}
+.btn-wallet picture{display:block}
 .btn-wallet .sw-badge{width:100%;height:auto;display:block}
+/* 04/11/2026 (relecture) — sous 340 px de large, le bouton long de Google descendait sous 48 px (288 px de large →
+   45 px de haut à 320 px) : le <picture> sert alors le badge COMPACT officiel (199 × 55), ici à 180 px ≈ 50 px. */
+@media (max-width:339px){ #btnGWallet{width:180px} #btnGWallet.is-loading .sw-loading{aspect-ratio:199/55} }
+/* L'attente : une boîte neutre aux proportions du badge, un anneau et « Préparation… » — jamais une imitation
+   du badge. */
 .btn-wallet .sw-loading{display:none}
 .btn-wallet.is-loading .sw-badge{display:none}
-.btn-wallet.is-loading .sw-loading{
-  display:flex;align-items:center;justify-content:center;gap:10px;
-  height:74px;border-radius:13px;background:#000;border:1.5px solid #a9a9a9;
-  font-family:-apple-system,BlinkMacSystemFont,'Inter',sans-serif;font-size:15px;color:#fff;line-height:1;
-}
-.sw-spin{width:15px;height:15px;border:2px solid rgba(255,255,255,.25);border-top-color:#fff;border-radius:50%;animation:swSpin .7s linear infinite}
-@keyframes swSpin{to{transform:rotate(360deg)}}
+.btn-wallet.is-loading .sw-loading{display:flex;align-items:center;justify-content:center;gap:var(--e-3);width:100%;min-height:48px;aspect-ratio:113.408/35.291;border:1px solid var(--bord-champ);border-radius:var(--r-controle);background:var(--surface);color:var(--encre);font-weight:600;font-size:var(--t-17);line-height:1.2}
+#btnGWallet.is-loading .sw-loading{aspect-ratio:317/50}
+.sw-spin{flex:none;width:20px;height:20px;border:2.5px solid var(--trait);border-top-color:var(--encre);border-radius:50%;animation:tourne .9s linear infinite}
+@keyframes tourne{to{transform:rotate(360deg)}}
+.sw-alt{margin-top:var(--e-1)}
 
-.sw-alt{
-  margin-top:22px;background:none;border:none;font-family:'Inter',sans-serif;font-size:13px;
-  color:rgba(245,237,216,.5);text-decoration:underline;text-underline-offset:3px;cursor:pointer;padding:8px;
-}
-.sw-alt:hover{color:var(--cream)}
+/* ══ 4. LE FORMULAIRE (coupon par e-mail) ════════════════════════════════════════════════════════ */
+.entete-lot{display:grid;grid-template-columns:72px minmax(0,1fr);align-items:center;gap:var(--e-4);margin-top:var(--e-2)}
+.entete-lot .vignette{width:72px;height:72px;border-radius:16px}
+.champs{display:grid;grid-template-columns:minmax(0,1fr);gap:var(--e-4);margin-top:var(--e-5)}
+.champs .deux{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--e-3)}
+.champ{min-width:0}
+.field-label{display:block;margin:0 var(--e-1) var(--e-2);font-weight:600;font-size:var(--t-16)}
+.field-label .aide{color:var(--encre-2);font-weight:400}
+/* 16 px : iOS ne zoome pas tout seul sur un champ de 16 px ou plus (24/09) */
+.field-input{display:block;width:100%;min-width:0;min-height:52px;padding:0 var(--e-4);border:1px solid var(--bord-champ);border-radius:var(--r-controle);background:var(--surface);color:var(--encre);font:400 16px/1.25 var(--police);-webkit-appearance:none;appearance:none}
+.field-input:focus-visible{outline-offset:1px}
+input[type="date"].field-input{line-height:50px}
+input[type="date"].field-input::-webkit-date-and-time-value{text-align:left}
+.champ .note{margin:var(--e-1) var(--e-1) 0}
+.s3-consent{display:grid;grid-template-columns:26px minmax(0,1fr);gap:var(--e-3);align-items:start;min-height:var(--h-cible);padding:var(--e-1) var(--e-1) 0;font-size:var(--t-16);line-height:1.45;color:var(--encre-2);text-align:left;cursor:pointer}
+.s3-consent input{width:24px;height:24px;margin:1px 0 0;accent-color:var(--marque-encre);cursor:pointer}
+.s3-consent b{color:var(--encre);font-weight:600}
+.securite{display:flex;align-items:center;justify-content:center;gap:var(--e-2);margin-top:var(--e-3)}
 
-/* ══ S3, S4, ALREADY — inchangés ══ */
-.s3-wrap{width:100%;max-width:380px}
-.s3-card{background:var(--cream3);border-radius:26px;overflow:hidden;box-shadow:0 20px 56px rgba(0,0,0,.35);border:1px solid rgba(200,150,62,.14)}
-.s3-hero{padding:28px 22px 20px;background:linear-gradient(180deg,rgba(200,150,62,.08) 0%,transparent 100%);border-bottom:1px solid var(--gold-border);text-align:center;display:flex;flex-direction:column;align-items:center;gap:8px}
-.s3-emoji-big{font-size:58px;display:block;animation:popIn .6s cubic-bezier(.36,.07,.19,.97) both}
-@keyframes popIn{0%{transform:scale(0) rotate(-14deg);opacity:0}60%{transform:scale(1.16) rotate(4deg)}100%{transform:scale(1) rotate(0);opacity:1}}
-.s3-congrats{font-family:'Plus Jakarta Sans',sans-serif;font-size:24px;font-weight:700;color:var(--ink)}
-.s3-prize-pill{display:inline-block;padding:5px 14px;background:rgba(200,150,62,.1);border:1px solid var(--gold-border);border-radius:999px;font-size:12px;font-weight:700;color:var(--gold)}
-.s3-body{padding:20px 22px 24px}
-.s3-section-title{font-size:15px;font-weight:700;color:var(--ink);margin-bottom:2px}
-.s3-section-sub{font-size:12px;color:var(--muted2);margin-bottom:16px}
-.field{margin-bottom:11px}
-.field-label{font-size:11px;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:.08em;margin-bottom:5px;display:block}
-.field-input{width:100%;padding:13px 15px;background:#fff;border:1.5px solid rgba(200,150,62,.18);border-radius:13px;color:var(--ink);font-family:'Inter',sans-serif;font-size:16px;font-weight:500;outline:none;transition:border-color .2s,box-shadow .2s}
-.field-input::placeholder{color:var(--muted2)}
-.field-input:focus{border-color:rgba(200,150,62,.48);box-shadow:0 0 0 3px rgba(200,150,62,.07)}
-.s3-consent{display:flex;align-items:flex-start;gap:10px;margin-top:12px;padding:11px 12px;background:rgba(200,150,62,.07);border:1px solid rgba(200,150,62,.22);border-radius:12px;cursor:pointer;font-size:12.5px;line-height:1.5;color:var(--muted);text-align:left}
-.s3-consent input{width:20px;height:20px;margin:1px 0 0;flex-shrink:0;accent-color:var(--gold)}
-.s3-consent b{color:var(--ink)}
-.s3-submit{width:100%;padding:15px;margin-top:12px;background:linear-gradient(135deg,var(--gold),var(--gold2));color:#fff;border:none;border-radius:15px;font-family:'Inter',sans-serif;font-size:15px;font-weight:700;cursor:pointer;box-shadow:0 6px 22px rgba(255,107,44,.32);transition:all .2s}
-.s3-submit:active{transform:scale(.98)}
-.s3-submit:disabled{opacity:.5;cursor:default}
-.s3-legal{text-align:center;font-size:11px;color:var(--muted2);margin-top:11px;line-height:1.6}
+/* ══ 5. SUCCÈS, FIN, DÉJÀ JOUÉ, PROGRAMME TERMINÉ : les états dessinés ═════════════════════════════ */
+.etat-icone{display:grid;grid-template-columns:minmax(0,1fr);place-items:center;width:72px;height:72px;margin:0 auto;border-radius:50%;background:var(--marque-clair);color:var(--marque-encre)}
+.etat-icone .icone{width:34px;height:34px}
+.etat-icone.succes{background:var(--succes-clair);color:var(--succes)}
+.etat-icone.erreur{background:var(--danger-clair);color:var(--danger)}
+.etat{display:grid;grid-template-columns:minmax(0,1fr);justify-items:center;gap:var(--e-3);margin:auto 0;padding:var(--e-6) 0;text-align:center}
+.etat .bouton{margin-top:var(--e-3)}
+.code-bloc{margin-top:var(--e-5);text-align:center}
+.code-bloc .libelle-code{color:var(--encre-2);font-weight:600;font-size:var(--t-16)}
+#s4code{margin:var(--e-2) 0 var(--e-1);font-weight:800;font-size:var(--t-34);line-height:1.1;letter-spacing:.06em;font-variant-numeric:tabular-nums;color:var(--encre)}
 
-.s4-wrap{text-align:center;max-width:310px}
-.s4-check{width:78px;height:78px;margin:0 auto 20px;background:rgba(34,197,94,.16);border:1.5px solid rgba(34,197,94,.45);color:#4ADE80;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:30px;animation:popIn .6s cubic-bezier(.36,.07,.19,.97) both}
-.s4-title{font-family:'Plus Jakarta Sans',sans-serif;font-size:28px;font-weight:700;color:var(--cream);margin-bottom:8px}
-.s4-desc{font-size:13px;color:rgba(245,237,216,.6);line-height:1.75;margin-bottom:20px}
-.s4-code-block{background:rgba(245,237,216,.09);border:1px solid rgba(200,150,62,.22);border-radius:20px;padding:20px;backdrop-filter:blur(10px)}
-.s4-code-label{font-size:10px;font-weight:700;color:rgba(245,237,216,.38);letter-spacing:.15em;text-transform:uppercase;margin-bottom:8px}
-.s4-code-value{font-size:36px;font-weight:800;color:var(--gold3);letter-spacing:.18em;line-height:1;font-variant-numeric:tabular-nums}
-.s4-code-sub{font-size:11px;color:rgba(245,237,216,.4);margin-top:8px}
-.s4-fort{color:var(--gold3);font-weight:700}
-.s4-etapes{display:flex;flex-direction:column;gap:10px;text-align:left}
-.s4-etapes span{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--cream);line-height:1.35}
-.s4-etapes b{flex:none;width:26px;height:26px;border-radius:50%;display:grid;place-items:center;background:var(--gold2);color:#fff;font-size:12px;font-weight:800}
-
-.already-wrap{text-align:center;max-width:280px}
-.already-emoji{font-size:50px;display:block;margin-bottom:14px}
-.already-title{font-family:'Plus Jakarta Sans',sans-serif;font-size:22px;font-weight:700;color:var(--cream);margin-bottom:10px}
-/* .78 et non .56 : à .56 sur le fond du site, le texte passait sous le seuil de
-   lisibilité une fois l'écran au soleil, dehors, devant le présentoir. */
-.already-desc{font-size:14.5px;color:rgba(245,237,216,.78);line-height:1.65}
-.already-cta{display:inline-block;margin-top:22px;padding:14px 28px;border-radius:999px;
-  background:var(--gold);color:#1a1206;font-weight:700;font-size:15px;text-decoration:none;
-  box-shadow:0 8px 22px rgba(200,150,62,.32)}
-.already-cta:active{transform:scale(.97)}
-
+/* Particules et confettis : aux couleurs du commerce (lues dans les jetons) */
 .particle{position:fixed;pointer-events:none;border-radius:50%;animation:pfly 1.4s ease-out forwards;z-index:999}
 @keyframes pfly{0%{transform:translate(0,0) scale(1);opacity:1}100%{transform:translate(var(--tx),var(--ty)) scale(0);opacity:0}}
 
-/* ♿ 24/09 (audit accessibilité, ACCESSIBILITE.md) — même principe que card.html : focus clavier visible
-   (jaune sur le fond nuit, encre orange sur les cartes claires), zones tactiles de 44 px sans changer la
-   taille des boutons, écran qui reçoit le focus sans contour. « Continuer sans laisser d'avis » devient
-   un vrai bouton (clavier, lecteur d'écran) : mêmes lettres, même place, même couleur. */
-a:focus-visible,button:focus-visible{outline:3px solid var(--gold3);outline-offset:3px}
-.btn-google:focus-visible,.s3-submit:focus-visible{outline-color:var(--gold-ink)}
-.screen-inner:focus{outline:none}
-.s1-skip{display:block;background:none;border:0;padding:0;font-family:inherit;line-height:inherit;-webkit-appearance:none;appearance:none}
-.s1-skip,.sw-alt,.btn-fallback{position:relative}
-.s1-skip::before,.sw-alt::before,.btn-fallback::before{content:'';position:absolute;left:0;right:0}
-.s1-skip::before{top:-15px;bottom:-15px}
-.sw-alt::before{top:-7px;bottom:-7px}
-.btn-fallback::before{top:-5px;bottom:-5px}
+/* ── Petit écran (iPhone SE, barres de Safari comprises : 375 × 548) : l'action principale reste visible
+   sans faire défiler — on resserre l'accueil, et l'écran de la carte perd le bandeau de l'aperçu et passe
+   son texte SOUS le badge. ── */
+@media (max-height:640px){
+  .identite{padding-top:var(--e-4);gap:var(--e-2)}
+  #identiteVisuel img{width:64px;height:64px}
+  #identiteVisuel .monogramme{width:56px;height:56px;border-radius:16px;font-size:var(--t-28)}
+  #screen1 .titre{margin-top:var(--e-3)}
+  .a-gagner{margin-top:var(--e-4)}
+  .lots li{padding:var(--e-2)}
+  .lots .vignette{width:52px;height:52px}
+  #googleBtn{margin-top:var(--e-4)}
+  .barre{min-height:52px}
+  .gain{grid-template-columns:64px minmax(0,1fr);gap:var(--e-3);margin-top:0}
+  .gain .vignette{width:64px;height:64px}
+  .gain .lot{font-size:var(--t-28)}
+  .sw-w-titre{margin-top:var(--e-3)}
+  .pass-bandeau{display:none}
+  #screenWallet .sw-welcome .note{order:2;margin-top:var(--e-3)}
+  #screenWallet .pousse{display:none}
+  .roue{width:min(100%,300px);margin-top:var(--e-3)}
+}
+/* 04/11/2026 (relecture) — à 320 px de large, « Pâtisserie » (76 px en 16 px 600) ne tenait pas dans les 75 px de sa
+   tuile et se coupait en plein mot (« Pâtisseri / e du Jour », Falman). Sous 360 px, le retrait horizontal passe de
+   8 à 4 px : 83 px de place, le texte reste à 16 px. Lié à la LARGEUR (et non à la hauteur) : 320 × 700 aussi ;
+   placé APRÈS le bloc max-height ci-dessus, dont le « padding » le défaisait sinon (320 × 568 : les deux s'appliquent). */
+@media (max-width:359px){ .lots li{padding-left:var(--e-1);padding-right:var(--e-1)} }
 
 /* Reduced motion */
 @media(prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
 }
+/* 04/11/2026 — l'anneau « Préparation… » n'est pas figé mais RALENTI (3 s par tour) : figé, il ne dirait plus
+   que la page travaille (même règle que card.html, 13/09). */
+@media(prefers-reduced-motion:reduce){
+  .sw-spin{animation-duration:3s!important;animation-iteration-count:infinite!important}
+}
 </style>
+<!-- 04/11/2026 (relecture) — sans JavaScript, poserIdentite() ne tourne pas : le nom écrit dans la page redevient
+     visible, comme avant D1 (.identite:not(.prete) le masque sinon, pour qu'un autre commerce ne voie jamais un
+     instant le nom de Falman). -->
+<noscript><style>.identite:not(.prete){visibility:visible}</style></noscript>
 </head>
 <body>
 
-<!-- ══ S1 — ACCUEIL ══ -->
+<!-- 04/11/2026 — DIRECTION D1 (choix de Valentin du 30/10). Chaque écran garde son id et ses ids internes (les
+     scripts et les essais les lisent) ; .screen-inner garde role="main" et tabindex="-1" (showScreen y met le
+     focus) et devient une colonne .ecran. Les logos, monogrammes, noms de la barre, lots à gagner et aperçus du
+     pass sont REMPLIS par poserIdentite(), poserLots() et poserApercuPass() (plus bas) ; les pictogrammes
+     (data-picto) par poserPictos() : aucun emoji ne sert d'icône. -->
+
+<!-- ══ S1 — ACCUEIL : l'avis Google ══ -->
 <div class="screen active" id="screen1">
-<div class="screen-inner" role="main" tabindex="-1">
-<div class="s1-wrap">
-  <img class="marque" src="assets/perify-logo.png" alt="Perify" width="359" height="156">
-  <div class="viewer-block">
-    <div class="viewer-glow"></div>
-    <div class="croissant-fallback" id="croissantFallback" aria-hidden="true">🥐</div>
+<div class="screen-inner ecran" role="main" tabindex="-1">
+  <div class="identite">
+    <span id="identiteVisuel" aria-hidden="true"></span>
     <div class="viewer-name" role="heading" aria-level="1">Falman<br>Emmanuelle &amp; Flavien</div>
   </div>
-  <div class="s1-stars" aria-hidden="true">
-    <span class="s1-star">⭐</span><span class="s1-star">⭐</span>
-    <span class="s1-star">⭐</span><span class="s1-star">⭐</span><span class="s1-star">⭐</span>
-  </div>
-  <div class="s1-card">
-    <div class="s1-card-top">
-      <div class="s1-heading" role="heading" aria-level="2">Un cadeau vous<br>attend <span class="accent">ici.</span></div>
-      <div class="s1-subtext">Laissez votre avis Google et repartez avec un <b>produit offert</b> 🎁</div>
-    </div>
-    <div class="s1-card-bottom">
-      <!-- 07/10/2026 — plus de lien écrit en dur vers la fiche Google de Falman : brancherLienAvis() pose celui
-           du commerce (registre, ou BA_REPLI pour le commerce historique), ou saute l'étape s'il n'en a pas. -->
-      <a href="#"
-         target="_blank" rel="noopener"
-         class="btn-google" id="googleBtn"
-         onclick="openGoogle(event)">
-        🌟&nbsp; Laisser votre avis Google
-      </a>
-      <div class="s1-unlock" id="unlockMsg" role="status">
-        <div class="s1-unlock-dot"></div>
-        Parfait — la roue est débloquée !
-      </div>
-      <div class="s1-optional">
-        <span class="s1-optional-icon" aria-hidden="true">💛</span>
-        <span class="s1-optional-text">Quand vous avez terminé, revenez découvrir votre cadeau. L'avis est libre et optionnel.</span>
-      </div>
-    </div>
-  </div>
-  <button class="s1-skip" id="skipReviewBtn" type="button" onclick="goToWheel()">Continuer sans laisser d'avis</button>
-</div>
+  <div class="s1-heading titre centre mt-5" role="heading" aria-level="2">Un cadeau vous attend ici.</div>
+  <p class="chapo centre mt-2">Laissez votre avis Google et repartez avec un produit offert.</p>
+  <!-- 04/11/2026 — « À gagner » (maquette D1, arbitrage 4 du 30/10) : les lots de la roue, dans l'ordre de PRIZES,
+       sans jamais dire qu'un lot est rare. Caché (hidden) tant que poserLots() ne l'a pas rempli : sans JavaScript,
+       jamais un titre « À gagner » au-dessus d'une liste vide (relecture du 04/11). -->
+  <section class="a-gagner" aria-labelledby="titreLots" hidden>
+    <h2 class="etiquette" id="titreLots">À gagner</h2>
+    <ul class="lots" id="lotsAGagner"></ul>
+  </section>
+  <!-- 07/10/2026 — plus de lien écrit en dur vers la fiche Google de Falman : brancherLienAvis() pose celui
+       du commerce (registre, ou BA_REPLI pour le commerce historique), ou saute l'étape s'il n'en a pas. -->
+  <a href="#"
+     target="_blank" rel="noopener"
+     class="btn-google bouton mt-6" id="googleBtn"
+     onclick="openGoogle(event)">Laisser votre avis Google</a>
+  <div class="s1-unlock" id="unlockMsg" role="status"><span data-picto="coche"></span>Parfait — la roue est débloquée !</div>
+  <p class="note centre mt-3">Quand vous avez terminé, revenez découvrir votre cadeau. L'avis est libre et optionnel.</p>
+  <button class="s1-skip bouton-texte discret" id="skipReviewBtn" type="button" onclick="goToWheel()">Continuer sans laisser d'avis</button>
+  <div class="pousse"><p class="propulse">Propulsé par <img src="assets/perify-logo-nuit.png" alt="Perify" width="53" height="22"></p></div>
 </div>
 </div>
 
 <!-- ══ S2 — ROUE DE LA CHANCE ══ -->
 <div class="screen" id="screen2">
-<div class="screen-inner" role="main" tabindex="-1">
-<div class="s2-wrap">
+<div class="screen-inner ecran" role="main" tabindex="-1">
+  <header class="barre"><span data-barre-logo></span><span data-barre-nom></span></header>
+  <div class="titre centre mt-3" role="heading" aria-level="1">Bienvenue sur la Roue de la Chance&nbsp;!</div>
+  <p class="chapo centre mt-2">Tournez la roue pour découvrir votre cadeau : un produit offert, 100&nbsp;% gagnant.</p>
 
-  <div class="s2-header">
-    <div role="heading" aria-level="1">
-    <div class="s2-bienvenue">Bienvenue sur la</div>
-    <div class="s2-titre">
-      <span class="s2-titre-txt">Roue de la Chance&nbsp;! 🎉</span>
-      <svg class="s2-ellipse" viewBox="0 0 300 70" preserveAspectRatio="none" aria-hidden="true"><path d="M150,6 C245,4 296,20 294,37 C292,56 222,66 140,64 C58,62 6,50 8,33 C10,16 70,5 150,6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
-      <span class="s2-croix" aria-hidden="true">× × ×</span>
-    </div>
-    </div>
-    <div class="s2-sub">Tournez la roue pour découvrir votre cadeau — un produit offert, 100&nbsp;% gagnant 🎁<br>Touchez <b>« Lancer »</b> et attendez que la roue s'arrête.</div>
-  </div>
-
-  <div class="wheel-scene">
-    <div class="wheel-logo" id="wheelLogo" aria-hidden="true">🎁</div>
+  <div class="wheel-scene roue">
+    <div class="wheel-logo" id="wheelLogo" aria-hidden="true"></div>
     <svg class="wheel-svg" id="wheelSvg" viewBox="0 0 300 300" aria-hidden="true"></svg>
     <div class="wheel-pointer" id="wheelPointer"></div>
     <button class="wheel-hub" id="wheelHub" type="button" onclick="spinWheel()" aria-label="Lancer la roue">Lancer</button>
   </div>
+  <p class="note centre" id="wheelHint">Touchez « Lancer » et attendez que la roue s'arrête.</p>
 
-  <div class="wheel-hint" id="wheelHint">
-    <span class="etape"><b>1</b>Lancez la roue</span><span class="etape"><b>2</b>Découvrez votre cadeau</span><span class="etape"><b>3</b>Récupérez-le en boutique</span>
+  <div class="wheel-result surface" id="wheelResult" role="status">
+    <span class="wr-emoji vignette" id="wrEmoji" aria-hidden="true"></span>
+    <div>
+      <p class="wr-badge">Vous avez gagné</p>
+      <div class="wr-name" id="wrName" role="heading" aria-level="2">Croissant Artisanal</div>
+      <p class="wr-msg note">Produit à présenter en caisse</p>
+    </div>
   </div>
 
-  <div class="wheel-result" id="wheelResult" role="status">
-    <div class="wr-badge">✦ Vous avez gagné</div>
-    <span class="wr-emoji" id="wrEmoji" aria-hidden="true">🥐</span>
-    <div class="wr-name" id="wrName" role="heading" aria-level="2">Croissant Artisanal</div>
-    <div class="wr-divider"></div>
-    <div class="wr-msg">Produit à présenter en caisse 🎁</div>
-  </div>
-
-  <button class="btn-fallback" id="fallbackBtn" onclick="spinWheel()">Lancer la roue →</button>
-  <button class="btn-claim" id="claimBtn" onclick="afterWheel()">Récupérer mon cadeau 🎁</button>
-
-</div>
+  <button class="btn-fallback bouton secondaire" id="fallbackBtn" onclick="spinWheel()">Lancer la roue</button>
+  <button class="btn-claim bouton" id="claimBtn" onclick="afterWheel()">Récupérer mon cadeau</button>
+  <div class="pousse"><p class="propulse">Propulsé par <img src="assets/perify-logo-nuit.png" alt="Perify" width="53" height="22"></p></div>
 </div>
 </div>
 
 
-<!-- ══ S2b — AJOUTER LA CARTE AU WALLET ══ -->
+<!-- ══ S2b — LE CADEAU, LA CARTE, LE WALLET ══ -->
 <div class="screen" id="screenWallet">
-<div class="screen-inner" role="main" tabindex="-1">
-<div class="sw-wrap">
-
-  <div class="sw-prize">
-    <span class="sw-prize-emoji" id="swEmoji" aria-hidden="true">🥐</span>
-    <div class="sw-prize-name" id="swName">Croissant Artisanal</div>
+<div class="screen-inner ecran" role="main" tabindex="-1">
+  <header class="barre"><span data-barre-logo></span><span data-barre-nom></span></header>
+  <div class="gain">
+    <span class="sw-prize-emoji vignette" id="swEmoji" aria-hidden="true"></span>
+    <div><p class="sur">Vous avez gagné</p><div id="swName" class="lot" role="heading" aria-level="1">Croissant Artisanal</div></div>
   </div>
 
-  <!-- 22/09 — message d'accueil, texte validé par l'utilisateur. -->
+  <!-- 22/09 — message d'accueil, texte validé par l'utilisateur ; 04/11/2026 : au « vous » (arbitrage 1 du 30/10).
+       04/11/2026 (relecture) — le nom du commerce colle au mot « fidélité » : l'espace qui les sépare est posée par
+       la feuille (#swShop:not(:empty)::before) SEULEMENT quand il y a un nom. Sans nom (démo hors registre), la
+       phrase dit « Voici votre carte de fidélité. » au lieu de « … fidélité votre boutique. ». -->
   <div class="sw-welcome" id="swWelcome">
-    <span class="sw-w-titre" role="heading" aria-level="1">Voici ta carte de fidélité <span id="swShop">…</span>.</span>
-    À chaque passage, tu cumules des tampons et tu gagnes des produits offerts.
-    Ton premier cadeau, <b id="swGain">…</b>, t'attend déjà dessus : ajoute ta carte à ton téléphone pour le récupérer en boutique.
+    <span class="sw-w-titre titre-carte" role="heading" aria-level="2">Voici votre carte de fidélité<span id="swShop"></span>.</span>
+    <!-- 04/11/2026 — l'aperçu du VRAI pass (son fond, ses libellés, son bandeau), rempli par poserApercuPass() -->
+    <figure class="pass" data-pass aria-label="Votre carte de fidélité">
+      <div class="pass-tete"><span class="pass-marque" data-pass-tete></span><span class="type">Carte de fidélité</span></div>
+      <div class="pass-bandeau" data-pass-bandeau hidden></div>
+      <div class="pass-champs"><p class="libelle">Cadeau à récupérer</p><p class="valeur" data-pass-lot>…</p></div>
+    </figure>
+    <p class="note">À chaque passage, vous cumulez des tampons et vous gagnez des produits offerts.
+    Votre premier cadeau, <b id="swGain">…</b>, vous attend déjà dessus : ajoutez votre carte à votre téléphone pour le récupérer en boutique.</p>
   </div>
+  <div class="pousse"></div>
 
   <button class="btn-wallet" id="btnWallet" onclick="addToWallet(this)" aria-label="Ajouter à l’app Cartes Apple">
     <!-- 22/09 — le badge OFFICIEL d'Apple (pack « Add to Apple Wallet », FR, RGB), tel quel.
-         Avant : une copie redessinée en SVG — ce que la charte d'Apple interdit. -->
-    <img class="sw-badge" src="assets/wallet/apple-wallet-badge-fr.svg" alt="Ajouter à l’app Cartes Apple">
+         Avant : une copie redessinée en SVG — ce que la charte d'Apple interdit.
+         04/11/2026 : en grand (280 px de large, ≈ 87 px de haut). -->
+    <img class="sw-badge" src="assets/wallet/apple-wallet-badge-fr.svg" alt="Ajouter à l’app Cartes Apple" width="280" height="87">
     <span class="sw-loading"><span class="sw-spin"></span> Préparation…</span>
   </button>
   <!-- 22/09 — Android : le bouton OFFICIEL de Google. Montré par afterWheel() pour un commerce
        servi par Perify ; à l'essai derrière ?gw=1 jusqu'au 24/09 (publication accordée par
        Google ce jour-là : ouvert à tous, ?gw=0 l'éteint sur l'appareil). Même préparation que
-       pour Apple : wallet_start signe un lien vers /api/gpass au lieu de /api/pass. -->
+       pour Apple : wallet_start signe un lien vers /api/gpass au lieu de /api/pass.
+       04/11/2026 (relecture) — sous 340 px de large, le bouton long rétrécissait sous 48 px de haut (45 px à
+       320 px) : on y sert le badge COMPACT officiel du même pack (google-wallet-badge-fr.svg, 199 × 55), à
+       180 px de large ≈ 50 px de haut. Les deux fichiers restent tels quels. -->
   <button class="btn-wallet" id="btnGWallet" hidden onclick="addToWallet(this)" aria-label="Ajouter au Google Wallet">
-    <img class="sw-badge" src="assets/wallet/google-wallet-bouton-fr.svg" alt="Ajouter au Google Wallet">
+    <picture><source media="(max-width:339px)" srcset="assets/wallet/google-wallet-badge-fr.svg" width="199" height="55"><img class="sw-badge" src="assets/wallet/google-wallet-bouton-fr.svg" alt="Ajouter au Google Wallet" width="320" height="50"></picture>
     <span class="sw-loading"><span class="sw-spin"></span> Préparation…</span>
   </button>
 
-  <button class="sw-alt" onclick="goToForm()">Recevoir par email</button>
-
-</div>
+  <button class="sw-alt bouton-texte" onclick="goToForm()">Recevoir par e-mail</button>
 </div>
 </div>
 <!-- ══ S3 — FORMULAIRE ══ -->
 <div class="screen" id="screen3">
-<div class="screen-inner" role="main" tabindex="-1">
-<div class="s3-wrap">
-  <div class="s3-card">
-    <div class="s3-hero">
-      <span class="s3-emoji-big" id="s3Emoji" aria-hidden="true">🥐</span>
-      <div class="s3-congrats" role="heading" aria-level="1">Félicitations !</div>
-      <div class="s3-prize-pill" id="s3PrizeLabel">Votre cadeau</div>
-    </div>
-    <div class="s3-body">
-      <div class="s3-section-title" role="heading" aria-level="2">Recevez votre coupon</div>
-      <div class="s3-section-sub">Un code unique vous sera envoyé par email</div>
-      <div class="field"><label class="field-label" for="fieldPrenom">Prénom</label><input class="field-input" type="text" id="fieldPrenom" placeholder="Jean" autocomplete="given-name"></div>
-      <div class="field"><label class="field-label" for="fieldNom">Nom</label><input class="field-input" type="text" id="fieldNom" placeholder="Dupont" autocomplete="family-name"></div>
-      <div class="field"><label class="field-label" for="fieldEmail">Email</label><input class="field-input" type="email" id="fieldEmail" placeholder="jean@exemple.fr" autocomplete="email"></div>
-      <div class="field"><label class="field-label" for="fieldNaissance">Date de naissance <span style="text-transform:none;letter-spacing:0;font-weight:400;color:var(--muted2)">— pour votre cadeau 🎂 (facultatif)</span></label><input class="field-input" type="date" id="fieldNaissance" autocomplete="bday"></div>
-      <!-- Consentement RGPD (opt-in explicite, non pré-coché). Ne conditionne PAS le coupon (email transactionnel). -->
-      <label class="s3-consent" for="fieldOptin">
-        <input type="checkbox" id="fieldOptin">
-        <!-- ⚠️ « alertes anti-gaspi » n'est vrai que chez les commerces qui ont
-             pris le module : faire consentir un client à quelque chose qui
-             n'existe pas chez ce commerçant vide le consentement de son sens.
-             Le texte est ajusté depuis le registre (champ `antigaspi`). -->
-        <span id="consentTxt">J'accepte de recevoir par email les <b>offres</b> et <b>alertes anti-gaspi</b> de la boutique <span style="color:var(--muted2)">(désactivable à tout moment sur ma carte fidélité)</span></span>
-      </label>
-      <button class="s3-submit" onclick="submitForm()">Recevoir mon coupon 🎁</button>
-      <div class="s3-legal">🔒 Données sécurisées · Non revendues · RGPD</div>
+<div class="screen-inner ecran" role="main" tabindex="-1">
+  <header class="barre"><span data-barre-logo></span><span data-barre-nom></span></header>
+  <div class="entete-lot">
+    <span class="s3-emoji-big vignette" id="s3Emoji" aria-hidden="true"></span>
+    <div>
+      <div class="titre" role="heading" aria-level="1">Félicitations !</div>
+      <p class="chapo" id="s3PrizeLabel">Votre cadeau</p>
     </div>
   </div>
-</div>
+  <div class="titre-section" role="heading" aria-level="2">Recevez votre coupon</div>
+  <p class="note">Un code unique vous sera envoyé par e-mail.</p>
+  <!-- Pas de <form> : la touche Entrée rechargerait la page (submitForm est appelée par le bouton). -->
+  <div class="champs">
+    <div class="deux">
+      <div class="champ"><label class="field-label" for="fieldPrenom">Prénom</label><input class="field-input" type="text" id="fieldPrenom" autocomplete="given-name"></div>
+      <div class="champ"><label class="field-label" for="fieldNom">Nom</label><input class="field-input" type="text" id="fieldNom" autocomplete="family-name"></div>
+    </div>
+    <div class="champ"><label class="field-label" for="fieldEmail">E-mail</label><input class="field-input" type="email" inputmode="email" id="fieldEmail" autocomplete="email"></div>
+    <!-- type="date" gardé : submitForm() lit AAAA-MM-JJ -->
+    <div class="champ"><label class="field-label" for="fieldNaissance">Date de naissance <span class="aide">(facultatif)</span></label><input class="field-input" type="date" id="fieldNaissance" autocomplete="bday" aria-describedby="aideNaissance"><p class="note" id="aideNaissance">Pour votre cadeau d’anniversaire.</p></div>
+    <!-- Consentement RGPD (opt-in explicite, non pré-coché). Ne conditionne PAS le coupon (email transactionnel). -->
+    <label class="s3-consent" for="fieldOptin">
+      <input type="checkbox" id="fieldOptin">
+      <!-- ⚠️ « alertes anti-gaspi » n'est vrai que chez les commerces qui ont
+           pris le module : faire consentir un client à quelque chose qui
+           n'existe pas chez ce commerçant vide le consentement de son sens.
+           Le texte est ajusté depuis le registre (champ `antigaspi`). -->
+      <span id="consentTxt">J'accepte de recevoir par e-mail les <b>offres</b> et <b>alertes anti-gaspi</b> de la boutique <span style="color:var(--encre-2)">(désactivable à tout moment sur ma carte fidélité)</span></span>
+    </label>
+    <button class="s3-submit bouton" onclick="submitForm()">Recevoir mon coupon</button>
+  </div>
+  <p class="note securite"><span data-picto="cadenas"></span><span>Données sécurisées et non revendues (RGPD).</span></p>
 </div>
 </div>
 
 <!-- ══ S4 — SUCCÈS ══ -->
 <div class="screen" id="screen4">
-<div class="screen-inner" role="main" tabindex="-1">
-<div class="s4-wrap">
-  <div class="s4-check" aria-hidden="true">✓</div>
-  <div class="s4-title" role="heading" aria-level="1">Email envoyé !</div>
-  <div class="s4-desc">Votre code est prêt. Montrez simplement cet écran en caisse, ou retrouvez-le dans votre email.<br>Puis <b class="s4-fort">scannez le QR code</b> du présentoir pour <b class="s4-fort">débloquer votre compte fidélité</b>.</div>
-  <div class="s4-code-block">
-    <div class="s4-code-label">Votre code unique</div>
-    <div class="s4-code-value" id="s4code">—</div>
-    <div class="s4-code-sub">Valable 30 jours · Usage unique</div>
+<div class="screen-inner ecran" role="main" tabindex="-1">
+  <header class="barre"><span data-barre-logo></span><span data-barre-nom></span></header>
+  <div class="etat-icone succes mt-5" aria-hidden="true"><span data-picto="coche"></span></div>
+  <div class="titre centre mt-4" role="heading" aria-level="1">E-mail envoyé !</div>
+  <p class="chapo centre mt-2">Votre code est prêt. Montrez simplement cet écran en caisse, ou retrouvez-le dans votre e-mail.<br>Puis <b>scannez le QR code</b> du présentoir pour <b>débloquer votre compte fidélité</b>.</p>
+  <div class="surface code-bloc">
+    <p class="libelle-code">Votre code unique</p>
+    <div id="s4code">—</div>
+    <p class="note">Valable 30 jours · Usage unique</p>
   </div>
-</div>
 </div>
 </div>
 
@@ -722,16 +673,25 @@ a:focus-visible,button:focus-visible{outline:3px solid var(--gold3);outline-offs
      Wallet : on affiche donc cet écran 1,5 s après avoir ouvert le pass, avec LA consigne qui
      compte — scanner le QR du présentoir, ce qui ouvre sa carte et déclenche son premier passage. -->
 <div class="screen" id="screenFin">
-<div class="screen-inner" role="main" tabindex="-1">
-<div class="s4-wrap">
-  <div class="s4-check" aria-hidden="true">✓</div>
-  <div class="s4-title" role="heading" aria-level="1">Carte ajoutée&nbsp;!</div>
-  <div class="s4-desc"><b class="s4-fort">Scannez le QR code</b> du présentoir pour <b class="s4-fort">débloquer votre compte fidélité</b>.<br>Votre cadeau, <b id="finGain">…</b>, vous y attend.</div>
-  <div class="s4-code-block">
-    <div class="s4-code-label">Et ensuite</div>
-    <div class="s4-etapes"><span><b>1</b>Scannez le QR au comptoir</span><span><b>2</b>Votre carte s'ouvre, votre passage est compté</span><span><b>3</b>Récupérez votre cadeau en caisse</span></div>
+<div class="screen-inner ecran" role="main" tabindex="-1">
+  <header class="barre"><span data-barre-logo></span><span data-barre-nom></span></header>
+  <div class="pass-zone">
+    <figure class="pass" data-pass aria-label="Votre carte de fidélité">
+      <div class="pass-tete"><span class="pass-marque" data-pass-tete></span><span class="type">Carte de fidélité</span></div>
+      <div class="pass-bandeau" data-pass-bandeau hidden></div>
+      <div class="pass-champs"><p class="libelle">Cadeau à récupérer</p><p class="valeur" data-pass-lot>…</p></div>
+    </figure>
+    <span class="pass-coche" aria-hidden="true"><span data-picto="coche"></span></span>
   </div>
-</div>
+  <div class="titre centre mt-6" role="heading" aria-level="1">Carte ajoutée&nbsp;!</div>
+  <p class="chapo centre mt-2"><b>Scannez le QR code</b> du présentoir pour <b>débloquer votre compte fidélité</b>.<br>Votre cadeau, <b id="finGain">…</b>, vous y attend.</p>
+  <div class="titre-section" role="heading" aria-level="2">Et ensuite</div>
+  <ol class="liste etapes">
+    <li class="rangee"><span class="num">1</span><span>Scannez le QR au comptoir</span></li>
+    <li class="rangee"><span class="num">2</span><span>Votre carte s'ouvre, votre passage est compté</span></li>
+    <li class="rangee"><span class="num">3</span><span>Récupérez votre cadeau en caisse</span></li>
+  </ol>
+  <div class="pousse"><p class="propulse">Propulsé par <img src="assets/perify-logo-nuit.png" alt="Perify" width="53" height="22"></p></div>
 </div>
 </div>
 
@@ -743,58 +703,47 @@ a:focus-visible,button:focus-visible{outline:3px solid var(--gold3);outline-offs
      serait la deuxième pire option — la pire étant de le laisser tourner la roue
      pour lui retirer le lot ensuite. -->
 <div class="screen" id="screenAlready">
-<div class="screen-inner" role="main" tabindex="-1">
-<div class="already-wrap">
-  <span class="already-emoji" aria-hidden="true">🎫</span>
-  <div class="already-title" role="heading" aria-level="1">Votre carte vous attend</div>
-  <div class="already-desc" id="alreadyDesc">Vous avez déjà reçu votre cadeau de bienvenue. Ouvrez votre carte pour votre tampon du jour.</div>
-  <a class="already-cta" id="alreadyCta" href="#">Ouvrir ma carte →</a>
-</div>
+<div class="screen-inner ecran" role="main" tabindex="-1">
+  <header class="barre"><span data-barre-logo></span><span data-barre-nom></span></header>
+  <div class="etat">
+    <div class="etat-icone" aria-hidden="true"><span data-picto="carte"></span></div>
+    <div class="titre" role="heading" aria-level="1">Votre carte vous attend</div>
+    <p class="chapo" id="alreadyDesc">Vous avez déjà reçu votre cadeau de bienvenue. Ouvrez votre carte pour votre tampon du jour.</p>
+    <a class="already-cta bouton" id="alreadyCta" href="#">Ouvrir ma carte</a>
+  </div>
 </div>
 </div>
 
 <!-- PROGRAMME TERMINÉ (23/09) — le serveur répond `commerce_arrete` (fin de contrat) :
      plus de roue, plus de carte à créer ; on le dit avec les mots du commerçant. -->
 <div class="screen" id="screenArrete">
-<div class="screen-inner" role="main" tabindex="-1">
-<div class="already-wrap">
-  <span class="already-emoji" aria-hidden="true">🏁</span>
-  <div class="already-title" id="arreteTitre" role="heading" aria-level="1">Programme terminé</div>
-  <div class="already-desc" id="arreteDesc">Ce programme de fidélité est terminé. Merci de votre fidélité !</div>
-</div>
+<div class="screen-inner ecran" role="main" tabindex="-1">
+  <header class="barre"><span data-barre-logo></span><span data-barre-nom></span></header>
+  <div class="etat">
+    <div class="etat-icone" aria-hidden="true"><span data-picto="drapeau"></span></div>
+    <div class="titre" id="arreteTitre" role="heading" aria-level="1">Programme terminé</div>
+    <p class="chapo" id="arreteDesc">Ce programme de fidélité est terminé. Merci de votre fidélité !</p>
+  </div>
 </div>
 </div>
 
-<!-- Theming multi-commerce (?type=) — boulangerie inchangée si absent -->
+<!-- Theming multi-commerce (?type=) — boulangerie inchangée si absent. 04/11/2026 (D1) : le NOM et le LOGO seulement ;
+     les couleurs sont dans PERIFY_HABILLAGE (en tête de page), T (couleurs) et E (emoji, logo blanc) sont retirés. -->
 <script>
+/* 04/11/2026 — LR : le logo COULEUR du commerce (pour fond clair) : accueil, barre, bouton de la roue. Sorti du
+   DOMContentLoaded (poserIdentite le lit), même nom qu'avant. Un commerce sans fichier : son monogramme. */
+var LR={baps:'assets/baps/logo.png'};
 (function(){
-  var T={baps:['#FF6B2C','#E85A1B','#FFC53D'],fleuriste:['#C8568E','#E084B0','#F4B6D2'],pizzeria:['#C8442E','#E2664E','#F2A07E'],vape:['#6D5AE0','#8A7AF0','#B6ABFF'],restaurant:['#9A3F4C','#B85A68','#D78F99'],primeur:['#E0892E','#F0A94E','#F8C87C']};
   var N={baps:"Le Bap's",fleuriste:'Au Jardin de Rose',pizzeria:'Bella Napoli',vape:'VapoStore',restaurant:'Le Bistrot',primeur:'Le Panier Frais'};
-  var E={baps:'assets/baps/logo-blanc.png',fleuriste:'🌷',pizzeria:'🍕',vape:'💨',restaurant:'🍽️',primeur:'🥕'};
   var t=(new URLSearchParams(location.search).get('type')||'').toLowerCase();
   window.NOM_HABILLAGE = N[t] || '';   // 07/10/2026 : lu par nommerLeCommerce() (audit légal, point 21)
-  if(!T[t]) return;
-  function hx(h,a){h=h.replace('#','');var n=parseInt(h,16);return 'rgba('+((n>>16)&255)+','+((n>>8)&255)+','+(n&255)+','+a+')';}
-  var r=document.documentElement.style;
-  r.setProperty('--gold',T[t][0]); r.setProperty('--gold2',T[t][1]); r.setProperty('--gold3',T[t][2]); r.setProperty('--gold-border',hx(T[t][0],.35));
   document.addEventListener('DOMContentLoaded',function(){
-    var vn=document.querySelector('.viewer-name'); if(vn) vn.textContent=N[t];
-    var fb=document.getElementById('croissantFallback');
-    if(fb){
-      /* Un commerce peut fournir un vrai visuel plutot qu'un emoji. */
-      /* Pas de regex ici : la barre oblique d'un chemin y demande un echappement,
-         et un echappement perdu referme l'expression trop tot — c'est exactement
-         ce qui a casse tout le script la premiere fois. indexOf ne peut pas. */
-      if(String(E[t]).indexOf('assets/') === 0) fb.innerHTML='<img src="'+E[t]+'" alt="" style="width:150px;height:150px;object-fit:contain;display:block;filter:drop-shadow(0 14px 26px rgba(0,0,0,.45))">';
-      else fb.textContent=E[t];
+    if(N[t]){
+      var vn=document.querySelector('.viewer-name'); if(vn) vn.textContent=N[t];
+      document.title=N[t];
     }
-    document.title=N[t];
-    /* 23/09 — le logo du commerce sur la pastille blanche en haut de la roue (logo couleur,
-       pas la version blanche : elle disparaîtrait sur fond blanc). Un commerce sans fichier
-       garde son emoji ; sans rien, le cadeau 🎁 posé dans le HTML reste. */
-    var LR={baps:'assets/baps/logo.png'};
-    var wl=document.getElementById('wheelLogo');
-    if(wl){ if(LR[t]) wl.innerHTML='<img src="'+LR[t]+'" alt="">'; else if(String(E[t]).indexOf('assets/')!==0) wl.textContent=E[t]; }
+    /* 04/11/2026 — logo ou monogramme, et nom, sur l'accueil, la barre et la roue (cf. poserIdentite) */
+    if(typeof poserIdentite === 'function') poserIdentite();
   });
 })();
 </script>
@@ -808,31 +757,8 @@ let PRIZES = [
   {name:"Baguette Tradition",  emoji:"🥖", prob:.98},
   {name:"Pâtisserie du Jour",  emoji:"🍰", prob:1}
 ];
-/* ── Habillage par commerce (?type=) ───────────────────────────────────────────
-   Le fond et l'or de cet écran étaient en dur : un vendeur de burgers héritait du
-   vert boulangerie. On surcharge ici les variables posées dans :root.
-   Un type absent de cette table garde l'habillage boulangerie — aucun risque de
-   casser un commerce existant. */
-(function(){
-  var HABILLAGE = {
-    baps: { bg:'#1B1F3B',
-            a:'rgba(255,107,44,.30)', b:'rgba(0,0,0,.45)',
-            c:'rgba(255,197,61,.12)', d:'rgba(255,107,44,.10)',
-            gold:'#FF6B2C', gold2:'#E85A1B', gold3:'#FFC53D',
-            border:'rgba(255,107,44,.38)', theme:'#1B1F3B' }
-  };
-  var t = HABILLAGE[(new URLSearchParams(location.search).get('type')||'').toLowerCase()];
-  if(!t) return;
-  var r = document.documentElement.style;
-  r.setProperty('--bg',t.bg);
-  r.setProperty('--bg-a',t.a); r.setProperty('--bg-b',t.b);
-  r.setProperty('--bg-c',t.c); r.setProperty('--bg-d',t.d);
-  /* L'or est deja pose par le bloc de theming plus haut (tables T/N/E) : on ne
-     le redefinit PAS ici, deux sources de verite pour une meme couleur finissent
-     toujours par diverger. Ce bloc ne s'occupe que du FOND. */
-  var m = document.querySelector('meta[name="theme-color"]');
-  if(m && t.theme) m.setAttribute('content', t.theme);
-})();
+/* 🗑️ 04/11/2026 (D1) — le bloc HABILLAGE (fond nuit et theme-color du Bap's, posés sur --bg…) est RETIRÉ : le fond est
+   clair pour tous, et les couleurs d'un commerce viennent de PERIFY_HABILLAGE (en tête de page, même bloc que card.html). */
 
 /* Lots thémés par commerce (?type=) — boulangerie inchangée */
 (function(){ var PT={
@@ -1233,6 +1159,168 @@ brancherLienAvis();               // 07/10/2026 : dès que le bouton existe, plu
   }).catch(function(){});
 })();
 
+/* ═══ 04/11/2026 — D1 « APP NATIVE ÉPURÉE » : CE QUE LES ÉCRANS MONTRENT (choix de Valentin du 30/10) ══════════
+   Rien ici ne parle au serveur ni ne choisit un écran : ces fonctions REMPLISSENT les écrans (pictogrammes, logo
+   ou monogramme, nom de la barre, lots à gagner, aperçu du pass) avec ce que la page sait déjà : LR et
+   NOM_HABILLAGE (bloc d'habillage), PRIZES, la fiche du registre (BA), PERIFY_HABILLAGE (en tête de page).
+   ⚠️ Placé APRÈS nommerLeCommerce (qui vide le nom de Falman pour un autre commerce : on lit donc le bon nom), et
+   JAMAIS entre « let etatAvis = 'attente'; » et « brancherLienAvis(); » : test-lien-avis exécute cette tranche
+   telle quelle, avec ses seules doublures. */
+
+/* Les pictogrammes : aucun emoji ne sert d'icône. Trait arrondi, currentColor (la couleur vient de la feuille).
+   cadeau, coche, chevron et cadenas : ceux de la maquette D1 (D1-natif-epure/outils/fabriquer.mjs, objet I) ;
+   alerte, croix, drapeau et carte : dessinés le 04/11/2026 dans le même trait. Les huit dessins sont les MÊMES que
+   ceux de card.html (relecture du 04/11 : le même état « programme terminé » montrait deux drapeaux) ; seule la
+   classe (picto / icone, la taille vient de la feuille) et focusable diffèrent — _outils/tests/d1/test-d1-css.mjs compare. */
+const PICTO = {
+  cadeau: '<svg class="picto" viewBox="0 0 24 24" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="8.5" width="17" height="4" rx="1"/><path d="M5 12.5V20h14v-7.5M12 8.5V20"/><path d="M12 8.5C10.6 5 6.8 4.6 6.8 6.9c0 1.4 2 1.6 5.2 1.6zM12 8.5c1.4-3.5 5.2-3.9 5.2-1.6 0 1.4-2 1.6-5.2 1.6z"/></g></svg>',
+  coche: '<svg class="icone" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  chevron: '<svg class="icone chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5.5l6.5 6.5L9 18.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  cadenas: '<svg class="icone" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10.5" width="14" height="10" rx="2.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5" fill="none" stroke="currentColor" stroke-width="2"/></svg>',
+  alerte: '<svg class="icone" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 4.3L2.9 17.4a2 2 0 0 0 1.7 3h14.8a2 2 0 0 0 1.7-3L13.7 4.3a2 2 0 0 0-3.4 0z"/><path d="M12 9.5v4.3M12 17.1v.1"/></g></svg>',
+  croix: '<svg class="icone" viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>',
+  drapeau: '<svg class="icone" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5.5 21V3.5"/><path d="M5.5 4.5c4.2-2 7.3 2 13 0v9.3c-5.7 2-8.8-2-13 0"/></g></svg>',
+  carte: '<svg class="icone" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5.5" width="18" height="13" rx="2.5"/><path d="M3 10h18M7 14.5h4"/></g></svg>'
+};
+/* Les pictogrammes du balisage : chaque <span data-picto="nom"> devient son dessin. */
+function poserPictos(){
+  document.querySelectorAll('[data-picto]').forEach(function(s){
+    var dessin = PICTO[s.getAttribute('data-picto')];
+    if (dessin) s.outerHTML = dessin; else s.remove();
+  });
+}
+poserPictos();
+
+/* L'initiale d'un nom, pour le monogramme : sa première lettre (ou chiffre), en capitale ; rien pour un nom vide. */
+function initialeDe(nom){
+  var m = String(nom || '').match(/[0-9A-Za-zÀ-ÖØ-öø-ÿ]/);
+  return m ? m[0].toUpperCase() : '';
+}
+/* Le texte d'un élément, chaque <br> compté comme une espace (« Falman<br>Emmanuelle » → « Falman Emmanuelle »). */
+function texteDe(el){
+  if (!el) return '';
+  var t = '';
+  el.childNodes.forEach(function(n){ t += n.nodeName === 'BR' ? ' ' : (n.textContent || ''); });
+  return t.replace(/\s+/g, ' ').trim();
+}
+let NOM_REGISTRE = '';           // nom_court (sinon nom) du commerce, quand le registre a répondu
+let FICHE_AFFICHAGE = null;      // sa fiche du registre (logo_blanc, nom_carte), pour l'aperçu du pass
+/* Le nom du commerce à afficher (barre, monogramme, aperçu du pass) — LA MÊME RÈGLE que nommerLeCommerce : pour
+   une adresse « autre » dont le nom écrit n'est pas le sien, seul le registre le donne (jamais Falman, jamais
+   « Au Jardin de Rose » pour ?c=dupont&type=fleuriste) ; sinon le nom de la table d'habillage (N), puis celui du
+   registre, puis celui écrit dans la page. */
+function nomAffiche(){
+  var A = (typeof PERIFY_ADRESSE !== 'undefined' && PERIFY_ADRESSE) || {};
+  var metierGoogle = !!(A.google && A.google.metiers.indexOf(A.metier || '') >= 0);
+  var ecrit = texteDe(document.querySelector('.viewer-name'));
+  if (A.sorte === 'autre' && !(window.NOM_HABILLAGE && !metierGoogle)) return NOM_REGISTRE || ecrit;
+  return String(window.NOM_HABILLAGE || NOM_REGISTRE || ecrit || '').trim();
+}
+/* L'identité du commerce : sur l'accueil, son logo couleur (LR) en 96 px — son nom reste lu par les lecteurs
+   d'écran — ou son monogramme puis son nom ; dans la barre de chaque écran, logo ou monogramme en 34 px et son
+   nom ; dans le bouton de la roue au lancement, son logo ou son monogramme (plus de 🎁). Sans nom connu (autre
+   commerce, registre pas encore là), ni monogramme ni nom : jamais l'initiale de Falman. */
+function poserIdentite(){
+  var t = (new URLSearchParams(location.search).get('type') || '').toLowerCase();
+  var logo = (typeof LR !== 'undefined' && LR[t]) || '';
+  var nom = nomAffiche(), ini = initialeDe(nom);
+  var mono = ini ? '<span class="monogramme" aria-hidden="true">' + ini + '</span>' : '';
+  var img = function(taille){ return '<img src="' + logo + '" alt="" width="' + taille + '" height="' + taille + '">'; };
+  var idv = document.getElementById('identiteVisuel');
+  if (idv) {
+    idv.innerHTML = logo ? img(96) : mono;
+    var bloc = idv.parentNode;
+    if (bloc && bloc.classList) { bloc.classList.toggle('avec-logo', !!logo); bloc.classList.add('prete'); }
+  }
+  document.querySelectorAll('[data-barre-logo]').forEach(function(el){ el.innerHTML = logo ? img(34) : mono; });
+  document.querySelectorAll('[data-barre-nom]').forEach(function(el){ el.textContent = nom; });
+  var wl = document.getElementById('wheelLogo');
+  if (wl) wl.innerHTML = logo ? '<img src="' + logo + '" alt="">' : mono;
+}
+poserIdentite();
+document.addEventListener('DOMContentLoaded', poserIdentite);   // inscrit APRÈS nommerLeCommerce : il passe après lui
+BA.pret().then(function(com){
+  /* Registre muet : BA_REPLI prête le serveur de Falman à une adresse « historique » qui ne le désigne pas (Au
+     Jardin de Rose) — jamais son nom ni sa fiche (même règle que brancherLienAvis). */
+  var A = (typeof PERIFY_ADRESSE !== 'undefined' && PERIFY_ADRESSE) || {};
+  var autreQueLeRepli = A.cle ? A.cle !== BA_REPLI.cle : (A.metier ? A.metier !== BA_REPLI.metier : !!(A.prefixe && A.prefixe !== BA_REPLI.prefixe));
+  if (com && !(com === BA_REPLI && autreQueLeRepli)) {
+    FICHE_AFFICHAGE = com;
+    NOM_REGISTRE = String(com.nom_court || com.nom || '').trim();
+  }
+  poserIdentite();               // inscrit APRÈS celui de nommerLeCommerce : le nom posé par lui est lu
+}).catch(function(){});
+
+/* « À gagner » sur l'accueil : les lots de la roue, dans l'ordre de PRIZES, photo ou pictogramme cadeau.
+   Jamais un mot sur la rareté d'un lot (arbitrage 4 du 30/10). */
+function poserLots(){
+  var ul = document.getElementById('lotsAGagner');
+  if (!ul) return;
+  ul.textContent = '';
+  var sec = ul.parentNode;   // la section « À gagner », cachée (hidden) tant qu'elle est vide
+  if (sec && sec.classList && sec.classList.contains('a-gagner')) sec.hidden = !PRIZES.length;
+  PRIZES.forEach(function(p){
+    var li = document.createElement('li');
+    var v = document.createElement('span');
+    v.className = 'vignette';
+    v.setAttribute('aria-hidden', 'true');
+    poserVisuelLot(v, p, 80);
+    var n = document.createElement('span');
+    n.textContent = p.name;
+    li.appendChild(v); li.appendChild(n);
+    ul.appendChild(li);
+  });
+}
+poserLots();   // tout de suite (le plan disait : à l'événement load) — l'accueil ne saute pas quand les lots arrivent
+
+/* L'aperçu du pass (écran Wallet et écran de fin), au modèle du vrai (wallet-service : buildPass.js, theme.js) :
+   en tête son logo blanc (registre logo_blanc) ou, sans logo, son monogramme et le nom de sa carte (nom_carte,
+   sinon nom_court, sinon nom) ; son bandeau (PERIFY_HABILLAGE, chargé seulement ici) ; le champ « Cadeau à
+   récupérer » (le libellé du vrai pass, en casse normale) avec le lot. JAMAIS le compteur de tampons du vrai
+   pass : on ne l'invente pas. Appelée par afterWheel(), juste avant d'afficher l'écran Wallet. */
+function poserApercuPass(){
+  var H = (typeof PERIFY_HABILLAGE !== 'undefined' && PERIFY_HABILLAGE && PERIFY_HABILLAGE.couleurs) || {};
+  var com = FICHE_AFFICHAGE || {};
+  var nom = nomAffiche();
+  var nomCarte = String(com.nom_carte || com.nom_court || com.nom || nom || '').trim();
+  var logoBlanc = String(com.logo_blanc || '').trim();
+  var lot = wonPrize ? wonPrize.name : 'Votre cadeau';
+  var sansLogo = function(tete){
+    tete.textContent = '';
+    var s = document.createElement('span');
+    s.className = 'nom';
+    var ini = initialeDe(nom || nomCarte);
+    if (ini) { var m = document.createElement('span'); m.className = 'monogramme'; m.setAttribute('aria-hidden', 'true'); m.textContent = ini; s.appendChild(m); }
+    s.appendChild(document.createTextNode(nomCarte));
+    tete.appendChild(s);
+  };
+  document.querySelectorAll('figure.pass[data-pass]').forEach(function(f){
+    var tete = f.querySelector('[data-pass-tete]');
+    if (tete) {
+      if (logoBlanc) {
+        tete.textContent = '';
+        var i = document.createElement('img');
+        i.className = 'logo'; i.alt = nom || nomCarte; i.width = 40; i.height = 40;
+        i.onerror = function(){ sansLogo(tete); };   // logo injoignable : monogramme et nom, jamais une image cassée
+        i.src = logoBlanc;
+        tete.appendChild(i);
+      } else sansLogo(tete);
+    }
+    var b = f.querySelector('[data-pass-bandeau]');
+    if (b) {
+      if (H.bandeau) {
+        var bi = b.querySelector('img');
+        if (!bi) { bi = document.createElement('img'); bi.alt = ''; bi.width = 750; bi.height = 288; b.appendChild(bi); }
+        bi.onerror = function(){ b.hidden = true; };
+        if (bi.getAttribute('src') !== H.bandeau) bi.setAttribute('src', H.bandeau);
+        b.hidden = false;
+      } else b.hidden = true;
+    }
+    var v = f.querySelector('[data-pass-lot]');
+    if (v) v.textContent = lot;
+  });
+}
+
 /* Le texte du consentement, ajusté au commerce. On ne promet des « alertes
    anti-gaspi » qu'à ceux qui ont réellement le module : un consentement qui
    porte sur une chose inexistante n'est pas un consentement.
@@ -1244,8 +1332,8 @@ function brancherConsentement(){
   if(!el || typeof BA === 'undefined') return;
   BA.pret().then(function(com){
     if(!com || com.antigaspi !== false) return;      // le commerce a le module : texte inchangé
-    el.innerHTML = 'J\'accepte de recevoir par email les <b>offres</b> et <b>bons plans</b> de la boutique '
-      + '<span style="color:var(--muted2)">(désactivable à tout moment sur ma carte fidélité)</span>';
+    el.innerHTML = 'J\'accepte de recevoir par e-mail les <b>offres</b> et <b>bons plans</b> de la boutique '
+      + '<span style="color:var(--encre-2)">(désactivable à tout moment sur ma carte fidélité)</span>';
   }).catch(function(){});
 }
 
@@ -1296,15 +1384,19 @@ window.addEventListener("load",()=>{
 /* ─── Tirage ─── */
 /* ─── Tirage (probas inchangées : 50 % / 48 % / 2 %) ─── */
 /* Pose le visuel d'un lot : l'image reelle du produit si le commerce en fournit
-   une, l'emoji sinon. Un seul endroit, parce que trois ecrans l'affichent. */
+   une, l'emoji sinon. Un seul endroit, parce que trois ecrans l'affichent.
+   04/11/2026 (D1) — sans image, le pictogramme cadeau (plus d'emoji) ; la TAILLE vient de la feuille de style (la
+   vignette : photo entière, jamais coupée, sans ombre) ; une image qui ne charge pas laisse place au pictogramme. */
 function poserVisuelLot(el, prize, taille){
   if(!el) return;
-  if (prize && prize.img) {
-    el.innerHTML = '<img src="' + prize.img + '" alt="" style="width:' + taille
-      + 'px;height:' + taille + 'px;object-fit:contain;display:block;margin:0 auto;'
-      + 'filter:drop-shadow(0 6px 12px rgba(0,0,0,.18))">';
+  const photo = !!(prize && prize.img);
+  el.classList.toggle('photo', photo);
+  if (photo) {
+    el.innerHTML = '<img src="' + prize.img + '" alt="">';
+    const i = el.querySelector('img');
+    if (i) i.onerror = function(){ el.classList.remove('photo'); el.innerHTML = PICTO.cadeau; };
   } else {
-    el.textContent = (prize && prize.emoji) || '🎁';
+    el.innerHTML = PICTO.cadeau;
   }
 }
 
@@ -1397,6 +1489,7 @@ function goToWheel(){ allerVersRoue(); }
    Le lot est pré-tiré par drawPrize() (probas inchangées : 50 / 48 / 2).
    La roue est purement visuelle : elle s'arrête sur le lot déjà tiré.
    6 secteurs = 3 lots × 2 → roue visuellement pleine et équilibrée.
+   04/11/2026 — plus « × 2 » : le plus fréquent sur 3 secteurs, le moyen sur 2, le plus rare sur 1 (secteursDeLaRoue).
 ═══════════════════════════════════════════ */
 const WHEEL_SEGMENTS = 6;
 const SEG_ANGLE      = 360 / WHEEL_SEGMENTS;
@@ -1404,6 +1497,25 @@ const SPIN_TURNS     = 6;
 const SPIN_MS        = 5200;
 let   wheelSpinning  = false;
 let   wheelDone      = false;
+
+/* 04/11/2026 — LA RÉPARTITION DES LOTS SUR LA ROUE (décision de Valentin du 30/10 : « le tacos une seule fois »).
+   Avant : PRIZES[i % 3], chaque lot sur 2 secteurs — le lot le plus rare (2 %) avait autant de place que celui
+   qu'on gagne 8 fois sur 10. Maintenant, pour 3 lots sur 6 secteurs : le plus probable en prend 3, le moyen 2,
+   le plus rare 1, et deux secteurs voisins (tour compris) ne portent jamais le même lot ; à égalité, l'ordre de
+   PRIZES départage. Le Bap's (80/18/2) : Boisson, Frites, Boisson, Tacos, Boisson, Frites ; Falman (50/48/2) :
+   Croissant Artisanal, Baguette Tradition, Croissant Artisanal, Pâtisserie du Jour, Croissant Artisanal, Baguette
+   Tradition ; les cinq autres tables suivent le même schéma.
+   ⚠️ SEULE l'image change : le lot est toujours tiré AVANT par drawPrize() avec les seuils prob, qui ne bougent
+   pas, et la roue s'arrête toujours sur un secteur DU lot tiré (spinWheel). Un autre nombre de lots (aucun
+   aujourd'hui) garde l'ancienne règle (i % n). Fonction pure : _outils/tests/d1/test-roue-d1.mjs l'éprouve. */
+function secteursDeLaRoue(lots){
+  const n = lots.length;
+  if(n !== 3 || WHEEL_SEGMENTS !== 6) return Array.from({length: WHEEL_SEGMENTS}, function(_, i){ return i % n; });
+  const part = lots.map(function(p, i){ return Number(p.prob) - (i ? Number(lots[i-1].prob) : 0); });
+  const rang = [0,1,2].sort(function(a, b){ return (part[b] - part[a]) || (a - b); });
+  return [rang[0], rang[1], rang[0], rang[2], rang[0], rang[1]];
+}
+let SECTEURS = null;   // la répartition dessinée (buildWheel), relue par spinWheel
 
 /* deg = 0 en haut, croissant dans le sens horaire */
 function polar(cx,cy,r,deg){
@@ -1414,93 +1526,52 @@ function svgEsc(s){
   return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
 }
 
-/* Couleur du commerce tirée vers le blanc (f > 0) ou vers le noir (f < 0).
-   N'accepte que #rrggbb — les tables de thème n'écrivent rien d'autre ; sinon renvoyée telle quelle. */
-function teinte(hex, f){
-  const m = String(hex).trim().match(/^#([0-9a-f]{6})$/i);
-  if(!m) return hex;
-  const n = parseInt(m[1],16), c = [(n>>16)&255,(n>>8)&255,n&255];
-  const k = Math.max(-1, Math.min(1, f));
-  return 'rgb('+c.map(function(v){ return Math.round(k >= 0 ? v + (255-v)*k : v*(1+k)); }).join(',')+')';
-}
+/* 🗑️ 04/11/2026 (D1) — teinte() retirée : les couleurs de la roue sont les jetons du commerce (--marque, --marque-clair,
+   --marque-profond, --surface, --encre), appliqués par la feuille de style aux classes du dessin. */
 
 /* Construit la roue en SVG — les lots suivent PRIZES (donc ?type=).
-   23/09 : dessin plat à deux tons de la couleur du commerce (comme la roue du concurrent),
-   jante sombre à ampoules blanches, plus de trait noir entre les secteurs. */
+   04/11/2026 (D1) — jante fine à la couleur du commerce et 12 ampoules blanches, secteurs en deux tons doux (sa
+   teinte claire, blanc) cernés d'un liseré ; plus d'emoji. Chaque lot est posé DROIT autour du centre, dans un
+   <g class="lot"> que spinWheel() fait tourner à contre-sens de la roue : le nom (Inter 700, 17 unités, ≥ 16 px
+   dès 283 px de roue ; deux lignes au plus) et, quand le lot en a une, sa photo dessous ; sinon le nom seul, un
+   peu plus près du centre. La répartition vient de secteursDeLaRoue() (le plus rare une seule fois).
+   Géométrie inchangée : le secteur i va de i·60° à (i+1)·60°, 0° en haut, sens horaire. */
 function buildWheel(){
   const svg = document.getElementById("wheelSvg");
   if(!svg) return;
-  const CX=150, CY=150, R=126;          /* R = rayon des secteurs ; la jante va jusqu'à 150 */
-  let out = "";
-
-  /* Palette : lue dans les variables CSS → suit le thème du commerce (?type=) */
-  const cs    = getComputedStyle(document.documentElement);
-  const cvar  = function(n,fb){ const v = cs.getPropertyValue(n).trim(); return v || fb; };
-  const GOLD  = cvar('--gold',  '#C8963E');
-  const GOLD2 = cvar('--gold2', '#E2B25A');
-  const INK   = cvar('--ink',   '#1a1a14');
-  const CLAIR = teinte(GOLD, .64);      /* le ton clair des secteurs */
-  const JANTE = teinte(GOLD2, -.18);    /* la jante */
-  const GORGE = teinte(GOLD2, -.34);    /* la gorge entre jante et secteurs */
-
-  /* Jante, gorge, fond des secteurs */
-  out += '<circle cx="'+CX+'" cy="'+CY+'" r="150" fill="'+JANTE+'"/>';
-  out += '<circle cx="'+CX+'" cy="'+CY+'" r="'+(R+8)+'" fill="'+GORGE+'"/>';
-  out += '<circle cx="'+CX+'" cy="'+CY+'" r="'+(R+1)+'" fill="'+GOLD+'"/>';
-
-  /* Secteurs */
+  SECTEURS = secteursDeLaRoue(PRIZES);
+  const CX=150, CY=150, R=138;          /* R = rayon des secteurs ; la jante va jusqu'à 150 */
+  let out = '<circle class="jante" cx="'+CX+'" cy="'+CY+'" r="150"/>';
+  for(let i=0;i<12;i++){                /* les ampoules, entre deux limites de secteur */
+    const p = polar(CX,CY,144,i*30+15);
+    out += '<circle class="ampoule" cx="'+p.x.toFixed(2)+'" cy="'+p.y.toFixed(2)+'" r="2.6"/>';
+  }
+  let lots = "";
   for(let i=0;i<WHEEL_SEGMENTS;i++){
-    const prize = PRIZES[i % PRIZES.length];
-    const a1 = i*SEG_ANGLE, a2 = (i+1)*SEG_ANGLE;
+    const prize = PRIZES[SECTEURS[i]];
+    const a1 = i*SEG_ANGLE, a2 = (i+1)*SEG_ANGLE, mid = a1 + SEG_ANGLE/2;
     const p1 = polar(CX,CY,R,a1), p2 = polar(CX,CY,R,a2);
-    const light = (i % 2 === 0);
-    const fill  = light ? CLAIR : GOLD;
-
-    out += '<path d="M'+CX+','+CY+' L'+p1.x.toFixed(2)+','+p1.y.toFixed(2)
-         + ' A'+R+','+R+' 0 0 1 '+p2.x.toFixed(2)+','+p2.y.toFixed(2)+' Z"'
-         + ' fill="'+fill+'"/>';
-
-    /* Contenu du secteur, pivoté sur son axe.
-       Moitié basse : on pivote de 180° de plus et on miroite les Y,
-       sinon les libellés se lisent à l'envers. */
-    const mid   = a1 + SEG_ANGLE/2;
-    const flip  = (mid > 90 && mid < 270);
-    const rot   = flip ? mid + 180 : mid;
-    const yEmo  = flip ? 2*CY - 62 : 62;
-    const yTxt  = flip ? 2*CY - 88 : 88;
-    const dy    = flip ? -11 : 11;
-
+    out += '<path class="'+(i % 2 === 0 ? 'secteur-a' : 'secteur-b')+'" d="M'+CX+','+CY+' L'+p1.x.toFixed(2)+','+p1.y.toFixed(2)
+         + ' A'+R+','+R+' 0 0 1 '+p2.x.toFixed(2)+','+p2.y.toFixed(2)+' Z"/>';
     const words = String(prize.name).split(/\s+/);
     const l1    = words[0] || "";
     const l2    = words.slice(1).join(" ");
-    out += '<g transform="rotate('+rot+' '+CX+' '+CY+')">'
-         /* Visuel réel du produit quand le commerce en fournit un, emoji sinon.
-            `href` et non `xlink:href` : la forme héritée est dépréciée, et Safari
-            accepte les deux depuis longtemps. */
-         + (prize.img
-             ? '<image x="'+(CX-18)+'" y="'+(yEmo-28)+'" width="36" height="36" href="'+svgEsc(prize.img)+'" preserveAspectRatio="xMidYMid meet"/>'
-             : '<text x="'+CX+'" y="'+yEmo+'" text-anchor="middle" font-size="25">'+svgEsc(prize.emoji)+'</text>')
-         + '<text x="'+CX+'" y="'+yTxt+'" text-anchor="middle" fill="'+INK+'"'
-         + ' font-family="Inter,sans-serif" font-size="10.5" font-weight="800">'+svgEsc(l1)
-         + (l2 ? '<tspan x="'+CX+'" dy="'+dy+'">'+svgEsc(l2)+'</tspan>' : '')
-         + '</text></g>';
+    const c     = polar(CX,CY,prize.img ? 94 : 90,mid);
+    const yTxt  = prize.img ? c.y - (l2 ? 31 : 22) : c.y - (l2 ? 9.5 : 0);
+    lots += '<g class="lot" data-secteur="'+i+'">'
+         + '<text x="'+c.x.toFixed(2)+'" y="'+yTxt.toFixed(2)+'" text-anchor="middle" dominant-baseline="central">'+svgEsc(l1)
+         + (l2 ? '<tspan x="'+c.x.toFixed(2)+'" dy="19">'+svgEsc(l2)+'</tspan>' : '') + '</text>'
+         /* `href` et non `xlink:href` : la forme héritée est dépréciée, et Safari accepte les deux depuis longtemps. */
+         + (prize.img ? '<image x="'+(c.x-20).toFixed(2)+'" y="'+(c.y-8).toFixed(2)+'" width="40" height="40" href="'+svgEsc(prize.img)+'" preserveAspectRatio="xMidYMid meet"/>' : '')
+         + '</g>';
   }
-
-  /* Ampoules blanches sur la jante (huit, avec leur halo) */
-  for(let i=0;i<8;i++){
-    const p = polar(CX,CY,R+16,i*45);
-    out += '<circle cx="'+p.x.toFixed(2)+'" cy="'+p.y.toFixed(2)+'" r="8" fill="#fff" opacity=".26"/>'
-         + '<circle cx="'+p.x.toFixed(2)+'" cy="'+p.y.toFixed(2)+'" r="4.2" fill="#fff"/>';
-  }
-
-  /* Ombre sous le bouton-goutte */
-  out += '<circle cx="'+CX+'" cy="'+CY+'" r="50" fill="rgba(0,0,0,.14)"/>';
-
+  out += '<circle class="lisere" cx="'+CX+'" cy="'+CY+'" r="'+R+'"/>' + lots;
   svg.innerHTML = out;
 }
 
 /* Au lancement, la pastille du logo glisse de son perchoir jusqu'au centre du bouton (CSS .au-centre).
-   Appelée dans spinWheel ; sans logo configuré, c'est l'emoji de la pastille qui descend. */
+   Appelée dans spinWheel ; sans logo configuré, c'est l'emoji de la pastille qui descend.
+   04/11/2026 (D1) — plus de perchoir : le logo (sans logo, le monogramme) APPARAÎT dans le bouton et y reste. */
 function logoAuCentre(){
   const l = document.getElementById("wheelLogo");
   if(!l) return;
@@ -1560,10 +1631,11 @@ function spinWheel(){
   if(fb) fb.classList.remove("show");
   if(navigator.vibrate) navigator.vibrate(20);
 
-  /* Secteur cible : l'un des deux qui portent le lot tiré */
+  /* Secteur cible : l'un de ceux qui portent le lot tiré — 04/11/2026 : 3, 2 ou 1 selon sa fréquence (secteursDeLaRoue) */
+  const sect = SECTEURS || (SECTEURS = secteursDeLaRoue(PRIZES));
   const idx  = PRIZES.indexOf(wonPrize);
   const cand = [];
-  for(let i=0;i<WHEEL_SEGMENTS;i++){ if(i % PRIZES.length === idx) cand.push(i); }
+  for(let i = 0; i < WHEEL_SEGMENTS; i++){ if(sect[i] === idx) cand.push(i); }
   const seg  = cand[Math.floor(Math.random()*cand.length)];
 
   /* Léger décalage pour ne pas tomber pile au milieu du secteur */
@@ -1574,6 +1646,12 @@ function spinWheel(){
   svg.style.transition = "transform " + SPIN_MS + "ms cubic-bezier(.13,.72,.12,1)";
   void svg.offsetWidth;                       /* force le reflow avant d'animer */
   svg.style.transform  = "rotate(" + target + "deg)";
+  /* 04/11/2026 (D1) — les lots tournent à contre-sens, du même mouvement : ils restent DROITS, lisibles pendant la
+     rotation comme à l'arrêt (plus jamais le lot gagné à l'envers, relevé dans etude/gros-plans). */
+  svg.querySelectorAll(".lot").forEach(function(g){
+    g.style.transition = svg.style.transition;
+    g.style.transform  = "rotate(" + (-target) + "deg)";
+  });
 
   startWheelTicks();
   setTimeout(onWheelStop, SPIN_MS + 130);
@@ -1701,7 +1779,7 @@ let commercePerify = false;
 BA.pret().then(function(com){
   commercePerify = String(com && com.apps_script || '').indexOf('https://api.perify.app/') === 0;
   var s = document.getElementById('swShop');
-  if (s) s.textContent = (com && (com.nom_court || com.nom)) || 'ta boutique';
+  if (s) s.textContent = (com && (com.nom_court || com.nom)) || '';   // 04/11/2026 (relecture) : sans nom, « Voici votre carte de fidélité. »
 }).catch(function(){});
 /* 'apple' ou 'google' : fixé par afterWheel() AVANT de préparer le lien. */
 let WALLET_CIBLE = 'apple';
@@ -1782,7 +1860,8 @@ function afterWheel(){
   document.getElementById('btnGWallet').hidden = !google;
   poserVisuelLot(document.getElementById('swEmoji'), wonPrize, 48);
   document.getElementById('swName').textContent  = wonPrize ? wonPrize.name  : 'Votre cadeau';
-  document.getElementById('swGain').textContent  = wonPrize ? wonPrize.name  : 'ton cadeau';
+  document.getElementById('swGain').textContent  = wonPrize ? wonPrize.name  : 'votre cadeau';
+  poserApercuPass();                      // 04/11/2026 (D1) : l'aperçu du pass, écran Wallet et écran de fin
   showScreen('screenWallet');
   prepareWallet().catch(function(){});    // en tache de fond, l'erreur est traitee au tap
 }
@@ -1807,7 +1886,7 @@ function addToWallet(el){
       console.warn('[wallet]', err);
       btn.classList.remove('is-loading');
       btn.disabled = false;
-      alert("Votre carte n'a pas pu être préparée.\nVous pouvez recevoir votre code par email à la place.");
+      alert("Votre carte n'a pas pu être préparée.\nVous pouvez recevoir votre code par e-mail à la place.");
     });
 }
 
@@ -1833,7 +1912,7 @@ async function submitForm(){
   const nom=document.getElementById("fieldNom").value.trim();
   const email=document.getElementById("fieldEmail").value.trim();
   const naissance=document.getElementById("fieldNaissance").value;  // AAAA-MM-JJ ou '' (facultatif)
-  if(!prenom||!nom||!email){alert("Veuillez remplir prénom, nom et email.");return}
+  if(!prenom||!nom||!email){alert("Veuillez remplir prénom, nom et e-mail.");return}
   const btn=document.querySelector(".s3-submit");
   const btnOriginal=btn.textContent;
   btn.textContent="Envoi en cours…";btn.disabled=true;
@@ -1971,9 +2050,18 @@ function activateFidelite(prenom, nom, email, gain, code, naissance, optin){
 /* ♿ 24/09 — pas de particules ni de confettis pour qui a demandé moins de mouvement (la feuille de
    style les figeait déjà en 0,01 ms : autant ne pas créer 55 éléments pour rien). */
 const MOINS_DE_MOUVEMENT = () => !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
+/* 04/11/2026 (D1) — les couleurs de la fête sont celles du commerce (ses jetons), plus l'or #C8963E écrit en dur. */
+function couleursFete(){
+  let c = [];
+  try {
+    const cs = getComputedStyle(document.documentElement);
+    c = ['--marque', '--marque-encre', '--marque-clair', '--succes'].map(function(n){ return cs.getPropertyValue(n).trim(); }).filter(Boolean);
+  } catch (e) {}
+  return c.length ? c : ['currentColor'];
+}
 function spawnParticles(){
   if(MOINS_DE_MOUVEMENT()) return;
-  const c=["#C8963E","#E2B25A","#F5D07A","#fff","#b5d98a"];
+  const c=couleursFete();
   for(let i=0;i<30;i++){
     const p=document.createElement("div");p.className="particle";
     const sz=Math.random()*8+3,a=Math.random()*Math.PI*2,d=Math.random()*200+90;
@@ -1983,7 +2071,7 @@ function spawnParticles(){
 }
 function spawnConfetti(){
   if(MOINS_DE_MOUVEMENT()) return;
-  const c=["#C8963E","#E2B25A","#F5D07A","#fff","#b5d98a","#f4c4d0"];
+  const c=couleursFete();
   for(let i=0;i<55;i++)setTimeout(()=>{
     const p=document.createElement("div");p.className="particle";
     const sz=Math.random()*9+4,a=Math.random()*Math.PI*2,d=Math.random()*300+100;

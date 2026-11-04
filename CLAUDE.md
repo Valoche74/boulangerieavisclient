@@ -19,13 +19,26 @@ développeur : écris-lui en français simple.
   (alias) parce que des cartes Wallet déjà dans les téléphones le portent. Jamais de valeur en dur
   par commerce dans le code : le thème vient des tables de thème et du registre.
 - **Les badges « Ajouter à l'app Cartes Apple » / « Ajouter au Google Wallet »** sont les fichiers
-  officiels (`assets/wallet/`) : jamais redessinés, jamais recolorés, 48 px minimum.
+  officiels (`assets/wallet/`) : jamais redessinés, jamais recolorés, jamais estompés, 48 px minimum ;
+  badge Apple grand : 280 px de large sur l'inscription (240 sur la carte). Sous 340 px d'écran, le
+  bouton long de Google passerait sous 48 px : un `<picture>` sert alors son badge compact officiel.
 - **La roue se joue une fois par carte** ; les seuils des lots (`PRIZES`, `prob` cumulé) et
-  « 1 tampon par passage et par jour » sont des règles du produit, pas du design.
-- **Direction visuelle (choisie le 23/09)** : fond nuit `#1B1F3B`, orange `#FF6B2C` / orange foncé
-  `#E85A1B`, jaune `#FFC53D`, cartes blanches, titres Plus Jakarta Sans 800, texte Inter. Contrastes
-  mesurés ≥ 4,5:1 (`--gold-ink` pour l'orange en texte), texte ≥ 15 px, boutons ≥ 44 px,
-  `prefers-reduced-motion` respecté, aucun emoji en guise d'icône.
+  « 1 tampon par passage et par jour » sont des règles du produit, pas du design. Le lot est tiré
+  AVANT l'animation, la roue ne fait que le montrer : 6 secteurs, le lot le plus fréquent sur 3, le
+  moyen sur 2, **le plus rare sur un seul** (`secteursDeLaRoue`, décision du 30/10 : « le tacos une
+  fois »), jamais deux secteurs voisins identiques ; la pointe s'arrête toujours sur un secteur du lot
+  tiré, et les libellés restent droits.
+- **Direction visuelle D1 « app native épurée »** (choisie le 30/10/2026, remplace la direction nuit
+  du 23/09) : fond clair `#F2F2F7`, surfaces blanches, Inter seule (servie par le site,
+  `assets/polices/`) ; la couleur du commerce tient en 7 jetons (bloc `PERIFY_HABILLAGE`, le MÊME
+  dans `card.html` et `index.html`, une entrée par métier ; Le Bap's en `#A04E27`, Falman en son
+  vert `#3A7A1E`, sinon l'orange Perify) — le commerce désigné (`?c=`, préfixe de carte) passe avant
+  le métier : jamais la couleur d'un commerce chez un autre. **« Vous » partout** (fin du mélange
+  tu/vous). Contrastes mesurés ≥ 4,5:1 (`--marque-encre` pour la marque en texte, jamais `--marque`),
+  texte ≥ 16 px, cibles ≥ 48 px, grilles en `minmax(0,1fr)` (jamais une colonne `auto` ou `1fr`
+  seule) et `overflow-x:clip` sur html et body (Safari iPhone zoome toute la page sinon),
+  `prefers-reduced-motion` respecté, aucun emoji en guise d'icône (pictogrammes SVG `PICTO`, les
+  mêmes dans les deux pages).
 - **Vitesse** : la carte doit s'ouvrir en moins de 2 s au comptoir. Pas de police lourde, pas d'image
   de fond énorme, rien de bloquant avant le premier rendu.
 - **Aucun chiffre inventé**, aucun commerce nommé sans accord, aucune adresse e-mail en clair.

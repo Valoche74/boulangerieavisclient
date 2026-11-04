@@ -97,7 +97,8 @@ var PERIFY_RELAIS = (function(){
 <!-- 24/09 (accessibilité, § 8 du rapport) — le zoom par pincement est autorisé : un client malvoyant doit pouvoir
      agrandir « Plus que 3 tampons » ou son code. Les champs de saisie font 16 px pour qu'iOS ne zoome pas tout seul. -->
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="theme-color" content="#FBF7EF">
+<!-- 04/11/2026 (D1) — la barre du navigateur prend le gris clair du fond (avant : #FBF7EF, puis #1B1F3B posé par le script). -->
+<meta name="theme-color" content="#F2F2F7">
 <meta name="color-scheme" content="light">
 <!-- 07/10/2026 (audit légal, point 21) — le titre par défaut ne porte plus le nom de Falman : applyPreset() pose
      « Ma Fidélité — <nom du commerce> » dès que le script de la page tourne, pour chaque commerce. -->
@@ -153,6 +154,7 @@ var PERIFY_ADRESSE = (function(){
   });
 })();
 </script>
+<script>/* 04/11/2026 — D1 « APP NATIVE ÉPURÉE » (choix de Valentin du 30/10) : LA COULEUR DU COMMERCE, POSÉE AVANT LE PREMIER RENDU. MÊME bloc dans card.html et index.html (_outils/tests/d1/test-d1-habillage.mjs le vérifie et mesure les contrastes). Sept jetons par métier, rien d'autre ; 'perify' = :root. Clé (corrigée à la relecture du 04/11 : le COMMERCE désigné passe avant le métier, comme dans le registre) : un commerce encore chez Google (?c= ou préfixe de carte, listes PERIFY_ADRESSE.google) → le métier qui lui répond (falman, FAL-… → 'boulangerie' ; jardin-de-rose, JDR-… → 'fleuriste') ; un AUTRE commerce → son ?type= s'il est connu et n'est pas un métier Google, 'perify' sinon (?c=baps&type=boulangerie, la redirection d'une inscription sans &type=, ou une future boulangerie Perify ?c=dupont&type=boulangerie : jamais le vert de Falman, qui est SA couleur, chez un autre) ; sans commerce désigné : ?type= connu → son entrée, ?type= inconnu → 'perify', rien → 'boulangerie' (Falman, défaut du registre). Seule l'APPARENCE en dépend : lots, catalogue, nom et serveur ne changent pas. */ var PERIFY_HABILLAGE = (function(){ var HABILLAGES = { perify:{marque:'#FF6B2C',surMarque:'#1B1F3B',marqueClair:'#FFEDE4',marqueEncre:'#C2410C',marqueProfond:'#1B1F3B',surProfond:'#FFFFFF',profondLibelle:'#FF6B2C',bandeau:''}, boulangerie:{marque:'#3A7A1E',surMarque:'#FFFFFF',marqueClair:'#EBF2E9',marqueEncre:'#3A7A1E',marqueProfond:'#3E7A1A',surProfond:'#FFFFFF',profondLibelle:'#FBEECF',bandeau:'assets/boulangerie/bandeau.webp'}, baps:{marque:'#A04E27',surMarque:'#FFFFFF',marqueClair:'#F6EAE3',marqueEncre:'#A04E27',marqueProfond:'#581816',surProfond:'#FFFFFF',profondLibelle:'#F3B068',bandeau:'assets/baps/bandeau.webp'}, fleuriste:{marque:'#BC5185',surMarque:'#FFFFFF',marqueClair:'#F8EEF3',marqueEncre:'#AD4B7A',marqueProfond:'#6E1A44',surProfond:'#FFFFFF',profondLibelle:'#F4B6D2',bandeau:''}, pizzeria:{marque:'#C8442E',surMarque:'#FFFFFF',marqueClair:'#FAECEA',marqueEncre:'#C0412C',marqueProfond:'#702014',surProfond:'#FFFFFF',profondLibelle:'#F2A07E',bandeau:''}, vape:{marque:'#6D5AE0',surMarque:'#FFFFFF',marqueClair:'#F0EFFC',marqueEncre:'#6B58DC',marqueProfond:'#2C2366',surProfond:'#FFFFFF',profondLibelle:'#B6ABFF',bandeau:''}, restaurant:{marque:'#9A3F4C',surMarque:'#FFFFFF',marqueClair:'#F5ECED',marqueEncre:'#9A3F4C',marqueProfond:'#4E1C23',surProfond:'#FFFFFF',profondLibelle:'#D78F99',bandeau:''}, primeur:{marque:'#E0892E',surMarque:'#1B1F3B',marqueClair:'#FCF3EA',marqueEncre:'#9D6020',marqueProfond:'#703E0C',surProfond:'#FFFFFF',profondLibelle:'#F8C87C',bandeau:''} }; var JETONS = {marque:'--marque',surMarque:'--sur-marque',marqueClair:'--marque-clair',marqueEncre:'--marque-encre',marqueProfond:'--marque-profond',surProfond:'--sur-profond',profondLibelle:'--profond-libelle'}; var cle = 'perify'; try { var A = (typeof PERIFY_ADRESSE !== 'undefined' && PERIFY_ADRESSE) || { metier: '', sorte: 'historique' }; var G = A.google || { cles: [], metiers: [], prefixes: [] }; var t = A.metier || ''; var connu = function(m){ return Object.prototype.hasOwnProperty.call(HABILLAGES, m); }; var iC = A.cle ? G.cles.indexOf(A.cle) : -1, iP = (!A.cle && !t && A.prefixe) ? G.prefixes.indexOf(A.prefixe) : -1; if (iC >= 0) cle = G.metiers[iC]; else if (A.sorte === 'autre') cle = (t && connu(t) && G.metiers.indexOf(t) < 0) ? t : 'perify'; else if (t) cle = connu(t) ? t : 'perify'; else if (iP >= 0) cle = G.metiers[iP]; else cle = 'boulangerie'; if (!connu(cle)) cle = 'perify'; var h = HABILLAGES[cle], r = document.documentElement; for (var k in JETONS) r.style.setProperty(JETONS[k], h[k]); r.setAttribute('data-habillage', cle); } catch (e) {} return { cle: cle, couleurs: HABILLAGES[cle] }; })();</script>
 <!-- ⚡ 24/09 (audit vitesse) — le serveur Perify est celui du commerce en production : même poignée de
      main anticipée que pour Google. -->
 <link rel="preconnect" href="https://api.perify.app" crossorigin>
@@ -170,9 +172,12 @@ var PERIFY_ADRESSE = (function(){
      graisses (Plus Jakarta Sans 700/800, Inter 400/600/700/800), mêmes plages de caractères, même
      font-display:swap. Même aspect, aucune requête vers Google.
      Vitesse (24/09) : rien de bloquant — les règles sont dans la page (aucune feuille à attendre) et les deux
-     fichiers « latin » (tout le français) sont préchargés : ils arrivent plus tôt qu'avant, depuis le même site. -->
+     fichiers « latin » (tout le français) sont préchargés : ils arrivent plus tôt qu'avant, depuis le même site.
+     04/11/2026 (D1 « app native épurée ») — INTER SEULE : les 8 règles Plus Jakarta Sans et son préchargement sont
+     retirés (une police de moins à télécharger) ; Inter gagne la graisse 500 (unités, valeurs), mêmes fichiers et
+     mêmes plages que la 400. Graisses de la carte : 400/500/600/700/800, comme index.html. Un seul préchargement.
+     Les fichiers Plus Jakarta Sans et OFL.txt restent dans assets/polices/ (plus lus par cette page). -->
 <link rel="preload" as="font" type="font/woff2" href="assets/polices/inter-v20-latin.woff2" crossorigin>
-<link rel="preload" as="font" type="font/woff2" href="assets/polices/plus-jakarta-sans-v12-latin.woff2" crossorigin>
 <style id="polices">
 @font-face{font-family:'Inter';font-style:normal;font-weight:400;font-display:swap;src:url(assets/polices/inter-v20-cyrillic-ext.woff2) format('woff2');unicode-range:U+0460-052F,U+1C80-1C8A,U+20B4,U+2DE0-2DFF,U+A640-A69F,U+FE2E-FE2F}
 @font-face{font-family:'Inter';font-style:normal;font-weight:400;font-display:swap;src:url(assets/polices/inter-v20-cyrillic.woff2) format('woff2');unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116}
@@ -181,6 +186,13 @@ var PERIFY_ADRESSE = (function(){
 @font-face{font-family:'Inter';font-style:normal;font-weight:400;font-display:swap;src:url(assets/polices/inter-v20-vietnamese.woff2) format('woff2');unicode-range:U+0102-0103,U+0110-0111,U+0128-0129,U+0168-0169,U+01A0-01A1,U+01AF-01B0,U+0300-0301,U+0303-0304,U+0308-0309,U+0323,U+0329,U+1EA0-1EF9,U+20AB}
 @font-face{font-family:'Inter';font-style:normal;font-weight:400;font-display:swap;src:url(assets/polices/inter-v20-latin-ext.woff2) format('woff2');unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C4,U+2113,U+2C60-2C7F,U+A720-A7FF}
 @font-face{font-family:'Inter';font-style:normal;font-weight:400;font-display:swap;src:url(assets/polices/inter-v20-latin.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:'Inter';font-style:normal;font-weight:500;font-display:swap;src:url(assets/polices/inter-v20-cyrillic-ext.woff2) format('woff2');unicode-range:U+0460-052F,U+1C80-1C8A,U+20B4,U+2DE0-2DFF,U+A640-A69F,U+FE2E-FE2F}
+@font-face{font-family:'Inter';font-style:normal;font-weight:500;font-display:swap;src:url(assets/polices/inter-v20-cyrillic.woff2) format('woff2');unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116}
+@font-face{font-family:'Inter';font-style:normal;font-weight:500;font-display:swap;src:url(assets/polices/inter-v20-greek-ext.woff2) format('woff2');unicode-range:U+1F00-1FFF}
+@font-face{font-family:'Inter';font-style:normal;font-weight:500;font-display:swap;src:url(assets/polices/inter-v20-greek.woff2) format('woff2');unicode-range:U+0370-0377,U+037A-037F,U+0384-038A,U+038C,U+038E-03A1,U+03A3-03FF}
+@font-face{font-family:'Inter';font-style:normal;font-weight:500;font-display:swap;src:url(assets/polices/inter-v20-vietnamese.woff2) format('woff2');unicode-range:U+0102-0103,U+0110-0111,U+0128-0129,U+0168-0169,U+01A0-01A1,U+01AF-01B0,U+0300-0301,U+0303-0304,U+0308-0309,U+0323,U+0329,U+1EA0-1EF9,U+20AB}
+@font-face{font-family:'Inter';font-style:normal;font-weight:500;font-display:swap;src:url(assets/polices/inter-v20-latin-ext.woff2) format('woff2');unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C4,U+2113,U+2C60-2C7F,U+A720-A7FF}
+@font-face{font-family:'Inter';font-style:normal;font-weight:500;font-display:swap;src:url(assets/polices/inter-v20-latin.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
 @font-face{font-family:'Inter';font-style:normal;font-weight:600;font-display:swap;src:url(assets/polices/inter-v20-cyrillic-ext.woff2) format('woff2');unicode-range:U+0460-052F,U+1C80-1C8A,U+20B4,U+2DE0-2DFF,U+A640-A69F,U+FE2E-FE2F}
 @font-face{font-family:'Inter';font-style:normal;font-weight:600;font-display:swap;src:url(assets/polices/inter-v20-cyrillic.woff2) format('woff2');unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116}
 @font-face{font-family:'Inter';font-style:normal;font-weight:600;font-display:swap;src:url(assets/polices/inter-v20-greek-ext.woff2) format('woff2');unicode-range:U+1F00-1FFF}
@@ -202,14 +214,6 @@ var PERIFY_ADRESSE = (function(){
 @font-face{font-family:'Inter';font-style:normal;font-weight:800;font-display:swap;src:url(assets/polices/inter-v20-vietnamese.woff2) format('woff2');unicode-range:U+0102-0103,U+0110-0111,U+0128-0129,U+0168-0169,U+01A0-01A1,U+01AF-01B0,U+0300-0301,U+0303-0304,U+0308-0309,U+0323,U+0329,U+1EA0-1EF9,U+20AB}
 @font-face{font-family:'Inter';font-style:normal;font-weight:800;font-display:swap;src:url(assets/polices/inter-v20-latin-ext.woff2) format('woff2');unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C4,U+2113,U+2C60-2C7F,U+A720-A7FF}
 @font-face{font-family:'Inter';font-style:normal;font-weight:800;font-display:swap;src:url(assets/polices/inter-v20-latin.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
-@font-face{font-family:'Plus Jakarta Sans';font-style:normal;font-weight:700;font-display:swap;src:url(assets/polices/plus-jakarta-sans-v12-cyrillic-ext.woff2) format('woff2');unicode-range:U+0460-052F,U+1C80-1C8A,U+20B4,U+2DE0-2DFF,U+A640-A69F,U+FE2E-FE2F}
-@font-face{font-family:'Plus Jakarta Sans';font-style:normal;font-weight:700;font-display:swap;src:url(assets/polices/plus-jakarta-sans-v12-vietnamese.woff2) format('woff2');unicode-range:U+0102-0103,U+0110-0111,U+0128-0129,U+0168-0169,U+01A0-01A1,U+01AF-01B0,U+0300-0301,U+0303-0304,U+0308-0309,U+0323,U+0329,U+1EA0-1EF9,U+20AB}
-@font-face{font-family:'Plus Jakarta Sans';font-style:normal;font-weight:700;font-display:swap;src:url(assets/polices/plus-jakarta-sans-v12-latin-ext.woff2) format('woff2');unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C4,U+2113,U+2C60-2C7F,U+A720-A7FF}
-@font-face{font-family:'Plus Jakarta Sans';font-style:normal;font-weight:700;font-display:swap;src:url(assets/polices/plus-jakarta-sans-v12-latin.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
-@font-face{font-family:'Plus Jakarta Sans';font-style:normal;font-weight:800;font-display:swap;src:url(assets/polices/plus-jakarta-sans-v12-cyrillic-ext.woff2) format('woff2');unicode-range:U+0460-052F,U+1C80-1C8A,U+20B4,U+2DE0-2DFF,U+A640-A69F,U+FE2E-FE2F}
-@font-face{font-family:'Plus Jakarta Sans';font-style:normal;font-weight:800;font-display:swap;src:url(assets/polices/plus-jakarta-sans-v12-vietnamese.woff2) format('woff2');unicode-range:U+0102-0103,U+0110-0111,U+0128-0129,U+0168-0169,U+01A0-01A1,U+01AF-01B0,U+0300-0301,U+0303-0304,U+0308-0309,U+0323,U+0329,U+1EA0-1EF9,U+20AB}
-@font-face{font-family:'Plus Jakarta Sans';font-style:normal;font-weight:800;font-display:swap;src:url(assets/polices/plus-jakarta-sans-v12-latin-ext.woff2) format('woff2');unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C4,U+2113,U+2C60-2C7F,U+A720-A7FF}
-@font-face{font-family:'Plus Jakarta Sans';font-style:normal;font-weight:800;font-display:swap;src:url(assets/polices/plus-jakarta-sans-v12-latin.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
 </style>
 <style>
 /* ════════════════════════════════════════════════════════════════
@@ -225,528 +229,472 @@ var PERIFY_ADRESSE = (function(){
      L'action serveur `fid_buyticket` reste en place mais n'est plus appelée :
      la colonne `tickets_mois` du Sheets ne doit pas être supprimée, elle
      décalerait les index de toutes les autres.
+
+   04/11/2026 — DIRECTION D1 « APP NATIVE ÉPURÉE » (choix de Valentin du 30/10 ; maquettes et comparatif :
+   IMAGE/livraisons/2026-10-30-refonte-site-client/D1-natif-epure/). Elle REMPLACE la direction nuit du 23/09
+   (fond #1B1F3B, dégradés orange, jaune #FFC53D, Plus Jakarta Sans, capitales espacées, ombres dorées).
+     • fond gris clair #F2F2F7, surfaces blanches, Inter seule (servie par le site), beaucoup d'air ;
+     • la couleur du commerce tient en 7 jetons (--marque…), posés AVANT le premier rendu par le bloc
+       PERIFY_HABILLAGE en tête de page (le même dans index.html). --marque ne sert qu'aux REMPLISSAGES
+       (bouton, tampon plein), toujours avec son texte en --sur-marque ; la marque EN TEXTE ou en trait
+       isolé sur du blanc passe par --marque-encre (l'orange Perify ne fait que 2,84:1 sur blanc) ;
+     • rien sous 16 px, cibles d'au moins 48 px, contrastes ≥ 4,5:1 mesurés (jetons : 3:1 pour un bord) ;
+     • aucun emoji en guise d'icône : des pictogrammes SVG (PICTO, dans le script) ;
+     • grilles en minmax(0,1fr), jamais une colonne auto ou 1fr seule, et overflow-x:clip sur html ET body
+       (une colonne « auto » fait zoomer toute la page sur Safari iPhone — règle du 29/10, invisible au Chrome
+       simulé) ;
+     • l'ordre des blocs suit la planche D1 : tampons, offres, « Mes cadeaux », récompenses, « Gagner plus ».
+   Ce qui NE change PAS : la logique (appels serveur, Wallet, e-mail, coupons, états, relais), les ids et les
+   classes que le script ou les essais lisent (_outils/tests, _outils/tests/d1).
    ════════════════════════════════════════════════════════════════ */
-*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 /* ⚠️ Sans ce !important, `hidden` ne cache PAS un élément à qui une classe
    impose un display (.social est en flex) : la règle du navigateur perd contre
    la classe. Le bloc « réseaux » restait donc visible, masqué en apparence
    seulement. Vérifié dans le DOM, pas à l'œil. */
 [hidden]{display:none!important}
-:root{
-  /* 🎨 23/09 — DIRECTION B « vitaminé » (son choix) : fond NUIT pour la page, cartes claires,
-     orange / orange foncé / jaune en accents, Plus Jakarta Sans + Inter. Les textes posés directement
-     sur le fond nuit passent par --surbg / --surbg-doux ; tout ce qui est dans une carte garde l'encre. */
-  --bg:#1B1F3B;--cream:#FFF8F0;--cream2:#FFEEDD;--card:#FFFFFF;
-  --surbg:#FFFFFF;--surbg-doux:rgba(255,255,255,.74);
-  /* 🔎 08/09 — LISIBILITÉ. Contrastes mesurés sur le fond réel (--cream #FBF7EF),
-     pas estimés à l'œil : 7 zones de texte sur 8 échouaient au seuil WCAG AA de
-     4,5:1. Cette carte se lit dans une boutique, souvent dehors, à bout de bras —
-     c'est le pire contexte possible pour du texte pâle en 10 px.
-       avant → après (sur crème)
-       --muted   #8A7E68  3,73:1  →  #6A5F4B  5,86:1
-       --muted2  #B3A88E  2,21:1  →  #776B55  4,89:1
-     Les anciennes valeurs restent en commentaire : ce sont elles, la référence,
-     si quelqu'un trouve un jour la nouvelle palette « trop foncée ». */
-  --ink:#1B1F3B;--muted:#5B5F7A;--muted2:#6B7086;
-  --gold:#FF6B2C;--gold2:#E85A1B;--gold3:#FFC53D;   /* orange, orange foncé, jaune */
-  /* ⚠️ --gold est une couleur de REMPLISSAGE (boutons, tampons, le gros chiffre),
-     pas une couleur de TEXTE : en texte sur crème il tombe à 2,49:1. On ne
-     l'assombrit donc pas — la marque garde son or — on ajoute une variante encre
-     réservée au texte doré. */
-  --gold-ink:#C2410C;   /* 23/09 : orange foncé pour le TEXTE — 4,9:1 sur blanc, 4,6:1 sur crème */
-  /* Même règle pour les deux autres accents. Un balayage de TOUS les nœuds de
-     texte (et non d'une liste de sélecteurs choisis à la main, qui laissait
-     passer 12 échecs) a montré que --green et --trust servaient aussi de couleur
-     de texte : le ★ Trustpilot tombait à 2,47:1. */
-  --green-ink:#15803D;  /* 5,1:1 sur blanc */
-  --trust-ink:#00875A;  /* 4,26:1 — icône 24 px, seuil 3:1 */
-  --gold-soft:rgba(255,107,44,.10);--gold-line:rgba(255,107,44,.30);
-  --green:#16A34A;--green-soft:rgba(22,163,74,.12);--trust:#00B67A;
-  --line:rgba(27,31,59,.08);
-  --shadow:0 10px 30px rgba(10,12,30,.18),0 2px 8px rgba(10,12,30,.10);
-  --font-display:'Plus Jakarta Sans','Segoe UI',system-ui,sans-serif;--font-ui:'Inter','Segoe UI',system-ui,sans-serif;
-}
-html,body{background:var(--bg)}
-body{font-family:var(--font-ui);-webkit-font-smoothing:antialiased;color:var(--ink);min-height:100vh;font-variant-numeric:tabular-nums lining-nums;
-  background:radial-gradient(ellipse 90% 42% at 50% -6%,rgba(255,107,44,.34),transparent 62%),radial-gradient(ellipse 60% 40% at 100% 34%,rgba(255,197,61,.10),transparent 60%),var(--bg)}
+/* D1-JETONS:debut — 04/11/2026, direction D1 du 30/10, MÊME bloc dans card.html et index.html (_outils/tests/d1/test-d1-habillage.mjs) */
+:root{--fond:#F2F2F7;--surface:#FFFFFF;--encre:#16171D;--encre-2:#5C5F6A;--trait:#E4E4EA;--bord-champ:#868893;--succes:#1A7F37;--succes-clair:#EDF7EF;--danger:#B42318;--danger-clair:#FDECEA;--ombre-pass:0 1px 2px rgb(22 23 29 / .10),0 14px 34px rgb(22 23 29 / .16);--ombre-douce:0 1px 2px rgb(22 23 29 / .06);--police:'Inter',-apple-system,'Segoe UI',system-ui,sans-serif;--t-16:16px;--t-17:17px;--t-20:20px;--t-22:22px;--t-28:28px;--t-34:34px;--t-52:52px;--e-1:4px;--e-2:8px;--e-3:12px;--e-4:16px;--e-5:24px;--e-6:32px;--e-7:48px;--r-surface:20px;--r-controle:14px;--r-vignette:12px;--r-pilule:999px;--h-bouton:56px;--h-cible:48px;--marque:#FF6B2C;--sur-marque:#1B1F3B;--marque-clair:#FFEDE4;--marque-encre:#C2410C;--marque-profond:#1B1F3B;--sur-profond:#FFFFFF;--profond-libelle:#FF6B2C} html,body{overflow-x:hidden;overflow-x:clip}
+/* D1-JETONS:fin */
 
-.floaties{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
-.fl{position:fixed;opacity:.15;animation:floaty 7s ease-in-out infinite;will-change:transform}
-.fl1{left:-6px;top:13%;font-size:42px}.fl2{right:-10px;top:24%;font-size:50px;animation-delay:1.1s;animation-duration:8s}
-.fl3{left:-4px;top:48%;font-size:32px;animation-delay:.5s;animation-duration:6.5s}.fl4{right:-4px;top:60%;font-size:30px;animation-delay:1.9s}
-.fl5{left:-10px;top:80%;font-size:40px;animation-delay:.9s;animation-duration:7.5s}.fl6{right:-8px;top:90%;font-size:32px;animation-delay:2.3s}
-@keyframes floaty{0%,100%{transform:translateY(0) rotate(-4deg)}50%{transform:translateY(-16px) rotate(6deg)}}
+/* ── Base ─────────────────────────────────────────────────────────────────── */
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html{background:var(--fond);-webkit-text-size-adjust:100%;text-size-adjust:100%}
+/* 04/11/2026 (relecture) — plus de chiffres tabulaires sur toute la page : dans Inter, « tnum » élargit AUSSI le trait
+   d'union (7,8 → 11,0 px en 17 px, mesuré) et la carte affichait « e - mail », « anti - gaspi ». Les chiffres qui
+   doivent garder leur place (solde, codes, compte à rebours) ont déjà leur propre tabular-nums. */
+body{font:400 var(--t-17)/1.45 var(--police);color:var(--encre);background:var(--fond);min-height:100vh;min-height:100svh;
+  -webkit-font-smoothing:antialiased;font-variant-numeric:lining-nums}
+img{display:block;max-width:100%}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer}
+/* ♿ 24/09 (audit accessibilité, ACCESSIBILITE.md) — le focus CLAVIER se voit (:focus-visible ne s'allume jamais
+   sous le doigt). 04/11/2026 (D1) : un seul contour, à l'encre, sur tout (avant : orange sur les cartes, jaune sur
+   le fond nuit). L'écran ou la fenêtre qui s'ouvre reçoit le focus (tabindex="-1"), sans contour : c'est un point
+   d'atterrissage, pas un bouton. */
+:focus-visible{outline:3px solid var(--encre);outline-offset:3px}
+.wrap:focus,.msg:focus,.cm-card:focus,.use-box:focus{outline:none}
 
 .screen{display:none}.screen.on{display:block}
-.wrap{position:relative;z-index:1;max-width:440px;margin:0 auto;padding:26px 18px 40px;display:flex;flex-direction:column;gap:14px}
+/* L'écran de la carte : une colonne de 430 px au plus, gouttière de 16 px. Les blocs se suivent à 12 px ; un
+   titre de section prend 32 px au-dessus de lui (cf. .sec-h). */
+.ecran{max-width:430px;min-height:100vh;min-height:100svh;margin:0 auto;padding:0 var(--e-4) calc(var(--e-5) + env(safe-area-inset-bottom));display:flex;flex-direction:column}
+.wrap > * + *{margin-top:var(--e-3)}
 
-/* messages plein écran */
-.msg{position:relative;z-index:1;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:40px 26px;max-width:430px;margin:0 auto}
-.msg .mic{width:80px;height:80px;border-radius:50%;display:grid;place-items:center;font-size:36px;margin-bottom:18px;background:var(--gold-soft);border:1.5px solid var(--gold-line)}
-.msg .mic.bad{background:rgba(190,60,60,.10);border-color:rgba(190,60,60,.30)}
-.msg h2{font-family:var(--font-display);font-size:25px;font-weight:800;color:var(--surbg);margin-bottom:10px}
-.msg p{font-size:14px;color:var(--surbg-doux);line-height:1.6;margin-bottom:22px}
-.msg .cta{display:inline-block;padding:15px 28px;border:none;border-radius:14px;background:linear-gradient(135deg,var(--gold),var(--gold2));color:#fff;font-family:var(--font-ui);font-size:15px;font-weight:700;cursor:pointer;text-decoration:none;box-shadow:0 6px 18px rgba(200,150,62,.36)}
+/* ── Écrans d'état : chargement, nouvelle carte, carte inconnue, erreur, programme terminé ─────────────────
+   04/11/2026 (D1) — une colonne centrée sur le fond : un pictogramme dans un cercle teinté (jamais un emoji),
+   le titre, la phrase, et le bouton principal. Variante .erreur en rouge (carte inconnue, connexion). */
+.msg{min-height:100vh;min-height:100svh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;
+  max-width:430px;margin:0 auto;padding:var(--e-7) var(--e-5) calc(var(--e-7) + env(safe-area-inset-bottom))}
+.etat-icone{display:grid;grid-template-columns:minmax(0,1fr);place-items:center;width:72px;height:72px;border-radius:50%;
+  background:var(--marque-clair);color:var(--marque-encre);margin-bottom:var(--e-5);flex:none}
+.etat-icone .picto{width:34px;height:34px}
+.etat-icone.erreur{background:var(--danger-clair);color:var(--danger)}
+.msg h2{font-weight:700;font-size:var(--t-28);line-height:1.15;letter-spacing:-.02em;color:var(--encre);margin-bottom:var(--e-3);text-wrap:balance}
+.msg p{font-size:var(--t-17);color:var(--encre-2);line-height:1.45;margin-bottom:var(--e-5);max-width:34ch}
+.msg p.note{font-size:var(--t-16);margin-bottom:0}
+.msg p:last-child{margin-bottom:0}
+.msg .cta{margin-top:var(--e-1)}
+/* Chargement : un anneau à la couleur du commerce (cf. le balisage). */
+.anneau{width:48px;height:48px;margin-bottom:var(--e-4);animation:tourne 1.2s linear infinite}
+.anneau circle{fill:none;stroke-width:4}
+.anneau .piste{stroke:var(--trait)}
+.anneau .arc{stroke:var(--marque-encre);stroke-linecap:round;stroke-dasharray:40 86}
+@keyframes tourne{to{transform:rotate(360deg)}}
 
-/* ── Chargement de la carte ─────────────────────────────────────────────────
-   Loader « young-goat-78 » de Nawsome sur uiverse.io, licence MIT.
-   https://uiverse.io/Nawsome/young-goat-78
+/* ── En-tête du commerce ───────────────────────────────────────────────────── */
+.carte-tete{display:flex;align-items:center;gap:var(--e-3);min-height:72px;padding-top:calc(var(--e-2) + env(safe-area-inset-top))}
+.logo-commerce{flex:none;width:44px;height:44px;display:flex;align-items:center;justify-content:center}
+.logo-commerce:empty{display:none}
+.logo-commerce img{width:44px;height:44px;object-fit:contain}
+.monogramme{display:grid;grid-template-columns:minmax(0,1fr);place-items:center;width:34px;height:34px;border-radius:10px;
+  background:var(--marque);color:var(--sur-marque);font-weight:800;font-size:var(--t-17);line-height:1}
+.carte-tete .monogramme{width:44px;height:44px;border-radius:12px;font-size:var(--t-20)}
+.carte-nom{flex:1;min-width:0}
+.carte-tete .bakery{font-weight:600;font-size:var(--t-17);line-height:1.25;overflow-wrap:anywhere}
+.carte-tete .eyebrow{color:var(--encre-2);font-size:var(--t-16);line-height:1.3}
+/* #cAv : masqué (attribut hidden), cf. le balisage. */
+.avatar{display:none}
+.wrap > .bonjour{margin:var(--e-2) var(--e-1) var(--e-1)}
+.bonjour{font-weight:700;font-size:var(--t-34);line-height:1.1;letter-spacing:-.02em;overflow-wrap:anywhere}
 
-   ⚠️ RECOLORE. L'original a quatre couleurs vives (rouge, orange, bleu, rose) qui
-   n'ont rien a voir avec la charte et qui, pire, ne suivraient pas le commerce :
-   cette carte se re-colore par metier. Les quatre anneaux passent donc par les
-   variables de theme — ils deviennent verts chez un primeur sans qu'on y retouche.
+/* ── Surfaces, listes groupées, vignettes ─────────────────────────────────── */
+.surface{background:var(--surface);border-radius:var(--r-surface);padding:var(--e-5) var(--e-4)}
+.liste{background:var(--surface);border-radius:var(--r-surface);overflow:hidden}
+.rangee{display:grid;grid-template-columns:48px minmax(0,1fr) max-content;align-items:center;gap:var(--e-3);min-height:68px;padding:var(--e-3) var(--e-4)}
+.rangee > *{min-width:0}
+.rangee + .rangee{box-shadow:inset 0 1px 0 var(--trait)}
+/* Vignettes : la photo du produit, ou le pictogramme du cadeau quand il n'y en a pas (jamais un emoji).
+   ⚠️ 11/09 (card.html), 04/11/2026 (maquette D1) — flex + max-*, et surtout PAS `display:grid` avec
+   `height:100%` : sur un produit très vertical (jus.png 181 × 392, boisson.png 169 × 300) le `height:100%` ne
+   se résout pas, l'image reprend sa hauteur naturelle et déborde (la canette coupée de la maquette). */
+.vignette{display:flex;align-items:center;justify-content:center;flex:none;width:48px;height:48px;border-radius:var(--r-vignette);
+  background:var(--marque-clair);overflow:hidden}
+.vignette.photo{background:none}
+.vignette img{max-width:100%;max-height:100%;width:auto;height:auto;object-fit:contain}
+.vignette .picto{width:52%;height:auto;color:var(--marque-encre)}
+.vignette.grande{width:64px;height:64px}
+.picto{display:block;flex:none;width:24px;height:24px}
+.note{color:var(--encre-2);font-size:var(--t-16);line-height:1.45}
 
-   Il gagne sa place ici : l'attente n'est pas decorative, un aller-retour Apps
-   Script coute 1,9 a 6,0 s et c'est le premier ecran que voit le client. */
-.pl{width:7.5em;height:7.5em}   /* 120 px : a 80 px les arcs sont trop courts pour que l animation se lise */
-.pl__ring{animation:ringA 2s linear infinite}
-.pl__ring--a{stroke:var(--gold)}
-.pl__ring--b{animation-name:ringB;stroke:var(--gold3)}
-.pl__ring--c{animation-name:ringC;stroke:var(--gold2)}
-.pl__ring--d{animation-name:ringD;stroke:var(--green)}
+/* ── Boutons ───────────────────────────────────────────────────────────────────
+   Le bouton principal : remplissage --marque, texte --sur-marque (≥ 4,5:1 pour chaque commerce, mesuré),
+   56 px de haut. Les boutons d'une rangée ou d'une tuile (.petit) : 48 px. Les classes historiques gardent leur
+   nom (le script et les essais les lisent) et prennent le même style. Plus de dégradé ni d'ombre dorée. */
+.bouton,.msg .cta,.use-go,.cm-btn,.rw .btn.go,.st.use,.offre-go,.om-btn{display:flex;align-items:center;justify-content:center;gap:var(--e-2);
+  min-height:var(--h-bouton);padding:0 var(--e-5);border:0;border-radius:var(--r-controle);background:var(--marque);color:var(--sur-marque);
+  font-weight:600;font-size:var(--t-17);line-height:1.2;text-align:center;text-decoration:none;cursor:pointer;
+  transition:transform 120ms ease-out}
+.bouton,.msg .cta,.use-go,.cm-btn{width:100%}
+.bouton:active,.msg .cta:active,.use-go:active,.cm-btn:active,.rw .btn.go:active,.st.use:active,.offre-go:active,.om-btn:active{transform:scale(.98)}
+.bouton.petit,.rw .btn.go,.st.use,.offre-go,.om-btn{min-height:var(--h-cible);padding:0 var(--e-4);border-radius:var(--r-vignette);font-size:var(--t-16)}
+/* grisé : jamais la seule opacité (le texte doit rester lisible : --encre-2 sur --trait, 5,03:1) */
+.bouton:disabled,.bouton[aria-disabled="true"],.use-go:disabled,.rw .btn.go:disabled,.offre-go:disabled,.om-btn:disabled{background:var(--trait);color:var(--encre-2);cursor:default;transform:none}
+.bouton-texte,.use-no,.pv-close{display:flex;align-items:center;justify-content:center;width:100%;min-height:var(--h-cible);padding:0 var(--e-3);border:0;
+  background:none;color:var(--marque-encre);font-weight:600;font-size:var(--t-17);text-decoration:none;cursor:pointer}
+.bouton-texte.discret,.plink{color:var(--encre-2);font-weight:500;font-size:var(--t-16);text-decoration:underline;text-underline-offset:3px}
+.bouton.secondaire,.loc-btn{display:flex;align-items:center;justify-content:center;width:100%;min-height:var(--h-cible);padding:0 var(--e-4);
+  border:1px solid var(--bord-champ);border-radius:var(--r-controle);background:var(--surface);color:var(--encre);font-weight:600;font-size:var(--t-17);text-decoration:none}
 
-@keyframes ringA{
-  from,4%{stroke-dasharray:0 660;stroke-width:20;stroke-dashoffset:-330}
-  12%{stroke-dasharray:60 600;stroke-width:30;stroke-dashoffset:-335}
-  32%{stroke-dasharray:60 600;stroke-width:30;stroke-dashoffset:-595}
-  40%,54%{stroke-dasharray:0 660;stroke-width:20;stroke-dashoffset:-660}
-  62%{stroke-dasharray:60 600;stroke-width:30;stroke-dashoffset:-665}
-  82%{stroke-dasharray:60 600;stroke-width:30;stroke-dashoffset:-925}
-  90%,to{stroke-dasharray:0 660;stroke-width:20;stroke-dashoffset:-990}
-}
-@keyframes ringB{
-  from,12%{stroke-dasharray:0 220;stroke-width:20;stroke-dashoffset:-110}
-  20%{stroke-dasharray:20 200;stroke-width:30;stroke-dashoffset:-115}
-  40%{stroke-dasharray:20 200;stroke-width:30;stroke-dashoffset:-195}
-  48%,62%{stroke-dasharray:0 220;stroke-width:20;stroke-dashoffset:-220}
-  70%{stroke-dasharray:20 200;stroke-width:30;stroke-dashoffset:-225}
-  90%{stroke-dasharray:20 200;stroke-width:30;stroke-dashoffset:-305}
-  98%,to{stroke-dasharray:0 220;stroke-width:20;stroke-dashoffset:-330}
-}
-@keyframes ringC{
-  from{stroke-dasharray:0 440;stroke-width:20;stroke-dashoffset:0}
-  8%{stroke-dasharray:40 400;stroke-width:30;stroke-dashoffset:-5}
-  28%{stroke-dasharray:40 400;stroke-width:30;stroke-dashoffset:-175}
-  36%,58%{stroke-dasharray:0 440;stroke-width:20;stroke-dashoffset:-220}
-  66%{stroke-dasharray:40 400;stroke-width:30;stroke-dashoffset:-225}
-  86%{stroke-dasharray:40 400;stroke-width:30;stroke-dashoffset:-395}
-  94%,to{stroke-dasharray:0 440;stroke-width:20;stroke-dashoffset:-440}
-}
-@keyframes ringD{
-  from,8%{stroke-dasharray:0 440;stroke-width:20;stroke-dashoffset:0}
-  16%{stroke-dasharray:40 400;stroke-width:30;stroke-dashoffset:-5}
-  36%{stroke-dasharray:40 400;stroke-width:30;stroke-dashoffset:-175}
-  44%,50%{stroke-dasharray:0 440;stroke-width:20;stroke-dashoffset:-220}
-  58%{stroke-dasharray:40 400;stroke-width:30;stroke-dashoffset:-225}
-  78%{stroke-dasharray:40 400;stroke-width:30;stroke-dashoffset:-395}
-  86%,to{stroke-dasharray:0 440;stroke-width:20;stroke-dashoffset:-440}
-}
-/* ⚠️ On RALENTIT au lieu de figer : un indicateur de chargement immobile fait
-   croire que la page a plante, ce qui est pire que le mouvement qu'on evite. */
-@media(prefers-reduced-motion:reduce){.pl__ring{animation-duration:6s}}
+/* ── Titres de section ────────────────────────────────────────────────────── */
+.sec-h{display:flex;align-items:baseline;justify-content:space-between;gap:var(--e-2);margin:0 var(--e-1)}
+.sec-h .t{font-weight:700;font-size:var(--t-22);line-height:1.2;letter-spacing:-.01em;color:var(--encre)}
+.wrap > .sec-h,.wrap > .bloc-section{margin-top:var(--e-6)}
+.bloc-section > * + *{margin-top:var(--e-3)}
 
-/* header */
-.head{display:flex;align-items:center;justify-content:space-between}
-.head .eyebrow{font-size:11px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--gold3);margin-bottom:4px}
-.head .bakery{font-family:var(--font-display);font-size:24px;font-weight:800;font-style:normal;letter-spacing:-.01em;color:var(--surbg);line-height:1.05}
-.head .greet{font-size:13px;color:var(--surbg-doux);margin-top:5px}
-.avatar{width:48px;height:48px;border-radius:50%;flex-shrink:0;display:grid;place-items:center;background:linear-gradient(135deg,var(--gold),var(--gold2) 55%,var(--gold3));font-family:var(--font-display);font-size:21px;font-weight:800;color:var(--ink);box-shadow:0 6px 16px rgba(200,150,62,.4)}
-/* Avatar de repli : un emoji a besoin de plus de place qu'une initiale, et la
-   police à empattements ne lui sert à rien. */
-.avatar.is-avatar{font-family:var(--font-ui);font-size:25px;line-height:1}
-
-/* Où nous trouver — plan OpenStreetMap, sans clé d'API ni quota. */
-.loc-row{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:15px 16px;box-shadow:var(--shadow)}
-.loc-t{font-size:14.5px;font-weight:700;color:var(--ink);margin-bottom:3px}
-.loc-d{font-size:12.5px;color:var(--muted);line-height:1.45;margin-bottom:12px}
-/* ⚠️ Carré, mais pleine largeur. À 240 px, la mention légale d'OpenStreetMap —
-   obligatoire sous licence ODbL, donc impossible à masquer — s'étalait sur cinq
-   lignes et recouvrait la moitié du plan. Sur toute la largeur elle tient sur deux. */
-.loc-map{position:relative;width:100%;aspect-ratio:1/1;margin:0 auto;border-radius:14px;overflow:hidden;border:1px solid var(--line);background:var(--gold-soft)}
-.loc-map iframe{position:absolute;inset:0;width:100%;height:100%;border:0;display:block}
-.loc-btn{display:block;margin:12px auto 0;padding:12px;text-align:center;border-radius:13px;background:var(--gold-soft);border:1px solid var(--gold-line);color:var(--ink);font-family:var(--font-ui);font-size:14px;font-weight:700;text-decoration:none}
-.loc-btn:active{transform:scale(.98)}
-
-/* solde */
-.hero{background:var(--card);border-radius:24px;padding:22px 22px 20px;box-shadow:var(--shadow);border:1px solid var(--line);position:relative;overflow:hidden}
-.hero::after{content:'';position:absolute;top:-40px;right:-30px;width:140px;height:140px;border-radius:50%;background:radial-gradient(circle,rgba(255,197,61,.35),transparent 70%);pointer-events:none}
-.hero-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px}
-.hero-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--muted2)}
-.hero-pts{display:flex;align-items:baseline;gap:9px}
-.hero-pts .v{font-family:var(--font-ui);font-size:62px;font-weight:800;line-height:.9;letter-spacing:-.02em;background:linear-gradient(135deg,var(--gold),var(--gold2) 60%,#E85A1B);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
-.hero-pts .u{font-size:15px;font-weight:600;color:var(--muted)}
-/* ⚡ 13/09 — « Mise à jour… » : la carte vient d'être redessinée depuis le cache du
-   téléphone, et la réponse du serveur n'est pas encore arrivée. Sans ce signal, un
-   solde qui passe de 7 à 8 sous les yeux du client se lirait comme un bug.
-   Texte en --muted (5,86:1 sur blanc) ; seul le point est en or, couleur de
-   remplissage et non de texte (cf. l'audit des contrastes du 08/09). */
-.maj{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:600;color:var(--muted)}
-.maj i{width:7px;height:7px;border-radius:50%;background:var(--gold);animation:majPulse 1.1s ease-in-out infinite}
+/* ── Mes tampons (l'ancien solde .hero et l'ancienne progression .prog, réunis) ── */
+.hero-top{display:flex;align-items:center;justify-content:space-between;gap:var(--e-2);min-height:24px}
+.hero-label{font-size:var(--t-16);font-weight:600;color:var(--encre-2);line-height:1.3}
+/* ⚡ 13/09 — « Mise à jour… » : la carte vient d'être redessinée depuis le cache du téléphone, et la réponse du
+   serveur n'est pas encore arrivée. Sans ce signal, un solde qui passe de 7 à 8 sous les yeux du client se lirait
+   comme un bug. Texte en --encre-2 ; seul le point est à la couleur du commerce (--marque-encre, visible sur blanc). */
+.maj{display:inline-flex;align-items:center;gap:6px;font-size:var(--t-16);font-weight:500;color:var(--encre-2)}
+.maj i{width:8px;height:8px;border-radius:50%;background:var(--marque-encre);animation:majPulse 1.1s ease-in-out infinite}
 @keyframes majPulse{0%,100%{opacity:.35;transform:scale(.8)}50%{opacity:1;transform:scale(1.15)}}
-@media(prefers-reduced-motion:reduce){.maj i{animation-duration:3s}}
-
-/* progression */
-.prog{background:var(--card);border-radius:20px;padding:16px 18px;box-shadow:var(--shadow);border:1px solid var(--line)}
-.prog-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;font-size:13px}
-.prog-top .l{color:var(--ink);font-weight:600}.prog-top .l b{color:var(--gold-ink);font-weight:700}
-.prog-top .r{font-size:12px;color:var(--muted);font-weight:600}
-.bar{height:11px;border-radius:99px;background:var(--cream2);overflow:hidden;border:1px solid var(--line)}
-.bar i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,var(--gold3),var(--gold));transition:width .6s cubic-bezier(.16,1,.3,1);box-shadow:0 1px 4px rgba(200,150,62,.4)}
-
-/* ─── Utiliser un cadeau : avertissement + écran de validation ─── */
-.use-warn{background:rgba(255,255,255,.08);border:1px solid rgba(255,197,61,.35);border-radius:14px;
-  padding:11px 14px;font-size:12.5px;color:var(--surbg-doux);line-height:1.5;margin:0 2px}
-.use-warn b{color:var(--surbg)}
-.st.use{border:none;border-radius:99px;padding:8px 15px;font-family:var(--font-ui);font-size:12px;
-  font-weight:700;cursor:pointer;color:#fff;background:linear-gradient(135deg,var(--gold),var(--gold2));
-  box-shadow:0 4px 12px rgba(200,150,62,.34)}
-.st.use:active{transform:scale(.95)}
-/* cadeau validé : reste cliquable pour être rouvert en grand devant le vendeur */
-.st.done.live{border:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;
-  background:var(--green-soft);border-radius:14px;padding:7px 13px;font-family:var(--font-ui)}
-.st.done.live .ok{font-size:12px;font-weight:700;color:var(--green-ink)}
-.st.done.live .cd{font-size:10.5px;color:var(--muted);font-variant-numeric:tabular-nums}
-.st.done.live:active{transform:scale(.96)}
-
-.use-ov{position:fixed;inset:0;z-index:60;background:rgba(10,12,30,.62);backdrop-filter:blur(6px);
-  display:none;align-items:center;justify-content:center;padding:24px}
-.use-ov.on{display:flex}
-.use-box{background:var(--card);border-radius:26px;padding:28px 24px;max-width:360px;width:100%;
-  text-align:center;box-shadow:0 24px 70px rgba(0,0,0,.35)}
-.use-box h3{font-family:var(--font-display);font-size:23px;color:var(--ink);margin-bottom:8px}
-.use-box p{font-size:14px;color:var(--muted);line-height:1.55;margin-bottom:18px}
-.use-box .lib{font-weight:700;color:var(--ink);font-size:16px;margin-bottom:4px}
-.use-box .cd{font-size:12px;color:var(--muted2);letter-spacing:.06em;margin-bottom:18px}
-.use-actions{display:flex;flex-direction:column;gap:9px}
-.use-actions button{border:none;border-radius:14px;padding:14px;font-family:var(--font-ui);
-  font-size:15px;font-weight:700;cursor:pointer}
-.use-go{background:linear-gradient(135deg,var(--gold),var(--gold2));color:#fff;
-  box-shadow:0 6px 18px rgba(200,150,62,.36)}
-.use-no{background:transparent;color:var(--muted);font-weight:600}
-/* écran validé : le vendeur doit le reconnaître d'un coup d'œil */
-.use-ok{width:78px;height:78px;border-radius:50%;margin:0 auto 14px;display:grid;place-items:center;
-  font-size:38px;color:#fff;background:linear-gradient(135deg,#15803D,#22C55E);
-  box-shadow:0 10px 26px rgba(63,125,46,.4);animation:okPop .45s cubic-bezier(.2,.9,.3,1.5) both}
-@keyframes okPop{from{transform:scale(.4);opacity:0}to{transform:none;opacity:1}}
-.use-clock{font-size:34px;font-weight:800;letter-spacing:-.01em;color:var(--ink);margin:4px 0 2px;
-  font-variant-numeric:tabular-nums}
-.use-left{font-size:13px;color:var(--muted);margin-bottom:20px}
-@media (prefers-reduced-motion:reduce){.use-ok{animation:none}}
-
+.solde{display:flex;align-items:baseline;gap:var(--e-2);margin-top:2px}
+.solde .n{display:inline-block;font-weight:700;font-size:var(--t-52);line-height:1;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+.solde .u{color:var(--encre-2);font-size:var(--t-20);font-weight:500}
 /* grille de tampons — remplace la barre tant que le palier reste lisible (≤ 25).
-   Au-delà, une grille de 40 ou 80 pastilles devient illisible : on repasse à la barre. */
-.stamps{display:none;grid-template-columns:repeat(10,1fr);gap:6px}
+   Au-delà, une grille de 40 ou 80 pastilles devient illisible : on repasse à la barre.
+   04/11/2026 (D1) — 5 colonnes (avant : 10 colonnes en 1fr, des pastilles de 26 px), en minmax(0,1fr). */
+.stamps{display:none;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px}
 .stamps.on{display:grid}
-.stamp{aspect-ratio:1;border-radius:50%;border:2px dashed var(--gold-line);background:var(--cream2);
-  display:grid;place-items:center;font-size:12px;line-height:1}
-.stamp.on{border:none;background:linear-gradient(135deg,var(--gold),var(--gold2));
-  box-shadow:0 3px 8px rgba(200,150,62,.34);animation:stampPop .34s cubic-bezier(.2,.9,.3,1.5) both}
+.bloc-tampons .stamps{margin-top:var(--e-5)}
+/* Un tampon vide : un simple cercle (--bord-champ, 3,53:1 sur blanc). Plein : le logo du commerce s'il en a un
+   (Le Bap's), sinon une coche dessinée sur sa couleur. Le logo est posé en absolu : une image dans une case de
+   grille en height:100% ne se résout pas toujours (cf. .vignette). */
+.stamp{position:relative;min-width:0;aspect-ratio:1;border-radius:50%;border:2px solid var(--bord-champ);display:flex;align-items:center;justify-content:center}
+.stamp.on{border-color:var(--marque);background:var(--marque);color:var(--sur-marque);animation:stampPop .34s cubic-bezier(.2,.9,.3,1.5) both}
+.stamp.on.logo{border:0;background:none}
+.stamp.on img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}
+.stamp .picto{width:46%;height:auto}
 @keyframes stampPop{from{transform:scale(.35);opacity:0}to{transform:none;opacity:1}}
-@media (prefers-reduced-motion:reduce){.stamp.on{animation:none}}
-
 /* ✨ 22/09 — L'EFFET DOPAMINE : le tampon qu'on vient de GAGNER atterrit (pop plus
    ample + anneau qui s'élargit + étincelles), et le gros chiffre rebondit. Distinct
    de stampPop, qui n'est que l'apparition de la grille. Rien de tout ça si le client
    a demandé moins d'animations : le toast reste. */
-.stamp.win{position:relative;z-index:2;animation:stampWin .9s cubic-bezier(.2,.9,.3,1.3) both}
-.stamp.win::after{content:'';position:absolute;inset:-5px;border-radius:50%;border:2px solid var(--gold);
+.stamp.win{z-index:2;animation:stampWin .9s cubic-bezier(.2,.9,.3,1.3) both}
+.stamp.win::after{content:'';position:absolute;inset:-5px;border-radius:50%;border:2px solid var(--marque-encre);
   pointer-events:none;animation:stampRing .9s ease-out both;animation-delay:inherit}
 @keyframes stampWin{0%{transform:scale(.3);opacity:0}55%{transform:scale(1.4);opacity:1}75%{transform:scale(.94)}100%{transform:none;opacity:1}}
 @keyframes stampRing{0%{transform:scale(.6);opacity:.95}60%{opacity:.5}100%{transform:scale(2.3);opacity:0}}
-.hero-pts .v{display:inline-block}
-.hero-pts .v.bump{animation:soldeBump .75s cubic-bezier(.2,.9,.3,1.4)}
+.solde .n.bump{animation:soldeBump .75s cubic-bezier(.2,.9,.3,1.4)}
 @keyframes soldeBump{0%{transform:scale(1)}40%{transform:scale(1.28)}100%{transform:scale(1)}}
 .etincelle{position:fixed;z-index:210;width:7px;height:7px;margin:-3px 0 0 -3px;border-radius:50%;pointer-events:none;
   will-change:transform,opacity;animation:etincelle .85s cubic-bezier(.1,.8,.3,1) forwards}
 @keyframes etincelle{to{transform:translate(var(--dx),var(--dy)) scale(.15);opacity:0}}
-@media (prefers-reduced-motion:reduce){.stamp.win,.stamp.win::after,.hero-pts .v.bump{animation:none}.etincelle{display:none}}
+/* La barre (palier de plus de 25 tampons) : piste --trait, remplissage --marque-encre (visible sur blanc). */
+.bar{height:8px;margin-top:var(--e-5);border-radius:var(--r-pilule);background:var(--trait);overflow:hidden}
+.bar i{display:block;height:100%;border-radius:inherit;background:var(--marque-encre);transition:width .6s cubic-bezier(.16,1,.3,1)}
+/* Le prochain palier : sa photo (ou le pictogramme), « Plus que N tampons pour … » et « n / palier ». */
+.palier{display:grid;grid-template-columns:64px minmax(0,1fr);align-items:center;gap:var(--e-4);margin-top:var(--e-5);padding-top:var(--e-4);box-shadow:inset 0 1px 0 var(--trait)}
+.palier > *{min-width:0}
+.palier .l{display:block;font-weight:600;font-size:var(--t-20);line-height:1.25}
+.palier .l b{font-weight:700;color:var(--marque-encre)}
+.palier .r{display:block;margin-top:2px;color:var(--encre-2);font-size:var(--t-16)}
+.palier .r:empty{display:none}
 
-.sec-h{display:flex;align-items:baseline;justify-content:space-between;margin:8px 2px 0}
-.sec-h .t{font-family:var(--font-display);font-size:21px;font-weight:800;letter-spacing:-.01em;color:var(--surbg)}
-.sec-h .a{font-size:12px;font-weight:600;color:var(--surbg-doux)}
-
-/* catalogue carrousel */
-.cat{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;padding:4px 18px 8px;margin:0 -18px;-webkit-overflow-scrolling:touch;scrollbar-width:none;overscroll-behavior-x:contain}
-.cat::-webkit-scrollbar{display:none}
-/* ── Tuile de récompense ────────────────────────────────────────────────────
-   Relief inspiré de « serious-penguin-95 » d'adamgiebl sur uiverse.io, MIT.
-   https://uiverse.io/adamgiebl/serious-penguin-95
-
-   ⚠️ RÉCHAUFFÉ ET ADOUCI. L'original pose deux ombres INTERNES bleutées
-   (rgba(50,50,93,.25)) très marquées, pensées pour un gris neutre. Sur du crème
-   elles virent au gris sale, et surtout elles assombrissent le HAUT de la tuile —
-   exactement là où se trouve le produit. Les teintes passent donc au brun chaud et
-   les opacités sont divisées par deux : on garde le creux, pas la salissure. */
-.rw{flex:0 0 152px;scroll-snap-align:start;background:var(--card);border-radius:26px;padding:15px 13px 13px;
-  box-shadow:inset 0 26px 44px -18px rgba(140,105,45,.13), inset 0 16px 24px -20px rgba(90,65,25,.16), var(--shadow);
-  border:1px solid var(--line);display:flex;flex-direction:column;align-items:center;text-align:center}
-
-/* ⚠️ AUCUN FOND derrière le produit — il est détourné et doit le rester, comme
-   dans l'application McDonald's. Vérifié le 11/09 : les sept images ont bien leurs
-   quatre coins à alpha 0. Ce qui les décolle n'est donc pas un cadre, c'est une
-   ombre PORTÉE, qui épouse la forme réelle du produit au lieu d'un rectangle. */
-/* ⚠️ 11/09 — flex + max-*, et surtout PAS `display:grid` avec `height:100%`.
-   Premiere version en grille : sur un produit tres vertical (jus.png, 181x392) le
-   `height:100%` ne se resolvait pas, l'image reprenait sa hauteur naturelle et
-   debordait sur le nom du produit — vu sur iPhone, pas en emulation.
-   Avec max-width/max-height, l'image ne peut PLUS deborder, quel que soit son ratio. */
-.rw .ph{width:104px;height:92px;margin-bottom:10px;display:flex;align-items:center;justify-content:center;overflow:hidden}
-.rw .ph-emoji{font-size:46px;line-height:1}
-.rw .ph-img{max-width:100%;max-height:100%;width:auto;height:auto;object-fit:contain;filter:drop-shadow(0 7px 9px rgba(90,65,25,.26))}
-/* commerces thémés : photos legacy encore avec fond -> on garde l'ancien rendu (cover + multiply) */
-.themed-photos .rw .ph-img{object-fit:cover;padding:0;mix-blend-mode:multiply;border-radius:18px}
-.rw .nm{font-size:14px;font-weight:600;color:var(--ink);line-height:1.2;min-height:34px;display:flex;align-items:center}
-.rw .cost{font-size:13px;font-weight:700;color:var(--gold-ink);margin:7px 0 11px;display:inline-flex;align-items:center;gap:5px}
-.rw .cost::before{content:'';width:7px;height:7px;border-radius:50%;background:var(--gold)}
-.rw .btn{width:100%;padding:11px;border:none;border-radius:12px;font-family:var(--font-ui);font-size:13px;font-weight:700;cursor:pointer;transition:transform .12s}
-.rw .btn.go{background:linear-gradient(135deg,var(--gold),var(--gold2));color:#fff;box-shadow:0 5px 14px rgba(200,150,62,.36)}
-.rw .btn.go:active{transform:scale(.96)}
-.rw .btn.lock{background:var(--cream2);color:var(--muted);cursor:default;font-size:11.5px;font-weight:700}
-.rw .btn:disabled{opacity:.5;cursor:default}
-.rw.locked .ph{filter:grayscale(.3) opacity(.85)}
-
-
-
-/* (24/09 — les tuiles « bonus » .bn ont été retirées : depuis le 12/09 les avis sont des rangées .social) */
-
-/* mes cadeaux */
-/* 🎁 15/09 — Offre reçue par e-mail, à activer (bloc « Nouvelle offre »). Rayons en
-   variables avec repli : l'habillage Pulse (skin-pulse.mjs) définit --r-carte et
-   --r-bouton, la carte d'origine garde ses valeurs. */
-.offres-wrap{display:flex;flex-direction:column;gap:10px}
-.offres{display:flex;flex-direction:column;gap:10px}
-.offre{display:flex;gap:14px;align-items:center;background:var(--card);border:1.5px solid var(--gold-line);
-  border-radius:var(--r-carte,20px);padding:12px 14px 12px 12px;box-shadow:var(--shadow)}
-.offre-img{width:62px;aspect-ratio:9/16;flex-shrink:0;border-radius:10px;overflow:hidden;background:var(--gold-soft);
-  display:grid;place-items:center;font-size:26px}
+/* ── 🎁 15/09 — Offres reçues par e-mail, à activer (bloc « Nouvelle offre ») ─────────────── */
+.offres > * + *{margin-top:var(--e-2)}
+.offre{display:grid;grid-template-columns:56px minmax(0,1fr);align-items:center;gap:var(--e-4);padding:var(--e-4);background:var(--surface);border-radius:var(--r-surface)}
+.offre > *{min-width:0}
+.offre-img{width:56px;aspect-ratio:9/16;border-radius:10px;overflow:hidden;background:var(--marque-clair);color:var(--marque-encre);
+  display:flex;align-items:center;justify-content:center}
 .offre-img img{width:100%;height:100%;object-fit:cover;display:block}
-.offre-meta{flex:1;min-width:0}
-.offre-t{font-size:14.5px;font-weight:700;color:var(--ink);line-height:1.3}
-.offre-d{font-size:12px;font-weight:600;color:var(--gold-ink);margin-top:3px}
-.offre-go{margin-top:10px;border:none;border-radius:var(--r-bouton,99px);padding:10px 16px;font-family:var(--font-ui);
-  font-size:13px;font-weight:700;color:#fff;background:linear-gradient(135deg,var(--gold),var(--gold2));
-  box-shadow:0 4px 12px rgba(200,150,62,.30);cursor:pointer}
-.offre-go:active{transform:scale(.96)}
-.offre-go:disabled{opacity:.6;cursor:default;transform:none}
-.gifts{background:var(--card);border-radius:20px;box-shadow:var(--shadow);border:1px solid var(--line);overflow:hidden}
-.gift{display:flex;align-items:center;gap:13px;padding:14px 16px;border-bottom:1px solid var(--line)}.gift:last-child{border-bottom:none}
-.gift .ic{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;font-size:21px;background:var(--gold-soft);flex-shrink:0}
-.gift .meta{flex:1;min-width:0}.gift .meta .n{font-size:14px;font-weight:600;color:var(--ink)}.gift .meta .d{font-size:11.5px;color:var(--muted);margin-top:2px}
-.gift .st{font-size:11px;font-weight:700;padding:5px 10px;border-radius:99px;white-space:nowrap}
-.gift .st.done{background:var(--green-soft);color:var(--green-ink)}
+.offre-img .picto{width:28px;height:28px}
+.offre-t{font-weight:600;line-height:1.3}
+.offre-d{font-size:var(--t-16);font-weight:500;color:var(--marque-encre);margin-top:2px}
+.offre-go{margin-top:var(--e-3)}
 
-/* Signature de marque en pied. Le fichier est blanc sur transparent et le fond de
-   la carte est crème : sans `invert`, le logo serait purement et simplement invisible.
-   En pied et non en tête, à dessein — sur la carte du client, l'identité qui domine
-   doit rester celle du commerce. */
-.marque{display:block;height:34px;width:auto;margin:0 auto 14px;opacity:.9}   /* 23/09 : fond nuit, le logo blanc se pose tel quel (plus d'invert) */
+/* ── Mes cadeaux ───────────────────────────────────────────────────────────── */
+.gift .n{font-weight:600;line-height:1.3}
+.gift .d{color:var(--encre-2);font-size:var(--t-16)}
+/* cadeau validé : reste cliquable pour être rouvert en grand devant le vendeur */
+.st.done.live{display:flex;flex-direction:column;align-items:flex-end;justify-content:center;gap:0;min-height:var(--h-cible);padding:var(--e-1) var(--e-3);
+  border:0;border-radius:var(--r-vignette);background:var(--succes-clair);cursor:pointer}
+.st.done.live .ok{display:flex;align-items:center;gap:var(--e-1);font-size:var(--t-16);font-weight:600;color:var(--succes);line-height:1.25}
+.st.done.live .ok .picto{width:18px;height:18px}
+.st.done.live .cd{font-size:var(--t-16);color:var(--succes);line-height:1.25;font-variant-numeric:tabular-nums}
+.st.done.live:active{transform:scale(.97)}
+.cadeaux-wrap .use-warn{margin:var(--e-3) var(--e-1) 0}
+.use-warn b{color:var(--encre);font-weight:600}
 
-.foot{text-align:center;margin-top:6px}.foot .ty{font-size:12px;color:var(--surbg-doux)}
-.foot .bk{font-family:var(--font-display);font-style:normal;color:var(--gold3);font-weight:800}
-.cardno{margin-top:10px;font-size:11.5px;letter-spacing:.1em;color:var(--surbg-doux)}.cardno b{color:var(--surbg);font-weight:700}
+/* ── Paniers anti-gaspi du jour ───────────────────────────────────────────── */
+.wrap > .agb{margin-top:var(--e-5)}
+.agb-h{display:flex;align-items:center;gap:var(--e-2);font-weight:700;font-size:var(--t-20);line-height:1.25}
+.agb-h .tag{margin-left:auto;padding:2px 10px;border-radius:var(--r-pilule);background:var(--succes-clair);color:var(--succes);font-size:var(--t-16);font-weight:600;white-space:nowrap}
+.agb-sub{font-size:var(--t-16);color:var(--encre-2);margin:var(--e-1) 0 var(--e-2)}
+.agb-item{display:grid;grid-template-columns:48px minmax(0,1fr) max-content;align-items:center;gap:var(--e-3);min-height:68px;padding:var(--e-2) 0}
+.agb-item > *{min-width:0}
+.agb-item + .agb-item{box-shadow:inset 0 1px 0 var(--trait)}
+.agb-meta .n{font-weight:600}
+.agb-meta .d{font-size:var(--t-16);color:var(--encre-2)}
+.agb-qty{font-weight:600;color:var(--succes)}
+.agb-price{text-align:right}
+.agb-price .pr{font-size:var(--t-20);font-weight:700;color:var(--succes)}
+.agb-price .or{font-size:var(--t-16);color:var(--encre-2);text-decoration:line-through}
 
-/* Mes données — information (RGPD art. 13) et effacement (art. 17).
-   ⚠️ Texte en var(--ink), jamais en var(--gold) : l'or en TEXTE tombe à 2,49:1. */
-.plink{margin-top:13px;background:none;border:0;padding:7px 10px;font-family:var(--font-ui);font-size:11.5px;color:var(--surbg-doux);text-decoration:underline;text-underline-offset:3px;cursor:pointer}
-.plink:active{opacity:.6}
-.pv-card{text-align:left}
-.pv-t{font-family:var(--font-display);font-size:20px;font-weight:700;color:var(--ink);margin-bottom:13px;text-align:center}
-.pv-p{font-size:13.5px;line-height:1.6;color:var(--ink);opacity:.86;margin:0 0 11px}
-.pv-p b{opacity:1;font-weight:700}
-.pv-list{margin:0 0 13px;padding-left:18px;font-size:13px;line-height:1.6;color:var(--ink);opacity:.86}
-.pv-list li{margin-bottom:4px}
-.pv-warn{background:var(--gold-soft);border:1px solid var(--gold-line);border-radius:12px;padding:11px 13px;font-size:13px;line-height:1.55;color:var(--ink);margin-bottom:13px}
-.pv-danger{width:100%;padding:13px;border:1px solid var(--gold-line);border-radius:14px;background:transparent;color:var(--ink);font-family:var(--font-ui);font-size:14px;font-weight:700;cursor:pointer}
-.pv-danger.armed{background:#8C2F2A;border-color:#8C2F2A;color:#fff}
-.pv-danger:disabled{opacity:.6}
-.pv-close{width:100%;margin-top:9px;padding:12px;border:0;border-radius:14px;background:var(--gold-soft);color:var(--ink);font-family:var(--font-ui);font-size:14px;font-weight:700;cursor:pointer}
+/* ── Mes récompenses : carrousel de tuiles de 156 px ──────────────────────────
+   La tuile suivante dépasse du bord : plus besoin de « glisse → ». ⚠️ AUCUN FOND derrière le produit, il est
+   détourné et doit le rester (vérifié le 11/09 : quatre coins à alpha 0) ; sans photo, le pictogramme sur la
+   teinte claire du commerce. 04/11/2026 : plus de relief (ombres internes) ni d'ombre portée, D1 est plat ;
+   et plus de rendu « cover + multiply » des anciennes photos à fond (.themed-photos) : tout en contain. */
+.cat{display:flex;gap:var(--e-3);overflow-x:auto;scroll-snap-type:x mandatory;scroll-padding:0 var(--e-4);
+  margin-left:calc(-1 * var(--e-4));margin-right:calc(-1 * var(--e-4));padding:0 var(--e-4) var(--e-1);
+  -webkit-overflow-scrolling:touch;scrollbar-width:none;overscroll-behavior-x:contain}
+.cat::-webkit-scrollbar{display:none}
+.rw{flex:0 0 156px;scroll-snap-align:start;display:flex;flex-direction:column;align-items:center;gap:var(--e-2);
+  padding:var(--e-4) var(--e-3);background:var(--surface);border-radius:var(--r-surface);text-align:center}
+.rw .ph{width:88px;height:88px;margin-bottom:var(--e-1)}
+.rw .nm{font-weight:600;line-height:1.25;min-height:2.5em;display:flex;align-items:center;justify-content:center;overflow-wrap:anywhere}
+.rw .cost{color:var(--encre-2);font-size:var(--t-16)}
+.rw .btn.go{width:100%;margin-top:auto}
+/* « Plus que N tampons » : un simple texte (une tuile verrouillée n'est pas un bouton qu'on peut activer, elle
+   le dit — 24/09), au-dessus d'une jauge (piste --trait, remplissage --marque-encre). */
+.rw .btn.lock{margin-top:auto;min-height:44px;display:flex;align-items:center;justify-content:center;padding:0;border:0;background:none;color:var(--encre-2);font-size:var(--t-16);font-weight:500;line-height:1.3;cursor:default}
+.jauge{display:block;width:100%;height:8px;border-radius:var(--r-pilule);background:var(--trait);overflow:hidden}
+.jauge i{display:block;height:100%;background:var(--marque-encre);transform-origin:left;transform:scaleX(var(--part,0))}
 
-.toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,16px);background:var(--card);color:var(--ink);padding:14px 20px;border-radius:14px;font-size:13.5px;font-weight:600;box-shadow:0 12px 34px rgba(0,0,0,.3);z-index:99;opacity:0;pointer-events:none;transition:opacity .25s,transform .25s;max-width:340px;text-align:center}
-.toast.show{opacity:1;transform:translate(-50%,0)}
-
-/* modal cadeau confirmé + confettis */
-.cm-overlay{position:fixed;inset:0;z-index:200;display:none;align-items:center;justify-content:center;padding:26px;background:rgba(10,12,30,.62);backdrop-filter:blur(4px);opacity:0;transition:opacity .25s}
-.cm-overlay.show{display:flex;opacity:1}
-.cm-card{background:var(--card);border-radius:26px;padding:30px 24px 24px;max-width:330px;width:100%;text-align:center;box-shadow:0 30px 70px rgba(0,0,0,.35);border:1px solid var(--gold-line);transform:scale(.6) translateY(20px);opacity:0}
-.cm-overlay.show .cm-card{animation:cmPop .55s cubic-bezier(.34,1.56,.64,1) forwards}
-@keyframes cmPop{to{transform:scale(1) translateY(0);opacity:1}}
-.cm-badge{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--green-ink);background:var(--green-soft);border-radius:99px;padding:6px 14px;display:inline-block;margin-bottom:14px}
-.cm-ph{width:120px;height:120px;border-radius:50%;margin:0 auto 16px;background:var(--cream2);background-size:cover;background-position:center;display:grid;place-items:center;font-size:58px;border:3px solid var(--gold-line);box-shadow:0 8px 22px rgba(200,150,62,.3)}
-.cm-title{font-family:var(--font-display);font-size:24px;font-weight:700;color:var(--ink);margin-bottom:4px}
-.cm-lib{font-size:14px;color:var(--muted);margin-bottom:18px}
-.cm-codebox{background:var(--cream);border:1px dashed var(--gold-line);border-radius:16px;padding:14px}
-.cm-codelbl{font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--muted2);margin-bottom:6px}
-.cm-code{font-family:var(--font-ui);font-size:38px;font-weight:800;letter-spacing:.1em;color:var(--gold-ink);line-height:1}
-.cm-note{font-size:12px;color:var(--muted);margin:12px 0 18px;line-height:1.5}
-.cm-btn{width:100%;padding:14px;border:none;border-radius:14px;background:linear-gradient(135deg,var(--gold),var(--gold2));color:#fff;font-family:var(--font-ui);font-size:15px;font-weight:700;cursor:pointer}
-/* réseaux sociaux */
-.social{background:var(--card);border-radius:20px;padding:15px 18px;box-shadow:var(--shadow);border:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:12px}
-.social-txt{font-size:12.5px;color:var(--ink);line-height:1.45}.social-txt b{color:var(--gold-ink);font-weight:700}
-.social-links{display:flex;gap:10px;flex-shrink:0}
-.slink{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;text-decoration:none;box-shadow:0 4px 12px rgba(0,0,0,.16);transition:transform .12s;position:relative}
+/* ── Gagner plus de tampons : une rangée blanche par moyen (e-mail, avis, réseaux) ──────────── */
+.social{display:flex;align-items:center;justify-content:space-between;gap:var(--e-3);min-height:68px;padding:var(--e-3) var(--e-4);
+  background:var(--surface);border-radius:var(--r-surface)}
+.wrap > .social + .social{margin-top:var(--e-2)}
+.social-txt{min-width:0;font-weight:600;line-height:1.35}
+.social-txt b{font-weight:700;color:var(--marque-encre);white-space:nowrap}   /* 04/11/2026 (relecture) : jamais « +1 / tampon » sur deux lignes */
+.social-links{display:flex;gap:var(--e-2);flex-shrink:0}
+.slink{position:relative;width:48px;height:48px;border-radius:14px;display:flex;align-items:center;justify-content:center;text-decoration:none;transition:transform .12s}
 .slink:active{transform:scale(.93)}
 /* 21/09 — un bouton dont les tampons sont DÉJÀ gagnés le dit : coche verte et icône
-   estompée. Avant, le client cliquait, rien ne se passait, et il croyait à une panne. */
-.slink.done{opacity:.55}
-.slink.done::after{content:'✓';position:absolute;right:-6px;top:-6px;width:19px;height:19px;border-radius:50%;
-  background:var(--green,#16a34a);color:#fff;font-size:11px;font-weight:800;line-height:19px;text-align:center;
-  box-shadow:0 2px 6px rgba(0,0,0,.25);opacity:1}
-.social-txt.done{color:var(--muted)}.social-txt.done b{color:var(--green-ink,#15803D)}  /* 01/10 : --green-ink (5,1:1 sur blanc) au lieu de --green (3,3:1) */
+   estompée. Avant, le client cliquait, rien ne se passait, et il croyait à une panne.
+   04/11/2026 (D1) — la coche est dessinée (SVG), plus un caractère. */
+.slink.done{opacity:.6}
+.slink.done::after{content:'';position:absolute;right:-6px;top:-6px;width:22px;height:22px;border-radius:50%;
+  background:var(--succes) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5' fill='none' stroke='%23fff' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/14px no-repeat;
+  box-shadow:0 0 0 2px var(--surface)}
+.social-txt.done{color:var(--encre-2);font-weight:500}.social-txt.done b{color:var(--succes)}
+/* Les couleurs des marques restent des littéraux : ce sont des logos. */
 .slink.ig{background:linear-gradient(45deg,#f09433,#e6683c 28%,#dc2743 50%,#cc2366 72%,#bc1888)}
 .slink.fb{background:#1877F2}
 .slink.tt{background:#010101}
 /* TripAdvisor : le logo porte déjà son rond vert, la pastille reste neutre. */
-.slink.ta{background:transparent;box-shadow:none;padding:0}
-.slink.ta img{width:44px;height:44px;display:block}
-/* Trustpilot n'a pas de logo fourni — l'étoile de la marque, sur son vert. */
-.slink.tp{background:#00B67A;color:#fff;font-size:24px;line-height:1}
-/* Plusieurs rangées à la suite : on les espace comme le reste de la page. */
-.social + .social{margin-top:10px}
-.confetti{position:fixed;top:-14px;z-index:210;pointer-events:none;will-change:transform,opacity}
-@keyframes confFall{to{transform:translateY(110vh) rotate(720deg);opacity:.85}}
-
-/* (24/09 — les rangs .tier-* ont été retirés : le système de rangs a disparu le 04/09) */
-
-/* bandeau anti-gaspi (alerte paniers du jour) */
-.agb{background:linear-gradient(135deg,rgba(22,163,74,.08),rgba(255,197,61,.12)),var(--card);border:1px solid rgba(63,125,46,.22);border-radius:20px;padding:15px 16px;box-shadow:var(--shadow)}
-.agb-h{display:flex;align-items:center;gap:8px;font-family:var(--font-display);font-size:18px;font-weight:700;color:var(--green-ink)}
-.agb-h .tag{margin-left:auto;font-family:var(--font-ui);font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;color:#2a6b1f;background:rgba(63,125,46,.16);border:1px solid rgba(63,125,46,.3);border-radius:99px;padding:3px 9px}
-.agb-sub{font-size:12px;color:var(--muted);margin:3px 0 4px}
-.agb-item{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:11px 13px;margin-top:8px}
-.agb-emoji{width:46px;height:46px;border-radius:12px;display:grid;place-items:center;font-size:22px;background:var(--cream2);background-size:cover;background-position:center;flex-shrink:0}
-.agb-meta{flex:1;min-width:0}.agb-meta .n{font-size:14px;font-weight:700;color:var(--ink)}.agb-meta .d{font-size:11.5px;color:var(--muted);margin-top:2px}
-.agb-qty{font-weight:800;color:#2a6b1f}
-.agb-price{text-align:right;flex-shrink:0}
-.agb-price .pr{font-size:18px;font-weight:800;color:var(--green-ink)}
-.agb-price .or{font-size:11px;color:var(--muted2);text-decoration:line-through}
-/* Réinstaller sa carte dans le portefeuille du téléphone.
-   Le lien .pkpass n'est signé que pour une heure : on ne peut donc pas le poser
-   en dur dans la page, il faut le demander au moment du clic. */
-.wal-row{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:15px 16px;box-shadow:var(--shadow);text-align:center}
-.wal-t{font-size:14.5px;font-weight:700;color:var(--ink);margin-bottom:3px}
-.wal-d{font-size:12.5px;color:var(--muted);line-height:1.45;margin-bottom:12px}
-/* 22/09 — les badges OFFICIELS d'Apple et de Google (assets/wallet/), jamais redessinés :
-   leurs chartes l'exigent, et Google le vérifie à la demande de publication. Hauteur 48 px
-   (minimum Google, ≥ les autres boutons de la page), 8 px d'espace libre tout autour,
-   proportions gardées. Le bouton lui-même est invisible : seule l'image se voit. */
-.wal-badge{display:inline-block;padding:0;margin:4px 8px;border:0;background:none;cursor:pointer;line-height:0;transition:transform .12s}
-.wal-badge img{height:48px;width:auto;display:block}
-.wal-badge:active{transform:scale(.97)}
-.wal-badge:disabled{opacity:.55;cursor:default;transform:none}
-.wal-badge[hidden]{display:none}   /* `display:inline-block` l'emporterait sur l'attribut hidden */
-.wal-hint{font-size:12px;color:var(--muted);margin-top:10px;line-height:1.45}
-
+.slink.ta{background:transparent;padding:0}
+.slink.ta img{width:48px;height:48px;display:block}
+/* Trustpilot n'a pas de logo fourni — l'étoile de la marque (dessinée), sur son vert. */
+.slink.tp{background:#00B67A}
 /* ✉️ 01/10/2026 — LA RANGÉE E-MAIL. Demande de l'utilisateur : « que le mail apparaisse au même
    niveau que les offres TripAdvisor, et qu'il y ait bien une notion de gagné 1 point ». Elle EST
-   une rangée .social (même carte blanche, mêmes marges, même rayon, même ombre, même phrase en
+   une rangée .social (même carte blanche, mêmes marges, même rayon, même phrase en
    .social-txt, même forme « ✓ … gagné » en .social-txt.done), mais en COLONNE : la phrase en
-   haut, le champ et « Valider » dessous — la place d'un logo ne suffit pas à un champ de saisie.
-   L'ancienne carte .optcard (cloche, « Reçois nos offres fidélité », sous-titre, bord orange une
-   fois inscrit) a disparu avec son emplacement en bas de page : le « gagné » de la phrase et le
-   champ figé bordé de vert disent maintenant que c'est fait. */
-.social.social-mail{flex-direction:column;align-items:stretch;justify-content:flex-start;gap:11px}
+   haut, le champ et « Valider » dessous — la place d'un logo ne suffit pas à un champ de saisie. */
+.social.social-mail{flex-direction:column;align-items:stretch;justify-content:flex-start;gap:var(--e-3)}
 .optmail{min-width:0}
-.om-row{display:flex;gap:8px}
-.om-input{flex:1;min-width:0;padding:12px 14px;border-radius:12px;border:1.5px solid var(--line);
-  background:var(--cream);color:var(--ink);font-family:inherit;font-size:16px;outline:none;transition:border-color .15s}   /* 16 px : pas de zoom automatique iOS (24/09) */
-.om-input:focus{border-color:var(--gold)}
-.om-input.bad{border-color:#d14343}
-.om-btn{flex-shrink:0;padding:12px 18px;border:none;border-radius:12px;background:var(--gold);color:#fff;
-  font-family:inherit;font-size:14px;font-weight:700;cursor:pointer}
-.om-btn:active{transform:scale(.97)}
-.om-btn:disabled{opacity:.5;cursor:default}
-.om-note{font-size:11.5px;color:var(--muted);line-height:1.5;margin-top:9px}
-.om-note.bad{color:#d14343}
+.om-row{display:flex;gap:var(--e-2)}
+.om-input{flex:1;min-width:0;min-height:var(--h-cible);padding:0 var(--e-3);border-radius:var(--r-vignette);border:1px solid var(--bord-champ);background:var(--surface);color:var(--encre);font-family:inherit;font-size:16px;transition:border-color .15s}   /* 16 px : pas de zoom automatique iOS (24/09) */
+.om-input::placeholder{color:var(--encre-2);opacity:1}
+.om-input:focus{border-color:var(--marque-encre)}
+.om-input:focus-visible{outline-offset:1px}
+.om-input.bad{border-color:var(--danger)}
+.om-btn{flex-shrink:0}
+.om-note{font-size:var(--t-16);color:var(--encre-2);line-height:1.45;margin-top:var(--e-2)}
+.om-note.bad{color:var(--danger)}
 /* ⚡ 13/09 — « Ne plus recevoir nos offres » (état « retrouver »). Discret, mais en
-   encre --muted (5,86:1) et souligné : le retrait doit se trouver sans chercher. */
-.om-lien{display:block;margin-top:4px;padding:6px 0;background:none;border:0;font-family:inherit;
-  font-size:12px;font-weight:600;color:var(--muted);text-decoration:underline;text-underline-offset:3px;cursor:pointer}
-.om-lien:active{opacity:.6}
+   encre --encre-2 et souligné : le retrait doit se trouver sans chercher. 48 px de haut. */
+.om-lien{display:inline-flex;align-items:center;min-height:var(--h-cible);margin-top:var(--e-1);padding:0;background:none;border:0;font-family:inherit;
+  font-size:var(--t-16);font-weight:500;color:var(--encre-2);text-decoration:underline;text-underline-offset:3px;cursor:pointer}
 /* Le champ FIGÉ, une fois l'adresse validée. Il doit rester parfaitement
    LISIBLE — c'est le seul endroit où le client peut repérer sa propre faute de
    frappe — donc on ne le grise pas : on le borde de vert et on garde l'encre
    pleine. Un champ pâli se lit comme « désactivé », pas comme « confirmé ». */
-.om-input.fige{background:rgba(63,125,46,.07);border-color:rgba(63,125,46,.45);
-  color:var(--ink);font-weight:600;cursor:default}
-.om-input.fige:focus{border-color:rgba(63,125,46,.45)}
+.om-input.fige{background:var(--succes-clair);border-color:var(--succes);color:var(--encre);font-weight:600;cursor:default}
+.om-input.fige:focus{border-color:var(--succes)}
 /* « Supprimer » : présent et atteignable (le retrait doit être aussi simple que
    l'accord), mais sans la couleur d'appel du bouton d'action. */
-.om-btn-off{background:transparent;color:var(--muted);border:1.5px solid var(--line);font-weight:600}
-.om-btn-off:active{background:rgba(0,0,0,.04)}
-/* (01/10/2026 — les styles .optrow (cloche, titre, sous-titre) ont été retirés avec la carte .optcard) */
-/* (24/09 — l'interrupteur .switch a été retiré : plus d'interrupteur depuis le 12/09, « Valider » fait foi) */
-@media(prefers-reduced-motion:reduce){.fl{animation:none}.cm-overlay.show .cm-card{animation:none;transform:none;opacity:1}}
+.om-btn.om-btn-off{background:var(--surface);color:var(--encre);border:1px solid var(--bord-champ)}
 
-/* ♿ 24/09 (audit accessibilité, ACCESSIBILITE.md) — rien de visible au toucher, tout pour le clavier
-   et les lecteurs d'écran.
-   · Le focus CLAVIER se voit (:focus-visible ne s'allume jamais sous le doigt) : encre orange sur les
-     cartes claires, jaune sur le fond nuit — deux couleurs déjà dans la charte.
-   · Les petits boutons gagnent une zone tactile de 44 px SANS changer de taille : un pseudo-élément
-     invisible déborde au-dessus et au-dessous (Apple et WCAG 2.5.5 demandent 44 px).
-   · L'écran ou la fenêtre qui s'ouvre reçoit le focus (tabindex="-1"), sans contour : c'est un point
-     d'atterrissage, pas un bouton. */
-a:focus-visible,button:focus-visible{outline:3px solid var(--gold-ink);outline-offset:3px}
-.plink:focus-visible,.cta:focus-visible{outline-color:var(--gold3)}
+/* ── Où nous trouver — plan OpenStreetMap, sans clé d'API ni quota ───────────────
+   ⚠️ Carré, mais pleine largeur. À 240 px, la mention légale d'OpenStreetMap —
+   obligatoire sous licence ODbL, donc impossible à masquer — s'étalait sur cinq
+   lignes et recouvrait la moitié du plan. Sur toute la largeur elle tient sur deux. */
+.wrap > .loc-row,.wrap > .wal-row{margin-top:var(--e-6)}
+.loc-t,.wal-t{margin:0 var(--e-1);font-weight:700;font-size:var(--t-22);line-height:1.2;letter-spacing:-.01em}
+.loc-d,.wal-d{margin:var(--e-1) var(--e-1) var(--e-4);color:var(--encre-2);font-size:var(--t-16);line-height:1.45}
+.loc-map{position:relative;width:100%;aspect-ratio:1/1;border-radius:var(--r-surface);overflow:hidden;background:var(--trait)}
+.loc-map iframe{position:absolute;inset:0;width:100%;height:100%;border:0;display:block}
+.loc-btn{margin-top:var(--e-3)}
+.loc-btn:active{transform:scale(.98)}
+
+/* ── Réinstaller sa carte dans le portefeuille du téléphone ────────────────────
+   22/09 — les badges OFFICIELS d'Apple et de Google (assets/wallet/), jamais redessinés ni recolorés : leurs
+   chartes l'exigent, et Google le vérifie à la demande de publication. 04/11/2026 (D1) — GRANDS : Apple en
+   240 px de large (environ 75 px de haut), Google en 317 px (50 px, minimum Google 48) ; ils rétrécissent avec
+   l'écran au lieu de déborder. Le bouton lui-même est invisible : seule l'image se voit. */
+.wal-row{text-align:center}
+.wal-row .wal-t,.wal-row .wal-d{text-align:left}
+.wal-badge{display:block;margin:var(--e-2) auto 0;padding:0;border:0;background:none;cursor:pointer;line-height:0;border-radius:var(--r-controle);transition:transform .12s}
+.wal-badge img{width:100%;height:auto;display:block}
+#awBtn{width:min(100%,240px)}
+#gwBtn{width:min(100%,317px)}
+.wal-badge picture{display:block}
+/* 04/11/2026 (relecture) — sous 340 px de large, le bouton long de Google descendait sous 48 px (288 px de large →
+   45 px de haut à 320 px ; main le fixait à 48) : le <picture> sert alors le badge COMPACT officiel (199 × 55), à
+   180 px ≈ 50 px de haut. */
+@media (max-width:339px){ #gwBtn{width:180px} }
+.wal-badge:active{transform:scale(.97)}
+/* 04/11/2026 (relecture) — pendant la préparation (badgeAttente), le badge officiel reste ENTIER : plus d'opacité .55
+   (un badge estompé est un badge altéré) ; « Préparation… » dans #walHint dit déjà que la page travaille. */
+.wal-badge:disabled{cursor:default;transform:none}
+.wal-badge[hidden]{display:none}   /* `display:block` l'emporterait sur l'attribut hidden */
+.wal-hint{font-size:var(--t-16);color:var(--encre-2);margin-top:var(--e-3);line-height:1.45}
+.wal-hint:empty{display:none}
+
+/* ── Pied : merci, le commerce, le numéro de carte, « Mes données », « Propulsé par Perify » ──
+   En pied et non en tête, à dessein — sur la carte du client, l'identité qui domine doit rester celle du
+   commerce. 04/11/2026 (D1) : le logo Perify à l'encre (assets/perify-logo-nuit.png), petit, tout en bas. */
+.wrap > .foot{margin-top:var(--e-7)}
+.foot{display:flex;flex-direction:column;align-items:center;gap:2px;text-align:center;color:var(--encre-2);font-size:var(--t-16)}
+.foot .ty{color:var(--encre);font-weight:600;font-size:var(--t-17);margin-bottom:var(--e-1)}
+.foot .bk{color:var(--encre-2)}
+.cardno{margin-top:var(--e-3)}.cardno b{color:var(--encre);font-weight:600}
+/* Mes données — information (RGPD art. 13) et effacement (art. 17). */
+.plink{width:auto;min-height:var(--h-cible);margin-top:var(--e-1);padding:0 var(--e-3);border:0;background:none;display:flex;align-items:center;cursor:pointer}
+.propulse{display:flex;align-items:center;justify-content:center;gap:var(--e-2);min-height:40px;margin-top:var(--e-5);color:var(--encre-2);font-size:var(--t-16)}
+.propulse img{height:22px;width:auto}
+
+.toast{position:fixed;left:50%;bottom:calc(var(--e-5) + env(safe-area-inset-bottom));transform:translate(-50%,16px);width:max-content;max-width:min(340px,calc(100vw - 32px));
+  background:var(--encre);color:var(--surface);padding:14px 20px;border-radius:var(--r-controle);font-size:var(--t-16);font-weight:600;line-height:1.35;text-align:center;
+  box-shadow:0 12px 34px rgb(22 23 29 / .25);z-index:99;opacity:0;pointer-events:none;transition:opacity .25s,transform .25s}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+
+/* ─── Utiliser un cadeau : écran de validation, devant le vendeur ───
+   04/11/2026 (D1) — voile sans flou, boîte blanche, bouton principal et bouton texte. */
+.use-ov{position:fixed;inset:0;z-index:60;background:rgb(22 23 29 / .45);display:none;align-items:center;justify-content:center;padding:var(--e-5) var(--e-4)}
+.use-ov.on{display:flex}
+.use-box{background:var(--surface);border-radius:var(--r-surface);padding:var(--e-5);max-width:360px;width:100%;text-align:center;box-shadow:var(--ombre-pass)}
+.use-box h3{font-weight:700;font-size:var(--t-28);line-height:1.15;letter-spacing:-.02em;margin-bottom:var(--e-3)}
+.use-box p{font-size:var(--t-17);color:var(--encre-2);line-height:1.45;margin-bottom:var(--e-5)}
+.use-box p b{color:var(--encre);font-weight:600}
+.use-box .lib{font-weight:700;font-size:var(--t-22);line-height:1.25;margin-bottom:var(--e-1)}
+.use-box .cd{font-size:var(--t-16);color:var(--encre-2);margin-bottom:var(--e-4);font-variant-numeric:tabular-nums}
+.use-actions{display:flex;flex-direction:column;gap:var(--e-2)}
+/* écran validé : le vendeur doit le reconnaître d'un coup d'œil */
+.use-ok{width:72px;height:72px;border-radius:50%;margin:0 auto var(--e-4);display:flex;align-items:center;justify-content:center;
+  color:var(--surface);background:var(--succes);animation:okPop .45s cubic-bezier(.2,.9,.3,1.5) both}
+.use-ok .picto{width:40px;height:40px}
+@keyframes okPop{from{transform:scale(.4);opacity:0}to{transform:none;opacity:1}}
+.use-clock{font-size:var(--t-34);font-weight:700;letter-spacing:-.01em;color:var(--encre);margin:var(--e-1) 0 2px;font-variant-numeric:tabular-nums}
+.use-left{font-size:var(--t-16);color:var(--encre-2);margin-bottom:var(--e-5)}
+
+/* ── Fenêtre « cadeau confirmé » (+ confettis), « Mes données », désinscription ── */
+.cm-overlay{position:fixed;inset:0;z-index:200;display:none;align-items:center;justify-content:center;padding:var(--e-5) var(--e-4);background:rgb(22 23 29 / .45);opacity:0;transition:opacity .25s}
+.cm-overlay.show{display:flex;opacity:1}
+.cm-card{background:var(--surface);border-radius:var(--r-surface);padding:var(--e-5);max-width:360px;width:100%;max-height:calc(100vh - 48px);max-height:calc(100svh - 48px);overflow-y:auto;text-align:center;box-shadow:var(--ombre-pass);transform:scale(.92) translateY(12px);opacity:0}
+.cm-overlay.show .cm-card{animation:cmPop .4s cubic-bezier(.2,.9,.3,1.2) forwards}
+@keyframes cmPop{to{transform:none;opacity:1}}
+.cm-badge{display:inline-flex;align-items:center;min-height:32px;padding:4px 14px;border-radius:var(--r-pilule);background:var(--succes-clair);color:var(--succes);font-size:var(--t-16);font-weight:600;margin-bottom:var(--e-4)}
+/* La photo du cadeau en contain sur la teinte claire du commerce ; sans photo, le pictogramme. */
+.cm-ph{width:120px;height:120px;margin:0 auto var(--e-4);padding:12px;border-radius:var(--r-surface);background-color:var(--marque-clair);
+  background-size:contain;background-repeat:no-repeat;background-position:center;background-origin:content-box;
+  display:flex;align-items:center;justify-content:center;color:var(--marque-encre)}
+.cm-ph .picto{width:56px;height:56px}
+.cm-title{font-weight:700;font-size:var(--t-28);line-height:1.15;letter-spacing:-.02em;color:var(--encre);margin-bottom:var(--e-1)}
+.cm-lib{font-size:var(--t-17);color:var(--encre-2);margin-bottom:var(--e-4)}
+.cm-codebox{background:var(--fond);border-radius:var(--r-controle);padding:var(--e-4)}
+.cm-codelbl{font-size:var(--t-16);font-weight:500;color:var(--encre-2);margin-bottom:var(--e-1)}
+.cm-code{font-size:var(--t-34);font-weight:800;letter-spacing:.08em;color:var(--encre);line-height:1.1;font-variant-numeric:tabular-nums}
+.cm-note{font-size:var(--t-16);color:var(--encre-2);margin:var(--e-4) 0 var(--e-5);line-height:1.45}
+.pv-card{text-align:left}
+.pv-t{font-weight:700;font-size:var(--t-22);line-height:1.2;color:var(--encre);margin-bottom:var(--e-3);text-align:center}
+.pv-p{font-size:var(--t-16);line-height:1.5;color:var(--encre);margin:0 0 var(--e-3)}
+.pv-p b{font-weight:700}
+.pv-list{margin:0 0 var(--e-3);padding-left:20px;font-size:var(--t-16);line-height:1.5;color:var(--encre)}
+.pv-list li{margin-bottom:var(--e-1)}
+.pv-warn{background:var(--danger-clair);border-radius:var(--r-vignette);padding:var(--e-3);font-size:var(--t-16);line-height:1.45;color:var(--encre);margin-bottom:var(--e-3)}
+.pv-danger{display:flex;align-items:center;justify-content:center;width:100%;min-height:var(--h-bouton);padding:0 var(--e-4);border:1.5px solid var(--danger);border-radius:var(--r-controle);
+  background:var(--surface);color:var(--danger);font-size:var(--t-17);font-weight:600;cursor:pointer}
+.pv-danger.armed{background:var(--danger);border-color:var(--danger);color:var(--surface)}
+.pv-danger:disabled{opacity:.6}
+.pv-close{margin-top:var(--e-2)}
+.confetti{position:fixed;top:-14px;z-index:210;pointer-events:none;will-change:transform,opacity}
+@keyframes confFall{to{transform:translateY(110vh) rotate(720deg);opacity:.85}}
+
 /* le carrousel des récompenses défile au clavier (flèches) même quand aucune tuile n'est déblocable */
-.cat:focus-visible{outline:3px solid var(--gold3);outline-offset:3px}
-.wrap:focus,.msg:focus,.cm-card:focus,.use-box:focus{outline:none}
-.plink,.om-lien,.st.use,.st.done.live,.offre-go,.rw .btn,.pv-close,.loc-btn{position:relative}
-.plink::before,.om-lien::before,.st.use::before,.st.done.live::before,.offre-go::before,.rw .btn::before,.pv-close::before,.loc-btn::before{content:'';position:absolute;left:0;right:0}
-.plink::before{top:-9px;bottom:-9px}
-.om-lien::before{top:-9px;bottom:-9px}
-.st.use::before{top:-11px;bottom:-11px}
-.st.done.live::before{top:-2px;bottom:-2px}
-.offre-go::before{top:-5px;bottom:-5px}
-.rw .btn::before{top:-4px;bottom:-4px}
-.pv-close::before{top:-2px;bottom:-2px}
-.loc-btn::before{top:-1px;bottom:-1px}
+.cat:focus-visible{outline:3px solid var(--encre);outline-offset:3px}
+/* (04/11/2026 — les zones tactiles élargies à 44 px par un ::before invisible (.plink, .om-lien, .st.use…,
+   24/09) ont été retirées : chaque bouton de la page fait maintenant lui-même 48 px de haut au moins.) */
+
+/* ── Mouvement : coupé quand le téléphone le demande ─────────────────────────
+   ⚠️ L'anneau de chargement et le point « Mise à jour… » RALENTISSENT au lieu de se figer : un indicateur
+   immobile fait croire que la page a planté, ce qui est pire que le mouvement qu'on évite (13/09). */
+@media (prefers-reduced-motion:reduce){
+  .anneau{animation-duration:3s}
+  .maj i{animation-duration:3s}
+  .stamp.on,.stamp.win,.stamp.win::after,.solde .n.bump,.use-ok{animation:none}
+  .etincelle{display:none}
+  .cm-overlay.show .cm-card{animation:none;transform:none;opacity:1}
+  .bouton,.msg .cta,.use-go,.cm-btn,.rw .btn.go,.st.use,.offre-go,.om-btn,.slink,.wal-badge,.bar i,.toast{transition:none}
+  .bouton:active,.msg .cta:active,.use-go:active,.cm-btn:active,.rw .btn.go:active,.st.use:active,.offre-go:active,.om-btn:active,.slink:active,.wal-badge:active,.loc-btn:active,.st.done.live:active{transform:none}
+}
 </style>
 </head>
 <body>
 
-<div class="floaties" id="floaties" aria-hidden="true">
-  <span class="fl fl1">🥐</span><span class="fl fl2">🥖</span><span class="fl fl3">🧁</span>
-  <span class="fl fl4">🥨</span><span class="fl fl5">🍞</span><span class="fl fl6">🥐</span>
-</div>
+<!-- 04/11/2026 (D1) — le décor d'emoji flottants (#floaties, .fl) est retiré : D1 est plat, et un emoji n'est jamais
+     une icône. Les pictogrammes des écrans (data-picto) sont des SVG, posés par le script (PICTO). -->
 
 <!-- CHARGEMENT -->
 <div class="screen on" id="loading"><div class="msg" role="main" tabindex="-1">
-  <svg class="pl" viewBox="0 0 240 240" aria-hidden="true">
-    <circle class="pl__ring pl__ring--a" cx="120" cy="120" r="105" fill="none" stroke-width="20" stroke-dasharray="0 660" stroke-dashoffset="-330" stroke-linecap="round"/>
-    <circle class="pl__ring pl__ring--b" cx="120" cy="120" r="35"  fill="none" stroke-width="20" stroke-dasharray="0 220" stroke-dashoffset="-110" stroke-linecap="round"/>
-    <circle class="pl__ring pl__ring--c" cx="85"  cy="120" r="70"  fill="none" stroke-width="20" stroke-dasharray="0 440" stroke-linecap="round"/>
-    <circle class="pl__ring pl__ring--d" cx="155" cy="120" r="70"  fill="none" stroke-width="20" stroke-dasharray="0 440" stroke-linecap="round"/>
-  </svg>
-  <p style="margin-top:18px" role="status">Chargement de ta fidélité…</p>
+  <!-- 04/11/2026 (D1) — un anneau à la couleur du commerce (--marque-encre) remplace le chargeur à quatre anneaux
+       (uiverse.io, ringA à ringD, retiré avec ses keyframes). Il gagne sa place : un aller-retour Apps Script coûte
+       1,9 à 6,0 s, et c'est le premier écran que voit le client. -->
+  <svg class="anneau" viewBox="0 0 48 48" aria-hidden="true"><circle class="piste" cx="24" cy="24" r="20"/><circle class="arc" cx="24" cy="24" r="20"/></svg>
+  <p role="status">Chargement de votre fidélité…</p>
 </div></div>
 
 <!-- NOUVELLE CARTE -->
 <div class="screen" id="stateNew"><div class="msg" role="main" tabindex="-1">
-  <div class="mic" aria-hidden="true">🥐</div><h2 aria-level="1">Bienvenue !</h2>
-  <p>Active ta carte de fidélité en laissant ton avis — tu gagnes aussi une gourmandise offerte.</p>
-  <a class="cta" id="avisLink" href="#">Commencer →</a>
+  <div class="etat-icone" aria-hidden="true" data-picto="cadeau"></div><h2 aria-level="1">Bienvenue !</h2>
+  <p>Activez votre carte de fidélité en laissant votre avis — vous gagnez aussi une gourmandise offerte.</p>
+  <a class="cta" id="avisLink" href="#">Commencer</a>
 </div></div>
 
 <!-- INCONNUE -->
 <div class="screen" id="stateUnknown"><div class="msg" role="main" tabindex="-1">
-  <div class="mic bad" aria-hidden="true">✕</div><h2 aria-level="1">Carte non reconnue</h2>
-  <p>Cette carte n'est pas enregistrée. Demande en boutique de l'associer à ton compte.</p>
+  <div class="etat-icone erreur" aria-hidden="true" data-picto="croix"></div><h2 aria-level="1">Carte non reconnue</h2>
+  <p>Cette carte n'est pas enregistrée. Demandez en boutique de l'associer à votre compte.</p>
 </div></div>
 
 <!-- ERREUR -->
 <div class="screen" id="stateError"><div class="msg" role="main" tabindex="-1">
-  <div class="mic bad" aria-hidden="true">⚠️</div><h2 aria-level="1">Connexion impossible</h2>
-  <p>Impossible de charger ta fidélité. Vérifie ta connexion.</p>
+  <div class="etat-icone erreur" aria-hidden="true" data-picto="alerte"></div><h2 aria-level="1">Connexion impossible</h2>
+  <p>Impossible de charger votre fidélité. Vérifiez votre connexion.</p>
   <button class="cta" onclick="location.reload()">Réessayer</button>
 </div></div>
 
 <!-- PROGRAMME TERMINÉ (23/09) — le serveur répond `commerce_arrete` (fin de contrat,
      article 14) : on le dit avec les mots du commerçant, jamais « connexion impossible ». -->
 <div class="screen" id="stateArrete"><div class="msg" role="main" tabindex="-1">
-  <div class="mic" aria-hidden="true">🏁</div><h2 id="arrTitre" aria-level="1">Programme terminé</h2>
-  <p id="arrMsg">Ce programme de fidélité est terminé. Merci de ta fidélité !</p>
-  <p class="small" id="arrDepuis" style="font-size:12px;color:var(--muted2)"></p>
+  <div class="etat-icone" aria-hidden="true" data-picto="drapeau"></div><h2 id="arrTitre" aria-level="1">Programme terminé</h2>
+  <p id="arrMsg">Ce programme de fidélité est terminé. Merci de votre fidélité !</p>
+  <p class="note" id="arrDepuis"></p>
 </div></div>
 
 <!-- FIDÉLITÉ -->
@@ -754,17 +702,17 @@ a:focus-visible,button:focus-visible{outline:3px solid var(--gold-ink);outline-o
 <div class="use-ov" id="useModal">
   <div class="use-box" role="dialog" aria-modal="true" aria-labelledby="useTitre1" tabindex="-1">
     <div id="useStep1">
-      <h3 id="useTitre1">Tu es en caisse ?</h3>
+      <h3 id="useTitre1">Vous êtes en caisse ?</h3>
       <div class="lib" id="useLib">—</div>
-      <div class="cd">code <span id="useCode">—</span></div>
-      <p>Ne valide que <b>devant le vendeur</b> : une fois validé, ce cadeau est utilisé et reste affiché <b>1 heure</b> seulement.</p>
+      <div class="cd">Code <span id="useCode">—</span></div>
+      <p>Ne validez que <b>devant le vendeur</b> : une fois validé, ce cadeau est utilisé et reste affiché <b>1 heure</b> seulement.</p>
       <div class="use-actions">
         <button class="use-go" onclick="confirmUse(this)">Oui, je suis en caisse</button>
         <button class="use-no" onclick="closeUse()">Pas encore</button>
       </div>
     </div>
     <div id="useStep2" style="display:none">
-      <div class="use-ok" aria-hidden="true">✓</div>
+      <div class="use-ok" aria-hidden="true" data-picto="coche"></div>
       <h3 id="useTitre2">Validé</h3>
       <div class="lib" id="useLib2">—</div>
       <div class="use-clock" id="useClock">—</div>
@@ -774,46 +722,58 @@ a:focus-visible,button:focus-visible{outline:3px solid var(--gold-ink);outline-o
   </div>
 </div>
 
-<div class="screen" id="stateActive"><div class="wrap" role="main" tabindex="-1">
-  <div class="head">
-    <div><div class="eyebrow">✦ Ma fidélité</div><div class="bakery" id="cBakery" role="heading" aria-level="1"></div><div class="greet">Bonjour <span id="cName">—</span> 👋</div></div>
-    <div class="avatar" id="cAv" aria-hidden="true">–</div>
-  </div>
+<div class="screen" id="stateActive"><div class="wrap ecran" role="main" tabindex="-1">
+  <!-- 04/11/2026 (D1) — L'EN-TÊTE : le logo du commerce (#cLogo, posé par applyPreset ; sans logo, son initiale en
+       monogramme, cf. poserMonogramme), puis son nom et « Carte de fidélité ».
+       ⚠️ #cBakery et #cFoot restent VIDES dans le balisage (audit légal du 07/10, point 21 :
+       _outils/tests/test-audit-legal-carte.mjs lit ces deux balises) ; le nom est TOUJOURS écrit en texte dans
+       #cBakery, même quand le commerce a un logo (avant : le logo remplaçait le nom).
+       #cAv (l'avatar) reste dans la page, masqué : render() y écrit encore, et son repli est un emoji d'animal,
+       qui n'a plus sa place dans D1. -->
+  <header class="carte-tete"><span class="logo-commerce" id="cLogo" aria-hidden="true"></span><div class="carte-nom"><div class="bakery" id="cBakery" role="heading" aria-level="1"></div><div class="eyebrow"></div></div><div class="avatar" id="cAv" aria-hidden="true" hidden>–</div></header>
+  <p class="bonjour">Bonjour <span id="cName">—</span></p>
 
-  <div class="hero">
-    <div class="hero-top"><span class="hero-label">Mes tampons</span><span class="maj" id="cMaj" role="status" hidden><i></i>Mise à jour…</span></div>
-    <div class="hero-pts"><span class="v" id="cSolde">0</span><span class="u">tampons</span></div>
-    
-    
-  </div>
-
-  <!-- Encart conversion : active les emails = +2 tampons (masqué si déjà activé) -->
-
-  <div class="prog">
-    <div class="prog-top"><span class="l" id="progL">—</span><span class="r" id="progR"></span></div>
-    <div class="bar" id="progBarWrap" role="progressbar" aria-labelledby="progL" aria-valuemin="0"><i id="progBar" style="width:0%"></i></div>
+  <!-- 04/11/2026 (D1) — « Mes tampons » : UNE surface, qui réunit l'ancien solde (.hero) et l'ancienne progression
+       (.prog) : le gros chiffre, la grille (palier ≤ 25 tampons) ou la barre (au-delà), puis le prochain palier
+       avec sa photo (#progVign, posée par renderStamps). Ids et rôles inchangés. -->
+  <section class="surface bloc-tampons" aria-labelledby="tamponsTitre">
+    <div class="hero-top"><h2 class="hero-label" id="tamponsTitre">Mes tampons</h2><span class="maj" id="cMaj" role="status" hidden><i></i>Mise à jour…</span></div>
+    <p class="solde"><span class="n" id="cSolde">0</span><span class="u">tampons</span></p>
     <div class="stamps" id="stampGrid" aria-hidden="true"></div>
-  </div>
+    <div class="bar" id="progBarWrap" role="progressbar" aria-labelledby="progL" aria-valuemin="0"><i id="progBar" style="width:0%"></i></div>
+    <div class="palier"><span class="vignette grande" id="progVign" aria-hidden="true"></span><p><span class="l" id="progL">—</span><span class="r" id="progR"></span></p></div>
+  </section>
 
   <!-- 🎁 15/09 — Offres reçues par e-mail, pas encore activées (décision du 14/09,
        option B). Masqué tant qu'il n'y en a pas ; une offre dont la date est passée n'y
        apparaît jamais (option A du 15/09). Rempli par renderOffres(). -->
-  <div class="offres-wrap" id="offresWrap" hidden>
-    <div class="sec-h"><span class="t" id="offresTitre" role="heading" aria-level="2">🎁 Nouvelle offre</span></div>
+  <div class="offres-wrap bloc-section" id="offresWrap" hidden>
+    <div class="sec-h"><span class="t" id="offresTitre" role="heading" aria-level="2">Nouvelle offre</span></div>
     <div class="offres" id="offres"></div>
   </div>
 
-  <!-- bandeau anti-gaspi : paniers invendus du jour (alerte clients fidélité) -->
-  <div class="agb" id="agBanner" style="display:none"></div>
+  <!-- 04/11/2026 (D1) — « Mes cadeaux » juste sous les tampons, comme sur la planche D1 (avant : après « Gagner plus
+       de tampons »). L'avertissement suit la liste ; la fenêtre « Vous êtes en caisse ? » le redit avant tout geste. -->
+  <div class="cadeaux-wrap bloc-section" id="giftsWrap" style="display:none">
+    <div class="sec-h"><span class="t" role="heading" aria-level="2">Mes cadeaux</span></div>
+    <div class="liste gifts" id="gifts"></div>
+    <p class="note use-warn">Un cadeau validé reste valable <b>1 heure</b>. Ne le validez qu'au moment de le récupérer, devant le vendeur.</p>
+  </div>
 
-  <div class="sec-h"><span class="t" id="catTitre" role="heading" aria-level="2">Mes récompenses</span><span class="a">glisse →</span></div>
+  <!-- bandeau anti-gaspi : paniers invendus du jour (alerte clients fidélité) -->
+  <div class="agb surface" id="agBanner" style="display:none"></div>
+
+  <div class="sec-h"><span class="t" id="catTitre" role="heading" aria-level="2">Mes récompenses</span></div>
   <div class="cat" id="cat" role="list" tabindex="0" aria-labelledby="catTitre"></div>
 
   <!-- Titre ET grille masqués ensemble s'il ne reste aucune tuile : depuis le
        retrait de la tuile « Anniversaire » (12/09), un commerce dont aucun lien
        n'est renseigné n'a plus rien à mettre sous ce titre.
        01/10/2026 — la rangée e-mail (toujours présente) est maintenant sous ce titre :
-       il s'affiche donc chez tous les commerces (cf. brancherLiens). -->
+       il s'affiche donc chez tous les commerces (cf. brancherLiens).
+       04/11/2026 (D1) — les rangées restent SÉPARÉES (une surface blanche chacune, 8 px entre elles), sans
+       conteneur autour : _outils/tests/test-email-etats.mjs repère la fin de #optRow par sa fermeture à
+       2 espaces d'indentation. -->
   <div class="sec-h" id="bonusTitre"><span class="t" role="heading" aria-level="2">Gagner plus de tampons</span></div>
   <!-- ✉️ 01/10/2026 — LA RANGÉE E-MAIL, EN PREMIER : c'est le seul gain que TOUT client peut
        avoir (les autres rangées dépendent des liens du commerce). Demande de l'utilisateur :
@@ -837,9 +797,11 @@ a:focus-visible,button:focus-visible{outline:3px solid var(--gold-ink);outline-o
        dise à quoi on s'engage : ne pas la raccourcir, ne pas l'éloigner du champ.
        ⚠️ ET LE RETRAIT DOIT RESTER AUSSI SIMPLE QUE L'ACCORD (art. 7-3) : « Supprimer » et le
        lien « Ne plus recevoir nos offres » en sont la raison d'être. Ne pas les enterrer.
-       Le champ est nommé par la phrase (aria-labelledby="optTitre") et décrit par la mention. -->
+       Le champ est nommé par la phrase (aria-labelledby="optTitre") et décrit par la mention.
+       04/11/2026 (D1) — balisage et indentation INCHANGÉS (les essais lisent ce bloc) : seuls les textes passent
+       au « vous » (choix de Valentin du 30/10). -->
   <div class="social social-mail" id="optRow">
-    <div class="social-txt" id="optTitre">Ton e-mail pour recevoir nos offres</div>
+    <div class="social-txt" id="optTitre">Votre e-mail pour recevoir nos offres</div>
     <div class="optmail" id="optMailRow">
       <div class="om-row">
         <input class="om-input" id="omInput" type="email" inputmode="email" autocomplete="email"
@@ -848,7 +810,7 @@ a:focus-visible,button:focus-visible{outline:3px solid var(--gold-ink);outline-o
                onkeydown="if(event.key==='Enter')omAction()">
         <button class="om-btn" id="omBtn" onclick="omAction()">Valider</button>
       </div>
-      <div class="om-note" id="omNote" aria-live="polite">En validant, tu acceptes de recevoir les offres de la boutique par e-mail. Adresse jamais revendue, suppression possible à tout moment.</div>
+      <div class="om-note" id="omNote" aria-live="polite">En validant, vous acceptez de recevoir les offres de la boutique par e-mail. Adresse jamais revendue, suppression possible à tout moment.</div>
       <!-- ⚡ 13/09 — État « retrouver » seulement (inscrit, adresse inconnue sur ce
            téléphone) : se désinscrire sans avoir à retrouver son adresse. -->
       <button class="om-lien" id="omDesinscrire" type="button" hidden onclick="demanderSuppression()">Ne plus recevoir nos offres</button>
@@ -862,18 +824,20 @@ a:focus-visible,button:focus-visible{outline:3px solid var(--gold-ink);outline-o
        Chaque rangée n'apparaît que si le registre donne une adresse.
        ⚠️ Les montants écrits ici doivent rester d'accord avec FID_ACTIONS dans
        Code.gs — c'est le backend qui crédite. `controle-commerce.mjs` compare
-       les deux et refuse de passer s'ils divergent. -->
+       les deux et refuse de passer s'ils divergent.
+       04/11/2026 — les phrases par défaut ci-dessous sont réécrites par rafraichirTextes() avant tout
+       affichage, avec les montants de TAMPONS (Trustpilot : +2, et non +3 comme l'ancien texte le disait). -->
   <div class="social" id="tripaBlock" hidden>
-    <div class="social-txt" id="tripaTxt">Laisse un avis sur <b>TripAdvisor</b> et gagne <b>+2 tampons</b> 🎁</div>
+    <div class="social-txt" id="tripaTxt">Laissez un avis sur <b>TripAdvisor</b> et gagnez <b>+2 tampons</b></div>
     <div class="social-links">
       <a class="slink ta" id="lkTripa" href="#" target="_blank" rel="noopener" aria-label="TripAdvisor" onclick="claimAction('tripadvisor')"><img src="assets/tripadvisor.png" alt="" width="96" height="96"></a>
     </div>
   </div>
 
   <div class="social" id="trustBlock" hidden>
-    <div class="social-txt" id="trustTxt">Laisse un avis sur <b>Trustpilot</b> et gagne <b>+3 tampons</b> 🎁</div>
+    <div class="social-txt" id="trustTxt">Laissez un avis sur <b>Trustpilot</b> et gagnez <b>+2 tampons</b></div>
     <div class="social-links">
-      <a class="slink tp" id="lkTrust" href="#" target="_blank" rel="noopener" aria-label="Trustpilot" onclick="claimAction('trustpilot')">★</a>
+      <a class="slink tp" id="lkTrust" href="#" target="_blank" rel="noopener" aria-label="Trustpilot" onclick="claimAction('trustpilot')"><svg viewBox="0 0 24 24" width="24" height="24" fill="#fff" aria-hidden="true"><path d="M12 2.6l2.75 6.2 6.75.6-5.1 4.5 1.5 6.6L12 17l-5.9 3.5 1.5-6.6-5.1-4.5 6.75-.6z"/></svg></a>
     </div>
   </div>
 
@@ -881,19 +845,13 @@ a:focus-visible,button:focus-visible{outline:3px solid var(--gold-ink);outline-o
        le registre donne une adresse pour ce commerce. Voir le commentaire de
        cette fonction : ces liens pointaient vers des boulangeries parisiennes. -->
   <div class="social" id="socialBlock" hidden>
-    <div class="social-txt" id="socialTxt">Suis-nous et gagne <b>+2 tampons</b> par réseau 🎁</div>
+    <div class="social-txt" id="socialTxt">Suivez-nous et gagnez <b>+1 tampon</b> par réseau</div>
     <div class="social-links">
-      <a class="slink ig" id="lkIg" href="#" target="_blank" rel="noopener" aria-label="Instagram" onclick="claimAction('insta')"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#fff" stroke-width="2"><rect x="2.5" y="2.5" width="19" height="19" rx="5.5"/><circle cx="12" cy="12" r="4.3"/><circle cx="17.6" cy="6.4" r="1.3" fill="#fff" stroke="none"/></svg></a>
-      <a class="slink fb" id="lkFb" href="#" target="_blank" rel="noopener" aria-label="Facebook" onclick="claimAction('facebook')"><svg viewBox="0 0 24 24" width="22" height="22" fill="#fff"><path d="M13.5 21v-8h2.7l.4-3.1h-3.1V7.9c0-.9.25-1.5 1.55-1.5H17V3.6c-.3-.04-1.3-.13-2.46-.13-2.43 0-4.1 1.48-4.1 4.21v2.35H7.7V13h2.74v8h3.06z"/></svg></a>
+      <a class="slink ig" id="lkIg" href="#" target="_blank" rel="noopener" aria-label="Instagram" onclick="claimAction('insta')"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#fff" stroke-width="2" aria-hidden="true"><rect x="2.5" y="2.5" width="19" height="19" rx="5.5"/><circle cx="12" cy="12" r="4.3"/><circle cx="17.6" cy="6.4" r="1.3" fill="#fff" stroke="none"/></svg></a>
+      <a class="slink fb" id="lkFb" href="#" target="_blank" rel="noopener" aria-label="Facebook" onclick="claimAction('facebook')"><svg viewBox="0 0 24 24" width="22" height="22" fill="#fff" aria-hidden="true"><path d="M13.5 21v-8h2.7l.4-3.1h-3.1V7.9c0-.9.25-1.5 1.55-1.5H17V3.6c-.3-.04-1.3-.13-2.46-.13-2.43 0-4.1 1.48-4.1 4.21v2.35H7.7V13h2.74v8h3.06z"/></svg></a>
       <!-- TikTok : là aussi le backend crédite déjà (FID_ACTIONS.tiktok, 2 tampons). -->
-      <a class="slink tt" id="lkTt" href="#" target="_blank" rel="noopener" aria-label="TikTok" onclick="claimAction('tiktok')"><svg viewBox="0 0 24 24" width="22" height="22" fill="#fff"><path d="M16.6 5.8a4.3 4.3 0 0 1-1-2.8h-3v11.6a2.4 2.4 0 1 1-1.7-2.3V9.2a5.4 5.4 0 1 0 4.7 5.3V9.1a7.2 7.2 0 0 0 4.2 1.3V7.4a4.3 4.3 0 0 1-3.2-1.6z"/></svg></a>
+      <a class="slink tt" id="lkTt" href="#" target="_blank" rel="noopener" aria-label="TikTok" onclick="claimAction('tiktok')"><svg viewBox="0 0 24 24" width="22" height="22" fill="#fff" aria-hidden="true"><path d="M16.6 5.8a4.3 4.3 0 0 1-1-2.8h-3v11.6a2.4 2.4 0 1 1-1.7-2.3V9.2a5.4 5.4 0 1 0 4.7 5.3V9.1a7.2 7.2 0 0 0 4.2 1.3V7.4a4.3 4.3 0 0 1-3.2-1.6z"/></svg></a>
     </div>
-  </div>
-
-  <div id="giftsWrap" style="display:none">
-    <div class="sec-h"><span class="t" role="heading" aria-level="2">Mes cadeaux</span></div>
-    <div class="use-warn">⏱️ Un cadeau validé reste valable <b>1 heure</b>. Ne le valide qu'au moment de le récupérer, devant le vendeur.</div>
-    <div class="gifts" id="gifts"></div>
   </div>
 
   <!-- Où nous trouver. Masqué par défaut : révélé seulement si le registre porte
@@ -909,13 +867,13 @@ a:focus-visible,button:focus-visible{outline:3px solid var(--gold-ink);outline-o
            ne suffirait pas : l'attribut du cadre passe avant lui. -->
       <iframe id="locFrame" loading="lazy" title="Plan de la boutique" referrerpolicy="no-referrer"></iframe>
     </div>
-    <a class="loc-btn" id="locBtn" href="#" target="_blank" rel="noopener">Ouvrir dans Plans →</a>
+    <a class="loc-btn" id="locBtn" href="#" target="_blank" rel="noopener">Ouvrir dans Plans</a>
   </div>
 
   <!-- Réinstaller sa carte : téléphone changé, carte supprimée par erreur. Ajouté le 10/09. -->
   <div class="wal-row">
-    <div class="wal-t" role="heading" aria-level="2">Ta carte dans ton téléphone</div>
-    <div class="wal-d">Change de téléphone ou supprime ta carte par erreur : tu la retrouves ici, avec tes tampons.</div>
+    <div class="wal-t" role="heading" aria-level="2">Votre carte dans votre téléphone</div>
+    <div class="wal-d">Vous changez de téléphone ou supprimez votre carte par erreur : vous la retrouvez ici, avec vos tampons.</div>
     <!-- Badge officiel Apple (pack « Add to Apple Wallet », FR, RGB) — 22/09. -->
     <button class="wal-badge" id="awBtn" type="button" onclick="ajouterAuWallet(this)" aria-label="Ajouter à l’app Cartes Apple">
       <img src="assets/wallet/apple-wallet-badge-fr.svg" alt="Ajouter à l’app Cartes Apple">
@@ -927,7 +885,8 @@ a:focus-visible,button:focus-visible{outline:3px solid var(--gold-ink);outline-o
          (interrupteur de secours, sans redéploiement), ?gw=1 le rallume.
          22/09 — bouton OFFICIEL de Google (pack « Add to Google Wallet », fr-FR, SVG). -->
     <button class="wal-badge" id="gwBtn" type="button" hidden onclick="ajouterAuGoogleWallet(this)" aria-label="Ajouter au Google Wallet">
-      <img src="assets/wallet/google-wallet-bouton-fr.svg" alt="Ajouter au Google Wallet">
+      <!-- 04/11/2026 (relecture) : sous 340 px, le badge COMPACT officiel du même pack (jamais sous 48 px de haut). -->
+      <picture><source media="(max-width:339px)" srcset="assets/wallet/google-wallet-badge-fr.svg" width="199" height="55"><img src="assets/wallet/google-wallet-bouton-fr.svg" alt="Ajouter au Google Wallet"></picture>
     </button>
     <div class="wal-hint" id="walHint" role="status"></div>
   </div>
@@ -936,14 +895,16 @@ a:focus-visible,button:focus-visible{outline:3px solid var(--gold-ink);outline-o
        la première rangée de « Gagner plus de tampons » (#optRow, plus haut). Pas de doublon. -->
 
   <div class="foot">
-    <img class="marque" src="assets/perify-logo.png" alt="Perify" width="359" height="156">
-    <div class="ty">Merci pour ta fidélité 🙏</div>
+    <div class="ty">Merci pour votre fidélité</div>
     <!-- 07/10/2026 (audit légal, point 21) — l'enseigne (#cBakery) et ce pied ne portent plus le nom de Falman par
          défaut : applyPreset() les remplit pour chaque commerce avant que la carte ne s'affiche (écran de
          chargement d'abord), et le registre donne le nom d'un commerce qui n'a pas de préréglage. -->
     <div class="bk" id="cFoot"></div>
     <div class="cardno">N° de carte · <b id="cardNo">—</b></div>
     <button class="plink" type="button" onclick="openPrivacy()">Mes données personnelles</button>
+    <!-- 04/11/2026 (D1) — « Propulsé par » et le logo Perify À L'ENCRE (fond clair), tout en bas, petit : il remplace
+         le logo blanc posé seul en tête du pied (assets/perify-logo.png, fait pour le fond nuit). -->
+    <p class="propulse">Propulsé par <img src="assets/perify-logo-nuit.png" alt="Perify" width="53" height="22" loading="lazy" decoding="async"></p>
   </div>
 </div></div>
 
@@ -954,7 +915,7 @@ a:focus-visible,button:focus-visible{outline:3px solid var(--gold-ink);outline-o
   <div class="cm-card" role="dialog" aria-modal="true" aria-labelledby="cmTitle" tabindex="-1">
     <div class="cm-badge" id="cmBadge">✓ Cadeau confirmé</div>
     <div class="cm-ph" id="cmPh" aria-hidden="true"></div>
-    <div class="cm-title" id="cmTitle" role="heading" aria-level="2">Bravo 🎉</div>
+    <div class="cm-title" id="cmTitle" role="heading" aria-level="2">Bravo !</div>
     <div class="cm-lib" id="cmLib">—</div>
     <div class="cm-codebox" id="cmCodebox"><div class="cm-codelbl">Code à présenter en caisse</div><div class="cm-code" id="cmCode">000000</div></div>
     <div class="cm-note" id="cmNote">—</div>
@@ -966,15 +927,15 @@ a:focus-visible,button:focus-visible{outline:3px solid var(--gold-ink);outline-o
      avant, un client n'avait aucun moyen de savoir ce qu'on gardait, ni de le faire effacer. -->
 <div class="cm-overlay" id="pvOverlay" onclick="if(event.target===this)closePrivacy()">
   <div class="cm-card pv-card" role="dialog" aria-modal="true" aria-labelledby="pvTitre" tabindex="-1">
-    <div class="pv-t" id="pvTitre" role="heading" aria-level="2">Tes données</div>
-    <p class="pv-p">Ta carte garde seulement ce qu'il faut pour fonctionner :</p>
+    <div class="pv-t" id="pvTitre" role="heading" aria-level="2">Vos données</div>
+    <p class="pv-p">Votre carte garde seulement ce qu'il faut pour fonctionner :</p>
     <ul class="pv-list">
-      <li>ton <b>numéro de carte</b>, tes tampons et tes cadeaux</li>
-      <li>la <b>date de tes passages</b> en boutique</li>
-      <li>ton <b>prénom</b>, ton <b>email</b> et ta <b>date de naissance</b> — seulement si tu les as donnés, ils sont facultatifs</li>
+      <li>votre <b>numéro de carte</b>, vos tampons et vos cadeaux</li>
+      <li>la <b>date de vos passages</b> en boutique</li>
+      <li>votre <b>prénom</b>, votre <b>e-mail</b> et votre <b>date de naissance</b> — seulement si vous les avez donnés, ils sont facultatifs</li>
     </ul>
-    <p class="pv-p">Rien n'est vendu ni transmis à qui que ce soit. Tout est <b>effacé automatiquement 3 ans</b> après ton dernier passage.</p>
-    <div class="pv-warn" id="pvWarn" role="alert" style="display:none">Tes informations personnelles vont être effacées. <b>Ta carte et tes tampons, eux, restent.</b> Touche à nouveau pour confirmer.</div>
+    <p class="pv-p">Rien n'est vendu ni transmis à qui que ce soit. Tout est <b>effacé automatiquement 3 ans</b> après votre dernier passage.</p>
+    <div class="pv-warn" id="pvWarn" role="alert" style="display:none">Vos informations personnelles vont être effacées. <b>Votre carte et vos tampons, eux, restent.</b> Touchez à nouveau pour confirmer.</div>
     <button class="pv-danger" id="pvBtn" type="button" onclick="askForget()">Effacer mes informations</button>
     <button class="pv-close" type="button" onclick="closePrivacy()">Fermer</button>
   </div>
@@ -988,7 +949,7 @@ a:focus-visible,button:focus-visible{outline:3px solid var(--gold-ink);outline-o
 <div class="cm-overlay" id="delOverlay" onclick="if(event.target===this)fermerSuppression()">
   <div class="cm-card pv-card" role="dialog" aria-modal="true" aria-labelledby="delTitre" tabindex="-1">
     <div class="pv-t" id="delTitre" role="heading" aria-level="2">Ne plus recevoir nos offres ?</div>
-    <p class="pv-p">Tu ne recevras plus aucune offre par e-mail. Tu pourras te réinscrire quand tu veux, depuis ta carte.</p>
+    <p class="pv-p">Vous ne recevrez plus aucune offre par e-mail. Vous pourrez vous réinscrire quand vous voulez, depuis votre carte.</p>
     <button class="pv-danger armed" id="delOui" type="button" onclick="confirmerSuppression()">Oui, me désinscrire</button>
     <button class="pv-close" type="button" onclick="fermerSuppression()">Annuler</button>
   </div>
@@ -1015,11 +976,32 @@ const AVIS_URL   = './';
    Les adresses vivent maintenant dans le registre : commerces.json →
    `instagram`, `facebook`, `trustpilot`. Vide = le bloc ne s'affiche pas. */
 
+/* 04/11/2026 (D1) — LES PICTOGRAMMES DE LA PAGE, à la place des emoji qui servaient d'icône (🎁, 🥐, ✕, ⚠️, 🏁,
+   ✓ des cadeaux validés, tampons emoji). Pur littéral de chaînes SVG (viewBox 0 0 24 24, currentColor, aria-hidden) :
+   des essais l'extraient du fichier (_outils/tests/d1, /const PICTO = \{…\n\};/). cadeau, coche, chevron et cadenas
+   reprennent à l'identique ceux de la maquette D1 (D1-natif-epure/outils/fabriquer.mjs) ; alerte, croix, drapeau et
+   carte sont dessinés dans le même trait (2 px, bouts arrondis). La taille vient du CSS (.picto et son contexte). */
+const PICTO = {
+  cadeau: '<svg class="picto" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="8.5" width="17" height="4" rx="1"/><path d="M5 12.5V20h14v-7.5M12 8.5V20"/><path d="M12 8.5C10.6 5 6.8 4.6 6.8 6.9c0 1.4 2 1.6 5.2 1.6zM12 8.5c1.4-3.5 5.2-3.9 5.2-1.6 0 1.4-2 1.6-5.2 1.6z"/></g></svg>',
+  coche: '<svg class="picto" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  chevron: '<svg class="picto" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M9 5.5l6.5 6.5L9 18.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  cadenas: '<svg class="picto" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="5" y="10.5" width="14" height="10" rx="2.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5" fill="none" stroke="currentColor" stroke-width="2"/></svg>',
+  alerte: '<svg class="picto" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 4.3L2.9 17.4a2 2 0 0 0 1.7 3h14.8a2 2 0 0 0 1.7-3L13.7 4.3a2 2 0 0 0-3.4 0z"/><path d="M12 9.5v4.3M12 17.1v.1"/></g></svg>',
+  croix: '<svg class="picto" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>',
+  drapeau: '<svg class="picto" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5.5 21V3.5"/><path d="M5.5 4.5c4.2-2 7.3 2 13 0v9.3c-5.7 2-8.8-2-13 0"/></g></svg>',
+  carte: '<svg class="picto" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5.5" width="18" height="13" rx="2.5"/><path d="M3 10h18M7 14.5h4"/></g></svg>'
+};
+/* Les pictogrammes des écrans d'état et de la fenêtre « Validé » (data-picto dans le balisage), posés une fois. */
+document.querySelectorAll('[data-picto]').forEach(function(el){ const p = PICTO[el.getAttribute('data-picto')]; if(p) el.innerHTML = p; });
+
 // ════ PRESETS MULTI-COMMERCE — 1 base, N verticales. Sélection via ?type= (défaut boulangerie) ════
-// Boulangerie = inchangée (catalogue photos + thème :root). Autres = emoji + thème injecté.
+// Boulangerie = inchangée (catalogue photos). Autres = leurs photos (emoji gardés en donnée).
+/* 04/11/2026 (D1) — PLUS DE COULEURS ICI : les clés theme:{…} / theme:null sont retirées, la couleur de chaque
+   métier vient du bloc PERIFY_HABILLAGE en tête de page (le même dans index.html). `fl` (les emoji flottants) n'est
+   plus affiché, il reste en donnée. ⚠️ PRESETS reste un PUR LITTÉRAL : l'audit légal l'exécute (new Function). */
 const PRESETS = {
-  boulangerie:{ name:'Falman', foot:'Falman — Emmanuelle & Flavien', eyebrow:'✦ Ma fidélité',
-    fl:['🥐','🥖','🧁','🥨','🍞','🥐'], theme:null,
+  boulangerie:{ name:'Falman', foot:'Falman — Emmanuelle & Flavien', eyebrow:'Carte de fidélité',
+    fl:['🥐','🥖','🧁','🥨','🍞','🥐'],
     catalogue:[
       {item:'cafe',libelle:'Boisson chaude',cout:12,img:'assets/cafe.png'},
       {item:'viennoiserie',libelle:'Viennoiserie',cout:10,img:'assets/viennoiserie.png'},
@@ -1029,9 +1011,8 @@ const PRESETS = {
       {item:'sandwich',libelle:'Formule sandwich',cout:40,img:'assets/sandwich.png'},
       {item:'gateau',libelle:'Gros lot — gâteau',cout:80,img:'assets/gateau.png'}
     ]},
-  fleuriste:{ name:'Au Jardin de Rose', foot:'Au Jardin de Rose — Fleuriste', eyebrow:'✦ Ma fidélité',
+  fleuriste:{ name:'Au Jardin de Rose', foot:'Au Jardin de Rose — Fleuriste', eyebrow:'Carte de fidélité',
     fl:['🌷','🌹','🌻','💐','🌸','🪷'],
-    theme:{cream:'#FBF5F8',cream2:'#F2E2EC',gold:'#C8568E',gold2:'#E084B0',gold3:'#F4B6D2',green:'#5E8C57',ink:'#3A2531'},
     catalogue:[
       {item:'f1',libelle:'Fleur à la tige',cout:12,img:'assets/fleuriste/fleur.png',emoji:'🌷'},
       {item:'f2',libelle:'Sachet de graines',cout:15,img:'assets/fleuriste/graines.png',emoji:'🌱'},
@@ -1039,9 +1020,8 @@ const PRESETS = {
       {item:'f4',libelle:'-20 % sur un bouquet',cout:50,img:'assets/fleuriste/bouquet20.png',emoji:'🎟️'},
       {item:'f5',libelle:'Bouquet du marché',cout:80,img:'assets/fleuriste/bouquet.png',emoji:'💐'}
     ]},
-  pizzeria:{ name:'Bella Napoli', foot:'Bella Napoli — Pizzeria', eyebrow:'✦ Ma fidélité',
+  pizzeria:{ name:'Bella Napoli', foot:'Bella Napoli — Pizzeria', eyebrow:'Carte de fidélité',
     fl:['🍕','🍅','🧀','🌶️','🫒','🍕'],
-    theme:{cream:'#FBF6EE',cream2:'#F3E6D4',gold:'#C8442E',gold2:'#E2664E',gold3:'#F2A07E',green:'#4E7C3F',ink:'#33231C'},
     catalogue:[
       {item:'p1',libelle:'Boisson',cout:12,img:'assets/pizzeria/boisson.png',emoji:'🥤'},
       {item:'p2',libelle:'Pain à l’ail',cout:15,img:'assets/pizzeria/painail.png',emoji:'🧄'},
@@ -1049,9 +1029,8 @@ const PRESETS = {
       {item:'p4',libelle:'Tiramisu maison',cout:25,img:'assets/pizzeria/tiramisu.png',emoji:'🍰'},
       {item:'p5',libelle:'Pizza au choix',cout:65,img:'assets/pizzeria/pizza.png',emoji:'🍕'}
     ]},
-  vape:{ name:'VapoStore', foot:'VapoStore — Cigarette électronique', eyebrow:'✦ Ma fidélité',
+  vape:{ name:'VapoStore', foot:'VapoStore — Cigarette électronique', eyebrow:'Carte de fidélité',
     fl:['💨','🫐','🍓','🥭','⚡','💜'],
-    theme:{cream:'#F3F5FB',cream2:'#E4E7F3',gold:'#6D5AE0',gold2:'#8A7AF0',gold3:'#B6ABFF',green:'#2BB3A3',ink:'#26283A'},
     catalogue:[
       {item:'v1',libelle:'Résistance / coil',cout:12,img:'assets/vape/coil.png',emoji:'🔩'},
       {item:'v2',libelle:'Kit cotton',cout:15,img:'assets/vape/cotton.png',emoji:'🧵'},
@@ -1059,9 +1038,8 @@ const PRESETS = {
       {item:'v4',libelle:'E-liquide 10 ml',cout:30,img:'assets/vape/eliquide.png',emoji:'🧪'},
       {item:'v5',libelle:'Pod / kit',cout:80,img:'assets/vape/podkit.png',emoji:'🎁'}
     ]},
-  restaurant:{ name:'Le Bistrot', foot:'Le Bistrot — Restaurant', eyebrow:'✦ Ma fidélité',
+  restaurant:{ name:'Le Bistrot', foot:'Le Bistrot — Restaurant', eyebrow:'Carte de fidélité',
     fl:['🍽️','🍷','🥩','🍝','🧆','🍤'],
-    theme:{cream:'#FBF6F1',cream2:'#F0E2D8',gold:'#9A3F4C',gold2:'#B85A68',gold3:'#D78F99',green:'#6E7A3C',ink:'#321F22'},
     catalogue:[
       {item:'r1',libelle:'Café ou soft',cout:12,img:'assets/restaurant/boisson.png',emoji:'🥤'},
       {item:'r2',libelle:'Kir / apéritif',cout:18,img:'assets/restaurant/kir.png',emoji:'🍷'},
@@ -1076,14 +1054,13 @@ const PRESETS = {
      l'inverser casserait les contrastes partout — sept zones de texte sur huit
      échouaient déjà avant l'audit du 08/09. On garde donc un fond clair et on prend
      leur orange en accent, assombri en `gold` pour rester utilisable en bouton.
-     Le PASS, lui, est bien noir : PassKit gère le fond et le texte séparément. */
-  baps:{ name:"Le Bap's", foot:"Le Bap's — Burgers, Tacos, Annecy", eyebrow:'✦ Ma fidélité',
-    logo:'assets/baps/logo.png',      /* remplace le nom ecrit en haut de carte */
+     Le PASS, lui, est bien noir : PassKit gère le fond et le texte séparément.
+     04/11/2026 (D1, arbitrage 3 de Valentin du 30/10) — Le Bap's prend SA couleur, le marron #A04E27 du disque
+     de son logo (HABILLAGES.baps, en tête de page), plus l'orange Perify ni le jaune. */
+  baps:{ name:"Le Bap's", foot:"Le Bap's — Burgers, Tacos, Annecy", eyebrow:'Carte de fidélité',
+    logo:'assets/baps/logo.png',      /* en tête de carte (à côté du nom, 04/11/2026) et dans les tampons pleins */
     antigaspi:false,                  /* Le Bap's ne prend pas le module invendus */
     fl:['🍔','🌯','🍟','🥤','🧀','🌮'],
-    /* 23/09 — direction B : le fond de la page est nuit pour tous (--bg), les cartes restent claires ;
-       Le Bap's prend l'orange / orange foncé / jaune de Perify. */
-    theme:{cream:'#FFF8F0',cream2:'#FFEEDD',gold:'#FF6B2C',gold2:'#E85A1B',gold3:'#FFC53D',green:'#16A34A',ink:'#1B1F3B'},
     catalogue:[
       {item:'b1',libelle:'Boisson',     cout:6,  img:'assets/baps/boisson.png',     emoji:'🥤'},
       {item:'b2',libelle:'Frites',      cout:10, img:'assets/baps/frites.png',      emoji:'🍟'},
@@ -1091,9 +1068,8 @@ const PRESETS = {
       {item:'b4',libelle:'Toast',       cout:15, img:'assets/baps/toast.png',       emoji:'🥪'},
       {item:'b5',libelle:'Tacos',       cout:20, img:'assets/baps/tacos.png',       emoji:'🌯'}
     ]},
-  primeur:{ name:'Le Panier Frais', foot:'Le Panier Frais — Primeur', eyebrow:'✦ Ma fidélité',
+  primeur:{ name:'Le Panier Frais', foot:'Le Panier Frais — Primeur', eyebrow:'Carte de fidélité',
     fl:['🍎','🥕','🍓','🥦','🍊','🍇'],
-    theme:{cream:'#F5FBF2',cream2:'#E2F0DC',gold:'#E0892E',gold2:'#F0A94E',gold3:'#F8C87C',green:'#4FA03F',ink:'#26301F'},
     catalogue:[
       {item:'pr1',libelle:'Fruit à l’unité',cout:8,img:'assets/primeur/fruit.png',emoji:'🍎'},
       {item:'pr2',libelle:'Botte d’herbes',cout:15,img:'assets/primeur/herbes.png',emoji:'🌿'},
@@ -1467,15 +1443,16 @@ function rafraichirTextes(){
   const restants = reseaux.filter(function(r){ return !r[1]; }).map(function(r){ return r[2]; });
   const txt = $('socialTxt');
   if(txt && reseaux.length){
+    /* 04/11/2026 (D1) — « vous » partout (arbitrage 1 de Valentin, 30/10), et plus d'emoji 🎁 en fin de phrase. */
     if(!restants.length){
-      txt.innerHTML = '✓ Tu nous suis déjà — <b>tampons gagnés</b>, merci !';
+      txt.innerHTML = '✓ Vous nous suivez déjà — <b>tampons gagnés</b>, merci !';
       txt.classList.add('done');
     } else {
       const liste = restants.length > 1
         ? restants.slice(0, -1).join(', ') + ' et ' + restants[restants.length - 1]
         : restants[0];
-      txt.innerHTML = 'Suis-nous sur ' + liste + ' et gagne <b>' + tampon(TAMPONS.reseau) + '</b>'
-        + (restants.length > 1 ? ' par réseau 🎁' : ' 🎁');
+      txt.innerHTML = 'Suivez-nous sur ' + liste + ' et gagnez <b>' + tampon(TAMPONS.reseau) + '</b>'
+        + (restants.length > 1 ? ' par réseau' : '');
       txt.classList.remove('done');
     }
   }
@@ -1484,7 +1461,7 @@ function rafraichirTextes(){
   const avis = function(idTexte, visible, fait, nom, pts){
     const t = $(idTexte); if(!t || !visible) return;
     if(fait){ t.innerHTML = '✓ Avis <b>' + nom + '</b> : <b>' + tampon(pts) + '</b> déjà gagnés, merci !'; t.classList.add('done'); }
-    else { t.innerHTML = 'Laisse un avis sur <b>' + nom + '</b> et gagne <b>' + tampon(pts) + '</b> 🎁'; t.classList.remove('done'); }
+    else { t.innerHTML = 'Laissez un avis sur <b>' + nom + '</b> et gagnez <b>' + tampon(pts) + '</b>'; t.classList.remove('done'); }
   };
   avis('tripaTxt', v.ta, st.tripadvisor, 'TripAdvisor', TAMPONS.tripadvisor);
   avis('trustTxt', v.tp, st.trustpilot,  'Trustpilot',  TAMPONS.trustpilot);
@@ -1495,30 +1472,18 @@ if(typeof BA !== 'undefined') BA.pret().then(brancherLiens).catch(function(){});
 
 // hex → rgba (pour dériver les teintes douces du thème)
 function hexA(hex,a){ hex=String(hex).replace('#',''); if(hex.length===3) hex=hex.split('').map(c=>c+c).join(''); const n=parseInt(hex,16); return 'rgba('+((n>>16)&255)+','+((n>>8)&255)+','+(n&255)+','+a+')'; }
-// Applique un preset (thème + textes + emojis flottants)
+// Applique un preset (textes et logo ; la couleur vient de PERIFY_HABILLAGE, en tête de page)
+/* 04/11/2026 (D1) — la branche « thème » (couleurs --gold… posées ici, classe .themed-photos, barre du navigateur
+   en #1B1F3B) est RETIRÉE : PERIFY_HABILLAGE pose les 7 jetons du commerce avant le premier rendu, et toutes les
+   photos s'affichent en contain. */
 function applyPreset(p){
-  const t = p.theme;
-  if(t){
-    document.documentElement.classList.add('themed-photos');   // photos legacy (fond) -> rendu cover+multiply
-    const r = document.documentElement.style, M = {cream:'--cream',cream2:'--cream2',card:'--card',ink:'--ink',muted:'--muted',muted2:'--muted2',gold:'--gold',gold2:'--gold2',gold3:'--gold3',green:'--green'};
-    for(const k in t){ if(M[k]) r.setProperty(M[k], t[k]); }
-    if(t.gold){ r.setProperty('--gold-soft',hexA(t.gold,.10)); r.setProperty('--gold-line',hexA(t.gold,.28)); }
-    if(t.green){ r.setProperty('--green-soft',hexA(t.green,.12)); }
-    document.querySelector('meta[name="theme-color"]') && document.querySelector('meta[name="theme-color"]').setAttribute('content', '#1B1F3B');   /* 23/09 : la barre du navigateur suit le fond nuit */
-  }
-  /* L'enseigne : son logo quand le commerce en fournit un, son nom sinon.
-     Le nom reste dans l'attribut `title` et dans l'alternative de l'image — un
-     logo qui ne charge pas ne doit pas laisser un blanc à la place de l'enseigne. */
+  /* L'enseigne : son NOM, toujours en texte dans #cBakery (04/11/2026 ; avant, le logo le remplaçait), et son logo
+     à côté, dans #cLogo, quand le commerce en fournit un (décoratif : le nom est écrit juste à droite). Sans logo,
+     poserMonogramme() y met l'initiale du nom. */
   const bk=$('cBakery');
-  if(bk){
-    if(p.logo){
-      bk.innerHTML = '<img src="'+p.logo+'" alt="'+String(p.name).replace(/"/g,'&quot;')+'" '
-                   + 'style="height:44px;width:auto;display:block;object-fit:contain">';
-      bk.title = p.name;
-    } else {
-      bk.textContent = p.name;
-    }
-  }
+  if(bk) bk.textContent = p.name;
+  const lg=$('cLogo');
+  if(lg) lg.innerHTML = p.logo ? '<img src="'+p.logo+'" alt="" width="44" height="44">' : '';
 
   /* Anti-gaspi : module optionnel. Un commerce qui ne vend pas d'invendus ne doit
      pas voir le bandeau des paniers.
@@ -1541,8 +1506,8 @@ function applyPreset(p){
      exclusive, paniers invendus » (#optSous) a disparu avec l'ancienne carte : la rangée suit
      le modèle des rangées d'avis et de réseaux, une phrase puis le geste. */
   const ft=$('cFoot'); if(ft) ft.textContent = p.foot;
-  const eb=document.querySelector('.eyebrow'); if(eb) eb.textContent = DEMO ? '✦ Démo fidélité' : (p.eyebrow||'✦ Ma fidélité');
-  const fzone=$('floaties'); if(fzone && p.fl) fzone.innerHTML = p.fl.map((e,i)=>'<span class="fl fl'+(i+1)+'">'+e+'</span>').join('');
+  const eb=document.querySelector('.eyebrow'); if(eb) eb.textContent = DEMO ? 'Démo fidélité' : (p.eyebrow||'Carte de fidélité');
+  /* (04/11/2026 — les emoji flottants de p.fl ne sont plus affichés : #floaties a été retiré de la page.) */
   document.title = 'Ma Fidélité — ' + p.name;
 }
 applyPreset(P);
@@ -1570,6 +1535,20 @@ applyPreset(P);
     document.title = 'Ma Fidélité — ' + nom;
   }).catch(function(){});
 })();
+/* 04/11/2026 (D1) — LE MONOGRAMME : un commerce sans logo (Falman, une démo, un commerce du registre) a son
+   initiale dans un carré à sa couleur, en tête de carte (jamais un emoji). L'initiale est lue dans le nom
+   AFFICHÉ (#cBakery), pas dans le préréglage : pour une adresse qui désigne un autre commerce, l'IIFE juste
+   au-dessus a vidé le nom, donc jamais le « F » de Falman ailleurs que chez lui ; le nom du registre arrive
+   ensuite (BA.pret, inscrit APRÈS celui de l'IIFE : les .then d'une même promesse partent dans l'ordre).
+   Nom vide (registre injoignable, commerce inconnu) : rien. */
+function poserMonogramme(){
+  const lg = $('cLogo'), bk = $('cBakery');
+  if(!lg || lg.querySelector('img')) return;
+  const initiale = String(bk && bk.textContent || '').trim().charAt(0).toUpperCase();
+  lg.innerHTML = initiale ? '<span class="monogramme">' + esc(initiale) + '</span>' : '';
+}
+poserMonogramme();
+BA.pret().then(poserMonogramme).catch(function(){});
 
 /* Point de passage UNIQUE vers le backend : c'est ici, et nulle part ailleurs,
    qu'on attend le registre. Toute la page en herite. */
@@ -1626,9 +1605,9 @@ function api(action, extra, retry){
    son wifi pour rien. */
 function messageEchec(err){
   const m = String((err && err.message) || err || '');
-  if(m === 'reponse_illisible') return 'Le serveur a mal répondu — réessaie dans un instant.';
-  if(m === 'timeout')           return 'Le serveur met trop de temps — réessaie dans un instant.';
-  return 'Pas de connexion — vérifie ton réseau.';
+  if(m === 'reponse_illisible') return 'Le serveur a mal répondu — réessayez dans un instant.';
+  if(m === 'timeout')           return 'Le serveur met trop de temps — réessayez dans un instant.';
+  return 'Pas de connexion — vérifiez votre réseau.';
 }
 function show(id){
   const cible = $(id), dejaOn = !!cible && cible.classList.contains('on');
@@ -1674,7 +1653,7 @@ function majBarre(n, max){
 function montrerArret(d){
   try{
     $('arrTitre').textContent = (d && d.commerce ? d.commerce + ' — ' : '') + 'programme terminé';
-    $('arrMsg').textContent = (d && d.message) || 'Ce programme de fidélité est terminé. Merci de ta fidélité !';
+    $('arrMsg').textContent = (d && d.message) || 'Ce programme de fidélité est terminé. Merci de votre fidélité !';
     $('arrDepuis').textContent = d && d.arrete_le ? 'Depuis le ' + String(d.arrete_le).slice(0, 10).split('-').reverse().join('/') : '';
     cacheOublier(cardId);
   }catch(e){}
@@ -1689,9 +1668,19 @@ let toastJusqua = 0;
 function toast(msg){ const t=$('toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(tT); tT=setTimeout(()=>t.classList.remove('show'),3200); toastJusqua = Date.now() + 3200; }
 function apresToast(fn){ const reste = toastJusqua - Date.now(); if(reste > 0) setTimeout(fn, reste + 300); else fn(); }
 
+/* 04/11/2026 (D1) — les confettis et les étincelles prennent les couleurs DU COMMERCE, lues dans ses jetons
+   (posés par PERIFY_HABILLAGE), plus l'or #C8963E écrit en dur. Jetons illisibles : le blanc et le vert du succès. */
+function couleursFete(){
+  const lues = [];
+  try{
+    const st = getComputedStyle(document.documentElement);
+    ['--marque','--marque-encre','--marque-clair','--succes'].forEach(function(k){ const v = st.getPropertyValue(k).trim(); if(v) lues.push(v); });
+  }catch(e){}
+  return lues.length ? lues : ['#1A7F37','#FFFFFF'];
+}
 function spawnConfetti(){
   if(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-  const colors=['#C8963E','#E2B25A','#F5D07A','#3F7D2E','#ffffff','#d98b5f'];
+  const colors=couleursFete().concat(['#FFFFFF']);
   for(let i=0;i<90;i++){
     const p=document.createElement('div'); p.className='confetti';
     const size=6+Math.random()*8, dur=2.2+Math.random()*1.8, delay=Math.random()*.4;
@@ -1731,7 +1720,7 @@ function etincelles(el, aDroite){
   try{
     const r = el.getBoundingClientRect();
     const cx = aDroite ? r.right : r.left + r.width / 2, cy = r.top + r.height / 2;
-    const couleurs = ['#C8963E','#E2B25A','#F5D07A','#ffffff'];
+    const couleurs = couleursFete();
     for(let i = 0; i < 12; i++){
       const p = document.createElement('i'); p.className = 'etincelle';
       const a = Math.random() * Math.PI * 2, d = 24 + Math.random() * 34;
@@ -1744,9 +1733,11 @@ function etincelles(el, aDroite){
 function showConfirm(o){
   $('cmBadge').textContent = o.badge || '✓ Confirmé';
   const ph = $('cmPh');
+  /* 04/11/2026 (D1) — sans photo, le pictogramme du cadeau (avant : un emoji, o.emoji ou 🎁 ; les appelants
+     peuvent encore passer « emoji », il n'est plus affiché). La photo est en contain sur la teinte du commerce. */
   if(o.img){ ph.style.backgroundImage = "url('"+o.img+"')"; ph.textContent = ''; }
-  else { ph.style.backgroundImage = ''; ph.textContent = o.emoji || '🎁'; }
-  $('cmTitle').textContent = o.title || 'Bravo 🎉';
+  else { ph.style.backgroundImage = ''; ph.innerHTML = PICTO.cadeau; }
+  $('cmTitle').textContent = o.title || 'Bravo !';
   $('cmLib').textContent = o.lib || '';
   if(o.code){ $('cmCodebox').style.display = ''; $('cmCode').textContent = o.code; }
   else { $('cmCodebox').style.display = 'none'; }
@@ -1762,6 +1753,12 @@ window.closeRewardModal = function(){ $('cmOverlay').classList.remove('show'); f
    barre de progression, qui reste lisible quel que soit le nombre. */
 const STAMP_GRID_MAX = 25;
 function renderStamps(solde, next){
+  /* 04/11/2026 (D1) — la vignette du prochain palier (#progVign) : sa photo, ou le pictogramme du cadeau. */
+  const vg = $('progVign');
+  if(vg){
+    vg.classList.toggle('photo', !!(next && next.img));
+    vg.innerHTML = (next && next.img) ? '<img src="'+next.img+'" alt="">' : PICTO.cadeau;
+  }
   const grid = $('stampGrid'), bar = $('progBarWrap');
   if(!grid || !bar) return;
   if(!next || next.cout > STAMP_GRID_MAX){
@@ -1769,11 +1766,15 @@ function renderStamps(solde, next){
   }
   bar.style.display = 'none';
   grid.classList.add('on');
-  const mark = (P.fl && P.fl[0]) || '✓';
+  /* 04/11/2026 (D1) — un tampon plein porte le logo du commerce s'il en a un (Le Bap's), sinon une coche dessinée
+     sur sa couleur (avant : le premier emoji de P.fl). Un tampon vide n'a plus que son bord. Les classes stamp, on
+     et win, et l'ordre des cases, ne changent pas : celebrerTampons() s'en sert. */
+  const mark = P.logo ? '<img src="'+P.logo+'" alt="">' : PICTO.coche;
+  const avecLogo = P.logo ? ' logo' : '';
   let html = '';
   for(let i=0; i<next.cout; i++){
     const on = i < solde;
-    html += '<div class="stamp'+(on?' on':'')+'"'
+    html += '<div class="stamp'+(on?' on'+avecLogo:'')+'"'
           + (on ? ' style="animation-delay:'+Math.min(i,14)*35+'ms"' : '')
           + '>'+(on ? mark : '')+'</div>';
   }
@@ -1801,7 +1802,7 @@ function applySolde(n){
     $('progBar').style.width = Math.max(4, Math.round(n/next.cout*100))+'%';
     majBarre(n, next.cout);
   } else {
-    $('progL').innerHTML = '🎉 Tu peux débloquer <b>tous</b> les cadeaux !';
+    $('progL').innerHTML = 'Vous pouvez débloquer <b>tous</b> les cadeaux !';
     $('progR').textContent = '';
     $('progBar').style.width = '100%';
     majBarre(n, n);
@@ -1826,13 +1827,20 @@ function renderCatalogue(n){
     const reste = r.cout - n;
     /* ♿ 24/09 — chaque tuile est un élément de liste ; l'image est décorative (le nom est à côté) ;
        « Échanger » dit CE QU'on échange (six boutons « Échanger » identiques ne se distinguent pas
-       à l'oreille) ; une tuile verrouillée n'est pas un bouton qu'on peut activer : elle le dit. */
+       à l'oreille) ; une tuile verrouillée n'est pas un bouton qu'on peut activer : elle le dit.
+       04/11/2026 (D1) — la photo dans une vignette (contain), le pictogramme du cadeau sans photo (avant : son
+       emoji, ou 🎁) ; sous « Plus que N tampons », une jauge (part du palier déjà gagnée). La jauge est décorative
+       (aria-hidden) : le texte juste au-dessus dit déjà la même chose, une lecture d'écran ne la répète pas.
+       ⚠️ Les deux boutons restent écrits À L'IDENTIQUE, sans balise à l'intérieur : _outils/tests/test-catalogue.mjs
+       les lit par expression régulière. */
+    const part = Math.max(0, Math.min(1, n / r.cout));
     return '<div class="rw'+(ok?'':' locked')+'" role="listitem">'
-      +(r.img ? '<div class="ph" aria-hidden="true"><img class="ph-img" src="'+r.img+'" alt="" loading="lazy"></div>' : '<div class="ph ph-emoji" aria-hidden="true">'+(r.emoji||'🎁')+'</div>')
+      +(r.img ? '<div class="ph vignette photo" aria-hidden="true"><img class="ph-img" src="'+r.img+'" alt="" loading="lazy"></div>' : '<div class="ph vignette" aria-hidden="true">'+PICTO.cadeau+'</div>')
       +'<div class="nm">'+esc(r.libelle)+'</div>'
       +'<div class="cost">'+r.cout+' tampons</div>'
       +(ok ? '<button class="btn go" aria-label="Échanger '+r.cout+' tampons contre '+esc(r.libelle)+'" onclick="redeem(\''+r.item+'\', this)">Échanger</button>'
-           : '<button class="btn lock" aria-disabled="true" tabindex="-1">Plus que '+reste+' tampon'+(reste>1?'s':'')+'</button>')
+           : '<button class="btn lock" aria-disabled="true" tabindex="-1">Plus que '+reste+' tampon'+(reste>1?'s':'')+'</button>'
+             +'<span class="jauge" aria-hidden="true"><i style="--part:'+part.toFixed(3)+'"></i></span>')
       +'</div>';
   }).join('');
 }
@@ -1872,7 +1880,7 @@ function render(c){
     $('progBar').style.width = Math.max(4, Math.round(c.points_solde/next.cout*100))+'%';
     majBarre(c.points_solde, next.cout);
   } else {
-    $('progL').innerHTML = '🎉 Tu peux débloquer <b>tous</b> les cadeaux !';
+    $('progL').innerHTML = 'Vous pouvez débloquer <b>tous</b> les cadeaux !';
     $('progR').textContent = '';
     $('progBar').style.width = '100%';
     majBarre(c.points_solde, c.points_solde);
@@ -1949,7 +1957,7 @@ function placerLeCommerce(com){
 
   const libelle = String(com.nom || com.nom_court || '').trim();
   const dn = $('locNom');
-  if (dn) dn.textContent = libelle || 'Ta boutique';
+  if (dn) dn.textContent = libelle || 'Votre boutique';
 
   const nom = encodeURIComponent(libelle);
   const b = $('locBtn');
@@ -2022,11 +2030,11 @@ window.ajouterAuGoogleWallet = function(btn){
       location.href = d.url;
       setTimeout(rendre, 4000);
     } else if (d && d.status === 'not_configured') {
-      rendre(); toast('Service indisponible — préviens le commerçant');
+      rendre(); toast('Service indisponible — prévenez le commerçant');
     } else {
-      rendre(); toast("Ta carte n'a pas pu être préparée");
+      rendre(); toast("Votre carte n'a pas pu être préparée");
     }
-  }).catch(()=>{ rendre(); toast('Hors ligne — réessaie dans un instant'); });
+  }).catch(()=>{ rendre(); toast('Hors ligne — réessayez dans un instant'); });
 };
 
 window.ajouterAuWallet = function(btn){
@@ -2040,11 +2048,11 @@ window.ajouterAuWallet = function(btn){
       location.href = d.url;
       setTimeout(rendre, 4000);   // le client revient sur la page après Wallet
     } else if (d && d.status === 'not_configured') {
-      rendre(); toast('Service indisponible — préviens le commerçant');
+      rendre(); toast('Service indisponible — prévenez le commerçant');
     } else {
-      rendre(); toast("Ta carte n'a pas pu être préparée");
+      rendre(); toast("Votre carte n'a pas pu être préparée");
     }
-  }).catch(()=>{ rendre(); toast('Hors ligne — réessaie dans un instant'); });
+  }).catch(()=>{ rendre(); toast('Hors ligne — réessayez dans un instant'); });
 };
 
 /* ── Mes données — RGPD art. 13 (information) et art. 17 (effacement) ────────
@@ -2090,7 +2098,7 @@ window.askForget = function(){
          clair après « Tes informations ont été effacées », et la carte se croyait encore inscrite. */
       oublierEmail(cardId);
       closePrivacy();
-      toast('Tes informations ont été effacées');
+      toast('Vos informations ont été effacées');
       /* Rechargement : le prénom affiché en haut de carte vient du serveur et
          serait resté à l'écran sans ça. */
       setTimeout(()=>location.reload(), 1400);
@@ -2100,7 +2108,7 @@ window.askForget = function(){
     }
   }).catch(()=>{
     b.disabled = false; b.textContent = 'Réessayer';
-    toast('Hors ligne — réessaie dans un instant');
+    toast('Hors ligne — réessayez dans un instant');
   });
 };
 
@@ -2108,13 +2116,13 @@ window.redeem = function(item, btn){
   const r = CATALOGUE.find(x=>x.item===item); if(!r) return;
   /* ⚡ 13/09 — solde lu dans le cache : il peut être faux, et fid_redeem brûle des
      tampons (non idempotent). On n'échange qu'avec le solde du serveur. */
-  if(!donneesFraiches){ toast('Un instant, on vérifie ton solde…'); return; }
-  if(solde < r.cout){ toast('Il te manque '+(r.cout-solde)+' tampons.'); return; }
+  if(!donneesFraiches){ toast('Un instant, on vérifie votre solde…'); return; }
+  if(solde < r.cout){ toast('Il vous manque '+(r.cout-solde)+' tampons.'); return; }
   if(btn){ btn.disabled=true; btn.textContent='…'; }
   const restore=()=>{ if(btn){ btn.disabled=false; btn.textContent='Échanger'; } };
   api('fid_redeem',{card_id:cardId, item:item}).then(d=>{
-    if(d.status==='ok'){ render(d.client); loadRewards(); showConfirm({badge:'✓ Cadeau confirmé', img:r.img, title:'Bravo 🎉', lib:d.libelle, code:d.code, note:"Un email de confirmation t'a été envoyé. Montre ce code en caisse 🥐"}); }
-    else if(d.status==='insufficient'){ toast('Il te manque '+d.manque+' tampons.'); restore(); }
+    if(d.status==='ok'){ render(d.client); loadRewards(); showConfirm({badge:'✓ Cadeau confirmé', img:r.img, title:'Bravo !', lib:d.libelle, code:d.code, note:'Un e-mail de confirmation vous a été envoyé. Montrez ce code en caisse.'}); }
+    else if(d.status==='insufficient'){ toast('Il vous manque '+d.manque+' tampons.'); restore(); }
     else { toast('Action impossible pour le moment.'); restore(); }
   }).catch(e=>{ toast(messageEchec(e)); restore(); });
 };
@@ -2155,7 +2163,7 @@ let emailDiffere = false;
 let gesteEmail = false;
 /* 01/10/2026 — la mention sur laquelle repose le consentement (cf. le commentaire au-dessus du
    champ), en un seul endroit : montrerEtatEmail l'affiche, l'écouteur ci-dessous la rétablit. */
-const MENTION_EMAIL = 'En validant, tu acceptes de recevoir les offres de la boutique par e-mail. Adresse jamais revendue, suppression possible à tout moment.';
+const MENTION_EMAIL = 'En validant, vous acceptez de recevoir les offres de la boutique par e-mail. Adresse jamais revendue, suppression possible à tout moment.';
 /* ⚡ 13/09 — le client TAPE son adresse : c'est une intention, que le rendu doit
    respecter. Avec le cache, la réponse du serveur peut arriver en pleine frappe ;
    sans ce drapeau, elle figerait le champ si le serveur le croit déjà inscrit. */
@@ -2255,8 +2263,8 @@ function montrerEtatEmail(etat, motif){
   if(n){
     n.classList.remove('bad');
     n.textContent = motif ? motif
-      : fige   ? 'Tu peux la supprimer quand tu veux : tu ne recevras plus nos offres.'
-      : (abonne && !String(champ.value || '').trim()) ? 'Ton adresse est bien enregistrée. Saisis-la pour la retrouver ici.'
+      : fige   ? 'Vous pouvez la supprimer quand vous voulez : vous ne recevrez plus nos offres.'
+      : (abonne && !String(champ.value || '').trim()) ? 'Votre adresse est bien enregistrée. Saisissez-la pour la retrouver ici.'
       : MENTION_EMAIL;
   }
 }
@@ -2289,10 +2297,10 @@ function titresEmail(){
   const coche = '<span aria-hidden="true">✓</span> ';
   const h = $('optTitre');
   if(!h) return;
-  h.innerHTML = fige ? (dejaGagne ? coche + 'E-mail validé : ' + gagne + ', merci !' : 'Tu reçois nos offres à cette adresse')
-    : abonne ? (dejaGagne ? coche + 'Tu reçois déjà nos offres : ' + gagne : 'Tu reçois déjà nos offres')
-    : dejaGagne ? 'Ton e-mail pour recevoir nos offres'
-    : 'Inscris ton e-mail et gagne <b>' + tampon(n) + '</b> <span aria-hidden="true">🎁</span>';
+  h.innerHTML = fige ? (dejaGagne ? coche + 'E-mail validé : ' + gagne + ', merci !' : 'Vous recevez nos offres à cette adresse')
+    : abonne ? (dejaGagne ? coche + 'Vous recevez déjà nos offres : ' + gagne : 'Vous recevez déjà nos offres')
+    : dejaGagne ? 'Votre e-mail pour recevoir nos offres'
+    : 'Inscrivez votre e-mail et gagnez <b>' + tampon(n) + '</b>';
   h.classList.toggle('done', abonne && dejaGagne);
 }
 
@@ -2328,14 +2336,14 @@ function supprimerEmail(){
     bouton.disabled = false;
     if(d.status !== 'ok'){
       montrerEtatEmail('inscrit');
-      note.classList.add('bad'); note.textContent = 'Suppression impossible pour le moment, réessaie.';
+      note.classList.add('bad'); note.textContent = 'Suppression impossible pour le moment, réessayez.';
       return;
     }
     oublierEmail(cardId);
     emailClient = ''; demandeEmail = false;
     if(carteVue.client){ carteVue.client = Object.assign({}, carteVue.client, { email_opt_in:'off' }); cacheSauver(); }   // ⚡ 13/09 — le cache suit
     const c = $('omInput'); if(c){ c.value = ''; c.placeholder = 'prenom@exemple.fr'; }
-    montrerEtatEmail('saisie', 'C’est fait : tu ne recevras plus nos offres.');
+    montrerEtatEmail('saisie', 'C’est fait : vous ne recevrez plus nos offres.');
   }).catch(function(e){
     bouton.disabled = false; montrerEtatEmail('inscrit');
     note.classList.add('bad'); note.textContent = messageEchec(e);
@@ -2352,7 +2360,7 @@ window.enregistrerEmail = function(){
   if(!emailPlausible(v)){
     champ.classList.add('bad');
     note.classList.add('bad');
-    note.textContent = 'Cette adresse ne semble pas valide — vérifie qu\'il y a bien un @ et un point.';
+    note.textContent = 'Cette adresse ne semble pas valide — vérifiez qu\'il y a bien un @ et un point.';
     return;
   }
   champ.classList.remove('bad'); note.classList.remove('bad');
@@ -2368,7 +2376,7 @@ window.enregistrerEmail = function(){
   }
   api('fid_activate', { card_id: cardId, email: v, email_opt_in: 'on' }, 2).then(function(d){
     btn.disabled = false; btn.textContent = 'Valider';
-    if(d.status !== 'ok'){ note.classList.add('bad'); note.textContent = 'Enregistrement impossible, réessaie dans un instant.'; return; }
+    if(d.status !== 'ok'){ note.classList.add('bad'); note.textContent = 'Enregistrement impossible, réessayez dans un instant.'; return; }
     emailClient = v;
     demandeEmail = false;             // la demande est satisfaite
     marquerEmailDonne(cardId, v);     // l'adresse elle-même, pour qu'il puisse la relire
@@ -2389,19 +2397,19 @@ window.enregistrerEmail = function(){
            gagné » (et le cache le retient), comme claimAction() pour les avis et les réseaux.
            Avant, l'en-tête ne changeait qu'à l'ouverture suivante de la carte. */
         applyActions(actionsState);
-        showConfirm({ badge:'🎉 +' + r.points_delta + ' tampon' + (r.points_delta > 1 ? 's' : '') + ' !',
+        showConfirm({ badge:'+' + r.points_delta + ' tampon' + (r.points_delta > 1 ? 's' : '') + ' !',
                       emoji:'🔔', title:'C’est noté !',
                       lib:'+' + r.points_delta + ' tampon' + (r.points_delta > 1 ? 's' : '') + ' offert' + (r.points_delta > 1 ? 's' : ''),
-                      note:'Tu seras prévenu des offres de la boutique 🎉' });
+                      note:'Vous serez prévenu des offres de la boutique.' });
       } else {
         /* 01/10/2026 — « already » : le tampon a déjà été donné à cette carte (réinscription).
            La rangée le dit (« gagné ») au lieu de rester sans rien. */
         if(r && r.status === 'already'){ actionsState.optin_email = true; applyActions(actionsState); }
-        toast('✉️ C\'est noté, tu recevras les offres');
+        toast('C’est noté, vous recevrez les offres');
       }
     /* 07/10/2026 — si ce crédit échoue, l'adresse est quand même enregistrée : le tampon est
        redemandé à l'ouverture suivante (rattraperTamponEmail). */
-    }).catch(function(){ toast('✉️ C\'est noté, tu recevras les offres'); });
+    }).catch(function(){ toast('C’est noté, vous recevrez les offres'); });
   }).catch(function(e){
     btn.disabled = false; btn.textContent = 'Valider';
     note.classList.add('bad'); note.textContent = messageEchec(e);
@@ -2434,9 +2442,9 @@ window.claimAction = function(key){
   }
   /* Déjà récompensé : le lien s'ouvre quand même (le client veut peut-être y aller),
      mais on le DIT — le silence passait pour une panne (21/09). */
-  if(actionsState[key]){ toast('Tu as déjà gagné ces tampons, merci !'); return; }
+  if(actionsState[key]){ toast('Vous avez déjà gagné ces tampons, merci !'); return; }
   api('fid_action',{card_id:cardId, key:key}, 2).then(d=>{
-    if(d.status==='ok'){ actionsState[key]=true; applySolde(solde + d.points_delta); celebrerTampons(d.points_delta, solde); toast('🎉 +'+d.points_delta+' tampon'+(d.points_delta>1?'s':'')+', merci !'); applyActions(actionsState); }
+    if(d.status==='ok'){ actionsState[key]=true; applySolde(solde + d.points_delta); celebrerTampons(d.points_delta, solde); toast('+'+d.points_delta+' tampon'+(d.points_delta>1?'s':'')+', merci !'); applyActions(actionsState); }
     else if(d.status==='already'){ actionsState[key]=true; applyActions(actionsState); }
     else if(d.code==='commerce_arrete'){ montrerArret(d); }
   }).catch(()=>{});
@@ -2500,7 +2508,7 @@ function rattraperTamponEmail(c, actions){
         if(r && r.status === 'ok' && r.points_delta > 0){
           actionsState.optin_email = true;
           applySolde(solde + r.points_delta); celebrerTampons(r.points_delta, solde);
-          toast('🎉 ' + tampon(r.points_delta) + ' pour ton e-mail, merci !');
+          toast(tampon(r.points_delta) + ' pour votre e-mail, merci !');
           applyActions(actionsState);
         } else if(r && r.status === 'already'){ actionsState.optin_email = true; applyActions(actionsState); }
         // autre réponse : rien à l'écran ; nouvelle tentative possible dans 24 h
@@ -2511,7 +2519,7 @@ function rattraperTamponEmail(c, actions){
 
 function creditPassage(){
   api('fid_passage',{card_id:cardId, source:'scan'}).then(d=>{
-    if(d.status==='ok'){ render(d.client); celebrerTampons(d.points_delta, d.client.points_solde); toast('🎉 '+tampon(d.points_delta)+' pour ton passage !'); }
+    if(d.status==='ok'){ render(d.client); celebrerTampons(d.points_delta, d.client.points_solde); toast(tampon(d.points_delta)+' pour votre passage !'); }
     else if(d.status==='cooldown' && d.client){ render(d.client); }
     else if(d.code==='commerce_arrete'){ montrerArret(d); }
   }).catch(()=>{});
@@ -2552,19 +2560,30 @@ function renderRewards(list, serverNow){
   if(!shown.length){ $('giftsWrap').style.display='none'; if(listTimer) clearInterval(listTimer); return; }
   $('giftsWrap').style.display='';
 
+  /* 04/11/2026 (D1) — chaque cadeau est une rangée : la photo du produit du CATALOGUE qui porte le même libellé
+     (« Boisson » → assets/baps/boisson.png), sinon le pictogramme du cadeau (une offre promo, un cadeau
+     d'anniversaire) — avant : 🎁 pour tous. « Code 482913 » (majuscule), et « Validé » avec une coche dessinée. */
+  const photoDe = function(libelle){
+    const l = String(libelle || '').trim().toLowerCase();
+    const r = (typeof CATALOGUE !== 'undefined' && Array.isArray(CATALOGUE))
+      ? CATALOGUE.find(function(x){ return x && x.img && String(x.libelle || '').trim().toLowerCase() === l; }) : null;
+    return r ? r.img : '';
+  };
   $('gifts').innerHTML = shown.map(g=>{
     const done = g.statut==='done';
     const lib = esc(g.libelle).replace(/'/g,"\\'");
-    return '<div class="gift"><div class="ic" aria-hidden="true">🎁</div>'
+    const img = photoDe(g.libelle);
+    return '<div class="gift rangee">'
+      +(img ? '<span class="vignette photo" aria-hidden="true"><img src="'+esc(img)+'" alt=""></span>' : '<span class="vignette" aria-hidden="true">'+PICTO.cadeau+'</span>')
       +'<div class="meta"><div class="n">'+esc(g.libelle)+'</div>'
-      +'<div class="d">'+(g.code?('code '+esc(g.code)):'')
+      +'<div class="d">'+(g.code?('Code '+esc(g.code)):'')
       +(!done && g.fin_le ? ' · jusqu’au '+esc(g.fin_le) : '')+'</div></div>'   // 🎁 15/09 — offre promo : sa date
       +(done
         /* Validé : on garde le bouton actif — le client doit pouvoir le rouvrir
            en grand devant le vendeur, et voir le temps qu'il lui reste. */
         ? '<button class="st done live" data-left="'+(g.used_at||0)+'" '
           +'onclick="showUsed(\''+esc(g.code)+'\',\''+lib+'\','+(g.used_at||0)+')">'
-          +'<span class="ok">✓ Validé</span><span class="cd" id="cd_'+esc(g.code)+'">—</span></button>'
+          +'<span class="ok">'+PICTO.coche+'Validé</span><span class="cd" id="cd_'+esc(g.code)+'">—</span></button>'
         : '<button class="st use" onclick="askUse(\''+esc(g.code)+'\',\''+lib+'\')">Utiliser</button>')
       +'</div>';
   }).join('');
@@ -2623,7 +2642,7 @@ window.askUse = function(code, libelle){
 }
 window.closeUse = function(){ $("useModal").classList.remove("on"); if(useTimer) clearInterval(useTimer); fermerDialogue($("useModal")); };
 
-let useTimer = null;/* Horloge de l'ecran de validation. Ancree sur l'heure LOCALE du client :   l'heure qui defile doit correspondre a celle du telephone que le vendeur   regarde, pas a celle du serveur Google (9 h d'ecart constate). */function startUseClock(startLocalMs){  const tick = ()=>{    const n = new Date();    $('useClock').textContent = n.toLocaleTimeString('fr-FR');    const reste = Math.max(0, REDEEM_WINDOW_MS - (n.getTime() - startLocalMs));    const m = Math.floor(reste/60000), s = Math.floor(reste%60000/1000);    $('useLeft').textContent = reste > 0      ? 'Valable encore ' + m + ' min ' + String(s).padStart(2,'0')      : 'Ce cadeau a expire';  };  tick(); if(useTimer) clearInterval(useTimer); useTimer = setInterval(tick, 1000);}
+let useTimer = null;/* Horloge de l'ecran de validation. Ancree sur l'heure LOCALE du client :   l'heure qui defile doit correspondre a celle du telephone que le vendeur   regarde, pas a celle du serveur Google (9 h d'ecart constate). */function startUseClock(startLocalMs){  const tick = ()=>{    const n = new Date();    $('useClock').textContent = n.toLocaleTimeString('fr-FR');    const reste = Math.max(0, REDEEM_WINDOW_MS - (n.getTime() - startLocalMs));    const m = Math.floor(reste/60000), s = Math.floor(reste%60000/1000);    $('useLeft').textContent = reste > 0      ? 'Valable encore ' + m + ' min ' + String(s).padStart(2,'0')      : 'Ce cadeau a expiré';  };  tick(); if(useTimer) clearInterval(useTimer); useTimer = setInterval(tick, 1000);}
 window.confirmUse = function(btn){
   const code = $('useModal').dataset.code;
   btn.disabled = true; btn.textContent = 'Validation…';
@@ -2647,7 +2666,7 @@ window.confirmUse = function(btn){
         return;
       }
       if(d.status !== 'ok' && d.status !== 'already'){
-        toast(d.status === 'not_yours' ? "Ce cadeau n'est pas sur ta carte." : "Impossible de valider.");
+        toast(d.status === 'not_yours' ? "Ce cadeau n'est pas sur votre carte." : "Impossible de valider.");
         return;
       }
       $('useStep1').style.display = 'none';
@@ -2683,10 +2702,11 @@ function renderOffres(list){
   if(!wrap || !box) return;
   const l = carteVue.offres;
   if(!l.length){ wrap.hidden = true; box.innerHTML = ''; return; }
-  $('offresTitre').textContent = l.length > 1 ? '🎁 Nouvelles offres' : '🎁 Nouvelle offre';
+  /* 04/11/2026 (D1) — titre sans emoji ; sans affiche (https), le pictogramme du cadeau au lieu de 🎁. */
+  $('offresTitre').textContent = l.length > 1 ? 'Nouvelles offres' : 'Nouvelle offre';
   box.innerHTML = l.map(function(o){
     const enCours = !!offresEnCours[o.id];
-    const img = /^https:\/\//.test(o.image || '') ? '<img src="' + esc(o.image) + '" alt="" loading="lazy">' : '🎁';
+    const img = /^https:\/\//.test(o.image || '') ? '<img src="' + esc(o.image) + '" alt="" loading="lazy">' : PICTO.cadeau;
     return '<div class="offre">'
       + '<div class="offre-img" aria-hidden="true">' + img + '</div>'
       + '<div class="offre-meta">'
@@ -2718,18 +2738,18 @@ function claimPromo(camp){
   api('fid_promo_claim',{card_id:cardId, promo:camp}, 1).then(d=>{
     if(d.status==='ok'){
       retirer(); loadRewards();
-      showConfirm({badge:'🎁 Offre activée !', emoji:'🎉', title:'Offre activée !', lib:d.libelle, code:d.code,
-        note:'Montre ce code en caisse pour profiter de ton offre' + (d.fin_le ? ', jusqu’au ' + d.fin_le + ' inclus' : '') + '. Il est aussi dans « Mes cadeaux ».'});
+      showConfirm({badge:'Offre activée !', emoji:'🎉', title:'Offre activée !', lib:d.libelle, code:d.code,
+        note:'Montrez ce code en caisse pour profiter de votre offre' + (d.fin_le ? ', jusqu’au ' + d.fin_le + ' inclus' : '') + '. Il est aussi dans « Mes cadeaux ».'});
     } else if(d.status==='already'){
       retirer(); loadRewards();
-      showConfirm({badge:'✅ Déjà activée', emoji:'🎁', title:'Offre déjà activée', lib:d.libelle, code:d.code,
-        note:'Cette offre est déjà dans « Mes cadeaux ». Montre le code en caisse.'});
+      showConfirm({badge:'Déjà activée', emoji:'🎁', title:'Offre déjà activée', lib:d.libelle, code:d.code,
+        note:'Cette offre est déjà dans « Mes cadeaux ». Montrez le code en caisse.'});
     } else if(d.status==='expired'){
       retirer(); loadRewards();
       toast('Cette offre a expiré' + (d.fin_le ? ' : elle était valable jusqu’au ' + d.fin_le : '') + '.');
     } else if(d.status==='not_recipient'){
       retirer();
-      toast('Cette offre n’est pas disponible sur ta carte.');
+      toast('Cette offre n’est pas disponible sur votre carte.');
     } else { liberer(); renderOffres(carteVue.offres); toast('Offre indisponible.'); }
     try{ var q=new URLSearchParams(location.search); q.delete('promo'); history.replaceState(null,'',location.pathname+(q.toString()?('?'+q.toString()):'')); }catch(e){}   // retire ?promo= (garde id/type)
   }).catch(e=>{ liberer(); renderOffres(carteVue.offres); toast(messageEchec(e)); });
@@ -2751,9 +2771,11 @@ function renderPaniers(list){
   }
   if(!list || !list.length){ el.style.display='none'; el.innerHTML=''; return; }
   el.style.display='';
-  el.innerHTML = '<div class="agb-h" role="heading" aria-level="2">🥖 Paniers anti-gaspi<span class="tag">Aujourd\'hui</span></div>'
+  /* 04/11/2026 (D1) — titre sans emoji (avant : 🥖), et chaque panier montre la photo du produit (agImg) dans une
+     vignette, même quand le serveur envoie un emoji (p.emoji n'est plus affiché). */
+  el.innerHTML = '<div class="agb-h" role="heading" aria-level="2">Paniers anti-gaspi<span class="tag">Aujourd\'hui</span></div>'
     + '<div class="agb-sub">À récupérer en boutique avant la fermeture — premier arrivé, premier servi&nbsp;!</div>'
-    + list.map(p => '<div class="agb-item">'+(p.emoji ? '<div class="agb-emoji" aria-hidden="true" style="font-size:24px;display:grid;place-items:center">'+p.emoji+'</div>' : '<div class="agb-emoji" aria-hidden="true" style="background-image:url(assets/'+agImg(p.libelle)+')"></div>')
+    + list.map(p => '<div class="agb-item"><span class="vignette photo" aria-hidden="true"><img src="assets/'+agImg(p.libelle)+'" alt=""></span>'
         + '<div class="agb-meta"><div class="n">'+esc(p.libelle)+'</div><div class="d">'+(p.retrait_avant?('Retrait avant '+esc(p.retrait_avant)+' · '):'')+'<span class="agb-qty">'+p.qty+' dispo</span></div></div>'
         + '<div class="agb-price"><div class="pr">'+eurC(p.prix_reduit)+'</div>'+(p.prix_origine?('<div class="or">'+eurC(p.prix_origine)+'</div>'):'')+'</div></div>').join('');
 }
@@ -2811,9 +2833,9 @@ else{
       var _promo=(params.get('promo')||'').trim();
       if(_promo){ claimPromo(_promo); }           // activation d'une offre reçue par email (prioritaire)
       else if(d.anniv){
-        showConfirm({badge:'🎂 Joyeux anniversaire !', emoji:'🎂', title:'Joyeux anniversaire '+((d.client.prenom||'').trim())+' !',
-          lib:'Cadeau offert : '+d.anniv.libelle, code:d.anniv.code, note:'Montre ce code en caisse pour récupérer ton cadeau d\'anniversaire 🎂'});
-      } else if(d.passage){ celebrerTampons(d.passage.points_delta, d.client.points_solde); toast('🎉 '+tampon(d.passage.points_delta)+' pour ton passage !'); }
+        showConfirm({badge:'Joyeux anniversaire !', emoji:'🎂', title:'Joyeux anniversaire '+((d.client.prenom||'').trim())+' !',
+          lib:'Cadeau offert : '+d.anniv.libelle, code:d.anniv.code, note:'Montrez ce code en caisse pour récupérer votre cadeau d’anniversaire.'});
+      } else if(d.passage){ celebrerTampons(d.passage.points_delta, d.client.points_solde); toast(tampon(d.passage.points_delta)+' pour votre passage !'); }
       lancerGestesDifferes();        // ⚡ 13/09 — les gestes faits pendant l'attente, sur le vrai solde
       /* 07/10/2026 — APRÈS les gestes différés (un « Valider » en attente passe d'abord), et sous
          try/catch : une erreur ici tomberait dans le .catch() d'en bas, qui affiche l'écran d'erreur. */
