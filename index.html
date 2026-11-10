@@ -315,32 +315,46 @@ ul,ol{list-style:none}
 .propulse img{height:22px;width:auto}
 
 /* ══ 2. LA ROUE ══════════════════════════════════════════════════════════════════════════════════ */
-/* Deux tons doux (teinte claire du commerce, blanc), une jante fine à sa couleur avec 12 ampoules, les lots
-   DROITS (ils tournent à contre-sens de la roue : jamais un lot gagné à l'envers), un bouton-goutte « Lancer »
-   dont la pointe désigne le lot du haut. Mécanique inchangée (lot tiré AVANT, la roue le montre). */
-/* overflow:hidden + rayon : la roue tournée reste dans son cercle (sans lui, les coins de son carré, en diagonale,
-   débordaient de l'écran pendant la rotation : page plus large que le téléphone). */
-.roue{position:relative;width:min(100%,344px);aspect-ratio:1/1;margin:var(--e-5) auto var(--e-4);border-radius:50%;overflow:hidden}
-@supports not (aspect-ratio:1/1){.roue{height:min(calc(100vw - 32px),344px)}}
+/* Les lots DROITS (ils tournent à contre-sens de la roue), un bouton-goutte « Lancer » dont la pointe désigne le lot
+   du haut. Mécanique inchangée (lot tiré AVANT, la roue le montre). overflow:hidden + rayon : la roue tournée reste
+   dans son cercle (sinon les coins de son carré débordaient de l'écran pendant la rotation). */
+/* 04/11/2026 (passe 2, Valentin : « plus doux », « une plus grosse roue », « des lots plus gros », « pas la moitié de
+   chaque section prise par du texte ») : deux tons clairs séparés d'un filet blanc, jante fine sans ampoules, lots en
+   grand et sans texte (cf. buildWheel). 10/11/2026 — la roue déborde de 8 px dans chaque marge (374 px sur 390, 359
+   sur 375 ; passe 1 : 344 et 343), 400 px au plus, centrée par ses marges (margin auto ne centre pas une boîte plus
+   large que sa colonne). */
+.roue{position:relative;width:min(calc(100% + 16px),400px);aspect-ratio:1/1;margin:var(--e-5) auto var(--e-4);margin-left:calc((100% - min(calc(100% + 16px),400px)) / 2);margin-right:calc((100% - min(calc(100% + 16px),400px)) / 2);border-radius:50%;overflow:hidden}
+@supports not (aspect-ratio:1/1){.roue{height:min(calc(100vw - 16px),400px)}}
 /* 04/11/2026 (relecture) — AU REPOS, la roue est tournée de −30° (et chaque lot de +30°, il reste droit) : un secteur
    est centré sous la pointe de « Lancer », comme sur la maquette D1 (avant : la pointe tombait sur une limite entre
    deux lots). Purement visuel : spinWheel() écrit ensuite des angles ABSOLUS (target), le lot désigné à l'arrêt, les
    secteurs candidats et le tic-tac (wheelAngleNow, multiples de 60°) ne changent pas. */
 .wheel-svg{display:block;width:100%;height:100%;transform:rotate(-30deg);transform-origin:50% 50%;will-change:transform}
-.wheel-svg .jante{fill:var(--marque)}
-.wheel-svg .ampoule{fill:var(--surface)}
+/* 10/11/2026 — jante en --marque-encre (≥ 3:1 contre la page et les cases pour TOUS les habillages ; en --marque,
+   l'orange Perify et le primeur tombaient à 2,4–2,6:1). Le Bap's, Falman, restaurant : même couleur qu'avant. */
+.wheel-svg .jante{fill:var(--marque-encre)}
+/* Le second ton : un voile de la couleur du commerce posé sur sa teinte claire (fill-opacity, et non color-mix() : un
+   iPhone d'avant iOS 16.2 aurait peint ce secteur en noir). */
 .wheel-svg .secteur-a{fill:var(--marque-clair)}
-.wheel-svg .secteur-b{fill:var(--surface)}
-.wheel-svg .lisere{fill:none;stroke:var(--marque-profond);stroke-opacity:.18;stroke-width:1}
-.wheel-svg text{fill:var(--encre);font:700 17px var(--police)}
+.wheel-svg .secteur-b{fill:var(--marque);fill-opacity:.1}
+.wheel-svg .filet{stroke:var(--surface);stroke-width:2;stroke-linecap:round}
+/* 10/11/2026 — 600 au lieu de 700 : le nom seul (lots sans photo) se lit sans peser */
+.wheel-svg text{fill:var(--encre);font:600 17px var(--police)}
+.wheel-svg .picto-lot{color:var(--marque-encre)}
+/* 10/11/2026 — le pictogramme seul, en grand : un trait un peu plus fin (1,25 au lieu de 1,7 sur 24) pour qu'il ne pèse
+   pas plus lourd que les photos voisines (≈ 4 px rendus sur une roue de 358 px). */
+.wheel-svg .picto-lot.seul > g{stroke-width:1.25}
 .wheel-svg .lot{transform-box:fill-box;transform-origin:50% 50%;transform:rotate(30deg)}
 /* L'ancien pointeur : gardé dans la page (startWheelTicks s'arrête sans lui), jamais montré */
 .wheel-pointer{display:none}
 /* Le bouton « Lancer » en goutte : le bouton est le disque (::after), ::before la pointe (carré tourné de 45°,
    ses deux côtés tangents au disque), le liseré blanc fait le tour des deux (drop-shadow), l'ombre est légère.
-   Il n'a AUCUN enfant : spinWheel() vide son texte. */
+   Il n'a AUCUN enfant : spinWheel() vide son texte.
+   10/11/2026 — un trait de 1,5 px en --marque-encre fait le tour de la goutte, SOUS le liseré blanc : son contour
+   reste ≥ 3:1 (encre contre blanc) même quand --marque est clair (orange Perify, primeur : 2,3:1 contre les cases).
+   Chez Le Bap's et Falman, encre = marque : la goutte grandit de 1,5 px, rien d'autre. */
 .wheel-hub{position:absolute;z-index:5;left:50%;top:50%;width:28%;height:28%;transform:translate(-50%,-50%);display:grid;grid-template-columns:minmax(0,1fr);place-items:center;padding:0;border:0;border-radius:50%;background:none;color:var(--sur-marque);font-weight:700;font-size:var(--t-17);line-height:1;cursor:pointer;
-  filter:drop-shadow(2px 0 0 var(--surface)) drop-shadow(-2px 0 0 var(--surface)) drop-shadow(0 2px 0 var(--surface)) drop-shadow(0 -2px 0 var(--surface)) drop-shadow(0 6px 10px rgb(22 23 29 / .2));
+  filter:drop-shadow(1.5px 0 0 var(--marque-encre)) drop-shadow(-1.5px 0 0 var(--marque-encre)) drop-shadow(0 1.5px 0 var(--marque-encre)) drop-shadow(0 -1.5px 0 var(--marque-encre)) drop-shadow(2px 0 0 var(--surface)) drop-shadow(-2px 0 0 var(--surface)) drop-shadow(0 2px 0 var(--surface)) drop-shadow(0 -2px 0 var(--surface)) drop-shadow(0 6px 10px rgb(22 23 29 / .2));
   transition:transform .18s ease-out}
 .wheel-hub::before{content:'';position:absolute;z-index:-1;left:25%;top:-10.36%;width:50%;height:50%;background:var(--marque);border-radius:14% 0 0 0;transform:rotate(45deg)}
 .wheel-hub::after{content:'';position:absolute;z-index:-1;inset:0;border-radius:50%;background:var(--marque)}
@@ -357,6 +371,14 @@ ul,ol{list-style:none}
 #wheelHint.off{visibility:hidden}
 /* … et quand le lot est annoncé, sa place est rendue au résultat (Safari 15.4+, Chrome 105+ ; sinon elle reste vide) */
 #screen2:has(.wheel-result.show) #wheelHint{display:none}
+/* 04/11/2026 (passe 2) — à l'arrêt, sous 820 px de haut, le titre et le chapo se replient (hauteur et opacité, jamais
+   display:none : le titre reste lu) pour que le résultat et « Récupérer mon cadeau » tiennent sous la roue. Sans :has,
+   onWheelStop fait défiler jusqu'au bouton. 10/11 : plafond de 420 px (écran étroit, texte agrandi). */
+@media (max-height:820px){
+  .intro-roue{max-height:420px;transition:max-height .45s ease-out,opacity .3s ease-out}
+  #screen2:has(.wheel-result.show) .intro-roue{max-height:0;opacity:0;overflow:hidden}
+  #screen2:has(.wheel-result.show) .roue{margin-top:var(--e-2)}
+}
 /* Le résultat : la vignette du lot, « Vous avez gagné », son nom */
 .wheel-result{display:none;margin-top:var(--e-2)}
 .wheel-result.show{display:grid;grid-template-columns:84px minmax(0,1fr);align-items:center;gap:var(--e-4);animation:apparaitre .45s ease-out both}
@@ -449,6 +471,9 @@ input[type="date"].field-input::-webkit-date-and-time-value{text-align:left}
 .etat-icone.erreur{background:var(--danger-clair);color:var(--danger)}
 .etat{display:grid;grid-template-columns:minmax(0,1fr);justify-items:center;gap:var(--e-3);margin:auto 0;padding:var(--e-6) 0;text-align:center}
 .etat .bouton{margin-top:var(--e-3)}
+/* 04/11/2026 (passe 2) — l'écran de fin : « Ouvrir ma carte » quand le numéro de la carte est connu (classe
+   avec-carte, posée par preparerFinAvecCarte), sinon la consigne du QR, telle qu'avant. */
+#screenFin:not(.avec-carte) .fin-carte,#screenFin.avec-carte .fin-qr{display:none}
 .code-bloc{margin-top:var(--e-5);text-align:center}
 .code-bloc .libelle-code{color:var(--encre-2);font-weight:600;font-size:var(--t-16)}
 #s4code{margin:var(--e-2) 0 var(--e-1);font-weight:800;font-size:var(--t-34);line-height:1.1;letter-spacing:.06em;font-variant-numeric:tabular-nums;color:var(--encre)}
@@ -477,7 +502,14 @@ input[type="date"].field-input::-webkit-date-and-time-value{text-align:left}
   .pass-bandeau{display:none}
   #screenWallet .sw-welcome .note{order:2;margin-top:var(--e-3)}
   #screenWallet .pousse{display:none}
-  .roue{width:min(100%,300px);margin-top:var(--e-3)}
+  .roue{width:min(100%,300px);margin-top:var(--e-3);margin-left:auto;margin-right:auto}
+}
+/* 10/11/2026 — L'ÉCRAN WALLET SOUS 720 PX DE HAUT (un iPhone de 390 px dans Safari, barres comprises : 390 × 664 ;
+   375 × 667) : le badge Apple, l'action principale, tombait sous le bas de l'écran (26 px visibles sur 87). Le texte
+   passe SOUS le badge, comme sous 640 px ; l'aperçu du pass garde son bandeau. */
+@media (max-height:720px){
+  #screenWallet .sw-welcome .note{order:2;margin-top:var(--e-3)}
+  #screenWallet .pousse{display:none}
 }
 /* 04/11/2026 (relecture) — à 320 px de large, « Pâtisserie » (76 px en 16 px 600) ne tenait pas dans les 75 px de sa
    tuile et se coupait en plein mot (« Pâtisseri / e du Jour », Falman). Sous 360 px, le retrait horizontal passe de
@@ -533,7 +565,7 @@ input[type="date"].field-input::-webkit-date-and-time-value{text-align:left}
   <div class="s1-unlock" id="unlockMsg" role="status"><span data-picto="coche"></span>Parfait — la roue est débloquée !</div>
   <p class="note centre mt-3">Quand vous avez terminé, revenez découvrir votre cadeau. L'avis est libre et optionnel.</p>
   <button class="s1-skip bouton-texte discret" id="skipReviewBtn" type="button" onclick="goToWheel()">Continuer sans laisser d'avis</button>
-  <div class="pousse"><p class="propulse">Propulsé par <img src="assets/perify-logo-nuit.png" alt="Perify" width="53" height="22"></p></div>
+  <div class="pousse"><p class="propulse">Propulsé par <img src="assets/perify-logo-nuit.png" alt="Perify" width="53" height="22" decoding="async"></p></div>
 </div>
 </div>
 
@@ -541,8 +573,12 @@ input[type="date"].field-input::-webkit-date-and-time-value{text-align:left}
 <div class="screen" id="screen2">
 <div class="screen-inner ecran" role="main" tabindex="-1">
   <header class="barre"><span data-barre-logo></span><span data-barre-nom></span></header>
-  <div class="titre centre mt-3" role="heading" aria-level="1">Bienvenue sur la Roue de la Chance&nbsp;!</div>
-  <p class="chapo centre mt-2">Tournez la roue pour découvrir votre cadeau : un produit offert, 100&nbsp;% gagnant.</p>
+  <!-- 04/11/2026 (passe 2) — le titre et le chapo dans .intro-roue : sur un écran court, ils se replient quand le lot
+       est annoncé (feuille, « À l'arrêt »), pour que le résultat et « Récupérer mon cadeau » tiennent sous la roue. -->
+  <div class="intro-roue">
+    <div class="titre centre mt-3" role="heading" aria-level="1">Bienvenue sur la Roue de la Chance&nbsp;!</div>
+    <p class="chapo centre mt-2">Tournez la roue pour découvrir votre cadeau : un produit offert, 100&nbsp;% gagnant.</p>
+  </div>
 
   <div class="wheel-scene roue">
     <div class="wheel-logo" id="wheelLogo" aria-hidden="true"></div>
@@ -563,7 +599,7 @@ input[type="date"].field-input::-webkit-date-and-time-value{text-align:left}
 
   <button class="btn-fallback bouton secondaire" id="fallbackBtn" onclick="spinWheel()">Lancer la roue</button>
   <button class="btn-claim bouton" id="claimBtn" onclick="afterWheel()">Récupérer mon cadeau</button>
-  <div class="pousse"><p class="propulse">Propulsé par <img src="assets/perify-logo-nuit.png" alt="Perify" width="53" height="22"></p></div>
+  <div class="pousse"><p class="propulse">Propulsé par <img src="assets/perify-logo-nuit.png" alt="Perify" width="53" height="22" decoding="async"></p></div>
 </div>
 </div>
 
@@ -598,7 +634,7 @@ input[type="date"].field-input::-webkit-date-and-time-value{text-align:left}
     <!-- 22/09 — le badge OFFICIEL d'Apple (pack « Add to Apple Wallet », FR, RGB), tel quel.
          Avant : une copie redessinée en SVG — ce que la charte d'Apple interdit.
          04/11/2026 : en grand (280 px de large, ≈ 87 px de haut). -->
-    <img class="sw-badge" src="assets/wallet/apple-wallet-badge-fr.svg" alt="Ajouter à l’app Cartes Apple" width="280" height="87">
+    <img class="sw-badge" src="assets/wallet/apple-wallet-badge-fr.svg" alt="Ajouter à l’app Cartes Apple" width="280" height="87" decoding="async">
     <span class="sw-loading"><span class="sw-spin"></span> Préparation…</span>
   </button>
   <!-- 22/09 — Android : le bouton OFFICIEL de Google. Montré par afterWheel() pour un commerce
@@ -609,7 +645,7 @@ input[type="date"].field-input::-webkit-date-and-time-value{text-align:left}
        320 px) : on y sert le badge COMPACT officiel du même pack (google-wallet-badge-fr.svg, 199 × 55), à
        180 px de large ≈ 50 px de haut. Les deux fichiers restent tels quels. -->
   <button class="btn-wallet" id="btnGWallet" hidden onclick="addToWallet(this)" aria-label="Ajouter au Google Wallet">
-    <picture><source media="(max-width:339px)" srcset="assets/wallet/google-wallet-badge-fr.svg" width="199" height="55"><img class="sw-badge" src="assets/wallet/google-wallet-bouton-fr.svg" alt="Ajouter au Google Wallet" width="320" height="50"></picture>
+    <picture><source media="(max-width:339px)" srcset="assets/wallet/google-wallet-badge-fr.svg" width="199" height="55"><img class="sw-badge" src="assets/wallet/google-wallet-bouton-fr.svg" alt="Ajouter au Google Wallet" width="320" height="50" decoding="async"></picture>
     <span class="sw-loading"><span class="sw-spin"></span> Préparation…</span>
   </button>
 
@@ -671,7 +707,10 @@ input[type="date"].field-input::-webkit-date-and-time-value{text-align:left}
 <!-- ══ FIN — la carte est dans le téléphone : dire quoi faire ensuite (24/09, sa demande) ══
      Depuis une page web on ne peut pas savoir si le client a vraiment touché « Ajouter » dans
      Wallet : on affiche donc cet écran 1,5 s après avoir ouvert le pass, avec LA consigne qui
-     compte — scanner le QR du présentoir, ce qui ouvre sa carte et déclenche son premier passage. -->
+     compte — scanner le QR du présentoir, ce qui ouvre sa carte et déclenche son premier passage.
+     04/11/2026 (passe 2, Valentin : « directement avoir accès à l'interface fidélité ») — .fin-carte (numéro de carte
+     connu, classe avec-carte) : « Ouvrir ma carte », et la carte s'ouvre seule au retour du Wallet ; .fin-qr (sans
+     numéro) : la consigne du QR, telle qu'avant — un bouton n'aurait là aucune carte à ouvrir. -->
 <div class="screen" id="screenFin">
 <div class="screen-inner ecran" role="main" tabindex="-1">
   <header class="barre"><span data-barre-logo></span><span data-barre-nom></span></header>
@@ -684,14 +723,23 @@ input[type="date"].field-input::-webkit-date-and-time-value{text-align:left}
     <span class="pass-coche" aria-hidden="true"><span data-picto="coche"></span></span>
   </div>
   <div class="titre centre mt-6" role="heading" aria-level="1">Carte ajoutée&nbsp;!</div>
-  <p class="chapo centre mt-2"><b>Scannez le QR code</b> du présentoir pour <b>débloquer votre compte fidélité</b>.<br>Votre cadeau, <b id="finGain">…</b>, vous y attend.</p>
+  <p class="chapo centre mt-2 fin-qr"><b>Scannez le QR code</b> du présentoir pour <b>débloquer votre compte fidélité</b>.<br>Votre cadeau, <b id="finGain">…</b>, vous y attend.</p>
+  <div class="fin-carte">
+    <p class="chapo centre mt-2">Votre cadeau, <b id="finGainCarte">…</b>, vous attend sur votre carte.</p>
+    <a class="bouton mt-5" id="finCarte" href="#">Ouvrir ma carte</a>
+  </div>
   <div class="titre-section" role="heading" aria-level="2">Et ensuite</div>
-  <ol class="liste etapes">
+  <ol class="liste etapes fin-qr">
     <li class="rangee"><span class="num">1</span><span>Scannez le QR au comptoir</span></li>
     <li class="rangee"><span class="num">2</span><span>Votre carte s'ouvre, votre passage est compté</span></li>
     <li class="rangee"><span class="num">3</span><span>Récupérez votre cadeau en caisse</span></li>
   </ol>
-  <div class="pousse"><p class="propulse">Propulsé par <img src="assets/perify-logo-nuit.png" alt="Perify" width="53" height="22"></p></div>
+  <ol class="liste etapes fin-carte">
+    <li class="rangee"><span class="num">1</span><span>Ouvrez votre carte : votre passage du jour est compté</span></li>
+    <li class="rangee"><span class="num">2</span><span>Récupérez votre cadeau en caisse</span></li>
+    <li class="rangee"><span class="num">3</span><span>À chaque passage, scannez le QR du comptoir</span></li>
+  </ol>
+  <div class="pousse"><p class="propulse">Propulsé par <img src="assets/perify-logo-nuit.png" alt="Perify" width="53" height="22" decoding="async"></p></div>
 </div>
 </div>
 
@@ -773,6 +821,33 @@ let PRIZES = [
         {name:"Frites",emoji:"🍟",img:"assets/baps/frites.png",prob:.98},
         {name:"Tacos",emoji:"🌯",img:"assets/baps/tacos.png",prob:1}]
 }; var _t=(new URLSearchParams(location.search).get('type')||'').toLowerCase(); if(PT[_t]) PRIZES=PT[_t]; })();
+
+/* 04/11/2026 (passe 2) — LES PHOTOS DES LOTS ABSENTES DE LEUR TABLE (Valentin : « des lots plus gros »), rangées à part
+   pour laisser PT intact (seuils, emoji : test-roue-d1.mjs le compare à main), par HABILLAGE (le commerce désigné passe
+   avant le métier : 'boulangerie' n'est que Falman, jamais une autre boulangerie) puis par nom de lot. Ce sont celles
+   de son catalogue (card.html). « Croissant Artisanal » : aucune (assets/viennoiserie.png est un pain au chocolat). */
+const PHOTOS_LOTS = {
+  boulangerie: { 'Baguette Tradition': 'assets/baguette.png', 'Pâtisserie du Jour': 'assets/patisserie.png' }
+};
+/* 10/11/2026 — LA TAILLE D'UNE PHOTO DANS LA ROUE quand elle n'y tient pas à 76 unités, par FICHIER (c'est l'image qui
+   compte, pas le commerce). La baguette, en diagonale, va jusque dans les coins de son carré : à 76, elle mordait la
+   jante et passait sous la pointe. test-roue-d1.mjs pose le masque de chaque photo à tous les angles d'arrêt. */
+const TAILLE_PHOTO_ROUE = { 'assets/baguette.png': 62 };
+/* 10/11/2026 — une photo qui n'a pas pu se charger (demanderVisuel) n'est plus proposée : son lot est montré comme un
+   lot sans photo, jamais une case vide ou une image cassée. */
+const VISUELS_MANQUANTS = {};
+/** La photo d'un lot : la sienne (PT, `img`), sinon celle de son commerce (PHOTOS_LOTS), sinon '' (le pictogramme). */
+function imageDuLot(p){
+  if(!p) return '';
+  var src = '';
+  if(p.img) src = String(p.img);
+  else {
+    var h = (typeof PERIFY_HABILLAGE !== 'undefined' && PERIFY_HABILLAGE && PERIFY_HABILLAGE.cle) || '';
+    var t = Object.prototype.hasOwnProperty.call(PHOTOS_LOTS, h) ? PHOTOS_LOTS[h] : null;
+    if(t && Object.prototype.hasOwnProperty.call(t, p.name)) src = t[p.name];
+  }
+  return VISUELS_MANQUANTS[src] ? '' : src;
+}
 /* 🗑️ 07/10/2026 — SHEETS_URLS / SHEETS_URL RETIRÉES (les adresses Apps Script par métier, routées par ?type=).
    Elles ne servaient plus que de « filet » : `com.apps_script || SHEETS_URL` dans apiGet(), submitForm() et
    activateFidelite(). Or ce filet ne pouvait se déclencher que pour un commerce SANS serveur connu… et il
@@ -1225,7 +1300,8 @@ function poserIdentite(){
   var logo = (typeof LR !== 'undefined' && LR[t]) || '';
   var nom = nomAffiche(), ini = initialeDe(nom);
   var mono = ini ? '<span class="monogramme" aria-hidden="true">' + ini + '</span>' : '';
-  var img = function(taille){ return '<img src="' + logo + '" alt="" width="' + taille + '" height="' + taille + '">'; };
+  /* 04/11/2026 (passe 2) — decoding="async" sur chaque image posée par le script (la règle de la demande 3) */
+  var img = function(taille){ return '<img src="' + logo + '" alt="" width="' + taille + '" height="' + taille + '" decoding="async">'; };
   var idv = document.getElementById('identiteVisuel');
   if (idv) {
     idv.innerHTML = logo ? img(96) : mono;
@@ -1235,7 +1311,7 @@ function poserIdentite(){
   document.querySelectorAll('[data-barre-logo]').forEach(function(el){ el.innerHTML = logo ? img(34) : mono; });
   document.querySelectorAll('[data-barre-nom]').forEach(function(el){ el.textContent = nom; });
   var wl = document.getElementById('wheelLogo');
-  if (wl) wl.innerHTML = logo ? '<img src="' + logo + '" alt="">' : mono;
+  if (wl) wl.innerHTML = logo ? '<img src="' + logo + '" alt="" width="80" height="80" decoding="async">' : mono;
 }
 poserIdentite();
 document.addEventListener('DOMContentLoaded', poserIdentite);   // inscrit APRÈS nommerLeCommerce : il passe après lui
@@ -1271,6 +1347,33 @@ function poserLots(){
     ul.appendChild(li);
   });
 }
+/* 04/11/2026 (passe 2, Valentin : les images « ont du mal à charger ») — LES VISUELS DEMANDÉS D'AVANCE, dès
+   l'ouverture : les photos des lots ; après l'event load, l'écran suivant (bandeau du commerce, logo blanc du
+   registre), qui n'était demandé qu'au toucher de « Récupérer mon cadeau ». Rien pour un porteur de carte (fidCardId).
+   10/11/2026 — une photo de lot en échec est notée (VISUELS_MANQUANTS) et la roue, si elle est déjà dessinée et
+   n'a pas tourné, est redessinée sans elle. */
+const VISUELS_DEMANDES = {};
+function demanderVisuel(src, priorite){
+  const s = String(src || '').trim();
+  if (!s || VISUELS_DEMANDES[s]) return;
+  try {
+    const i = new Image();
+    i.decoding = 'async';
+    if (priorite && 'fetchPriority' in i) i.fetchPriority = priorite;
+    i.onerror = function(){ VISUELS_MANQUANTS[s] = 1; if (SECTEURS) buildWheel(); };
+    i.src = s;
+    VISUELS_DEMANDES[s] = i;
+  } catch (e) {}
+}
+if (!fidCardId) {
+  PRIZES.forEach(function(p){ demanderVisuel(imageDuLot(p), 'high'); });
+  window.addEventListener('load', function(){
+    const H = (typeof PERIFY_HABILLAGE !== 'undefined' && PERIFY_HABILLAGE && PERIFY_HABILLAGE.couleurs) || {};
+    demanderVisuel(H.bandeau, 'low');
+    /* le logo blanc : celui du registre (le même que poserApercuPass), jamais celui d'un autre commerce */
+    BA.pret().then(function(){ if (FICHE_AFFICHAGE) demanderVisuel(FICHE_AFFICHAGE.logo_blanc, 'low'); }).catch(function(){});
+  });
+}
 poserLots();   // tout de suite (le plan disait : à l'événement load) — l'accueil ne saute pas quand les lots arrivent
 
 /* L'aperçu du pass (écran Wallet et écran de fin), au modèle du vrai (wallet-service : buildPass.js, theme.js) :
@@ -1300,7 +1403,7 @@ function poserApercuPass(){
       if (logoBlanc) {
         tete.textContent = '';
         var i = document.createElement('img');
-        i.className = 'logo'; i.alt = nom || nomCarte; i.width = 40; i.height = 40;
+        i.className = 'logo'; i.alt = nom || nomCarte; i.width = 40; i.height = 40; i.decoding = 'async';
         i.onerror = function(){ sansLogo(tete); };   // logo injoignable : monogramme et nom, jamais une image cassée
         i.src = logoBlanc;
         tete.appendChild(i);
@@ -1310,7 +1413,7 @@ function poserApercuPass(){
     if (b) {
       if (H.bandeau) {
         var bi = b.querySelector('img');
-        if (!bi) { bi = document.createElement('img'); bi.alt = ''; bi.width = 750; bi.height = 288; b.appendChild(bi); }
+        if (!bi) { bi = document.createElement('img'); bi.alt = ''; bi.width = 750; bi.height = 288; bi.decoding = 'async'; b.appendChild(bi); }
         bi.onerror = function(){ b.hidden = true; };
         if (bi.getAttribute('src') !== H.bandeau) bi.setAttribute('src', H.bandeau);
         b.hidden = false;
@@ -1387,12 +1490,16 @@ window.addEventListener("load",()=>{
    une, l'emoji sinon. Un seul endroit, parce que trois ecrans l'affichent.
    04/11/2026 (D1) — sans image, le pictogramme cadeau (plus d'emoji) ; la TAILLE vient de la feuille de style (la
    vignette : photo entière, jamais coupée, sans ombre) ; une image qui ne charge pas laisse place au pictogramme. */
+/* 04/11/2026 (passe 2) — la photo vient d'imageDuLot() (Falman a les siennes) ; width/height (la boîte de la vignette)
+   et decoding="async". */
 function poserVisuelLot(el, prize, taille){
   if(!el) return;
-  const photo = !!(prize && prize.img);
+  const src = imageDuLot(prize);
+  const photo = !!src;
   el.classList.toggle('photo', photo);
   if (photo) {
-    el.innerHTML = '<img src="' + prize.img + '" alt="">';
+    const t = Math.round(Number(taille) || 80);
+    el.innerHTML = '<img src="' + src + '" alt="" width="' + t + '" height="' + t + '" decoding="async">';
     const i = el.querySelector('img');
     if (i) i.onerror = function(){ el.classList.remove('photo'); el.innerHTML = PICTO.cadeau; };
   } else {
@@ -1529,44 +1636,77 @@ function svgEsc(s){
 /* 🗑️ 04/11/2026 (D1) — teinte() retirée : les couleurs de la roue sont les jetons du commerce (--marque, --marque-clair,
    --marque-profond, --surface, --encre), appliqués par la feuille de style aux classes du dessin. */
 
-/* Construit la roue en SVG — les lots suivent PRIZES (donc ?type=).
-   04/11/2026 (D1) — jante fine à la couleur du commerce et 12 ampoules blanches, secteurs en deux tons doux (sa
-   teinte claire, blanc) cernés d'un liseré ; plus d'emoji. Chaque lot est posé DROIT autour du centre, dans un
-   <g class="lot"> que spinWheel() fait tourner à contre-sens de la roue : le nom (Inter 700, 17 unités, ≥ 16 px
-   dès 283 px de roue ; deux lignes au plus) et, quand le lot en a une, sa photo dessous ; sinon le nom seul, un
-   peu plus près du centre. La répartition vient de secteursDeLaRoue() (le plus rare une seule fois).
-   Géométrie inchangée : le secteur i va de i·60° à (i+1)·60°, 0° en haut, sens horaire. */
+/* Construit la roue en SVG — les lots suivent PRIZES (donc ?type=), répartis par secteursDeLaRoue() (le plus rare une
+   seule fois). Chaque lot est posé DROIT dans un <g class="lot"> que spinWheel() fait tourner à contre-sens de la roue.
+   Géométrie : le secteur i va de i·60° à (i+1)·60°, 0° en haut, sens horaire.
+   04/11/2026 (passe 2, Valentin : plus doux, lots plus gros, moins de texte) — un lot AVEC photo (imageDuLot) n'est
+   plus que sa photo, en grand (76 unités, ou TAILLE_PHOTO_ROUE, centrée à 97 du centre : dans sa case, au-delà du
+   bouton et de sa pointe). 10/11/2026 — SANS photo : s'il est le seul dans ce cas (Falman, « Croissant Artisanal »),
+   son pictogramme cadeau seul, en grand (64 unités), le même que dans « À gagner » ; à plusieurs (la démo, les
+   métiers sans photos), leur NOM seul (Inter 600, 17 unités, deux lignes au plus) : un même pictogramme partout ne les
+   distinguerait plus. Une photo qui ne charge pas laisse la place au nom du lot. Les noms sont dans l'aria-label du
+   dessin. Une roue lancée ou arrêtée n'est jamais redessinée (ses lots perdraient leur contre-rotation). */
 function buildWheel(){
   const svg = document.getElementById("wheelSvg");
-  if(!svg) return;
+  if(!svg || wheelSpinning || wheelDone) return;
   SECTEURS = secteursDeLaRoue(PRIZES);
-  const CX=150, CY=150, R=138;          /* R = rayon des secteurs ; la jante va jusqu'à 150 */
-  let out = '<circle class="jante" cx="'+CX+'" cy="'+CY+'" r="150"/>';
-  for(let i=0;i<12;i++){                /* les ampoules, entre deux limites de secteur */
-    const p = polar(CX,CY,144,i*30+15);
-    out += '<circle class="ampoule" cx="'+p.x.toFixed(2)+'" cy="'+p.y.toFixed(2)+'" r="2.6"/>';
-  }
-  let lots = "";
+  const CX=150, CY=150, R=143;          /* R = rayon des secteurs ; la jante (fine) va jusqu'à 150 */
+  const PHOTO = 76, C_PHOTO = 97, C_NOM = 96, PICTO_SEUL = 64;
+  /* le dessin du pictogramme cadeau, sans sa balise <svg> : posé dans la roue à l'échelle voulue */
+  const cadeau = String(PICTO.cadeau || '').replace(/^<svg[^>]*>/, '').replace(/<\/svg>$/, '');
+  /* combien de lots n'ont pas de photo : un seul → son pictogramme suffit à le reconnaître */
+  const sansPhoto = PRIZES.filter(function(p){ return !imageDuLot(p); }).length;
+  /* le nom seul (une ou deux lignes de 19), centré sur c : la contre-rotation tourne autour */
+  const nomDuLot = function(prize, c){
+    const words = String(prize.name).split(/\s+/), l1 = words[0] || "", l2 = words.slice(1).join(" ");
+    return '<text x="'+c.x.toFixed(2)+'" y="'+(c.y - (l2 ? 9.5 : 0)).toFixed(2)+'" text-anchor="middle" dominant-baseline="central">'+svgEsc(l1)
+         + (l2 ? '<tspan x="'+c.x.toFixed(2)+'" dy="19">'+svgEsc(l2)+'</tspan>' : '') + '</text>';
+  };
+  const replis = {};                     /* secteur → son nom, si sa photo ne charge pas */
+  let out = '<circle class="jante" cx="'+CX+'" cy="'+CY+'" r="150"/>'
+          + '<circle class="secteur-a" cx="'+CX+'" cy="'+CY+'" r="'+R+'"/>';
+  let filets = "", lots = "";
   for(let i=0;i<WHEEL_SEGMENTS;i++){
     const prize = PRIZES[SECTEURS[i]];
     const a1 = i*SEG_ANGLE, a2 = (i+1)*SEG_ANGLE, mid = a1 + SEG_ANGLE/2;
     const p1 = polar(CX,CY,R,a1), p2 = polar(CX,CY,R,a2);
-    out += '<path class="'+(i % 2 === 0 ? 'secteur-a' : 'secteur-b')+'" d="M'+CX+','+CY+' L'+p1.x.toFixed(2)+','+p1.y.toFixed(2)
+    /* un secteur sur deux reçoit le voile (le second ton) ; les autres gardent la teinte claire du disque */
+    if(i % 2 === 1) out += '<path class="secteur-b" d="M'+CX+','+CY+' L'+p1.x.toFixed(2)+','+p1.y.toFixed(2)
          + ' A'+R+','+R+' 0 0 1 '+p2.x.toFixed(2)+','+p2.y.toFixed(2)+' Z"/>';
-    const words = String(prize.name).split(/\s+/);
-    const l1    = words[0] || "";
-    const l2    = words.slice(1).join(" ");
-    const c     = polar(CX,CY,prize.img ? 94 : 90,mid);
-    const yTxt  = prize.img ? c.y - (l2 ? 31 : 22) : c.y - (l2 ? 9.5 : 0);
-    lots += '<g class="lot" data-secteur="'+i+'">'
-         + '<text x="'+c.x.toFixed(2)+'" y="'+yTxt.toFixed(2)+'" text-anchor="middle" dominant-baseline="central">'+svgEsc(l1)
-         + (l2 ? '<tspan x="'+c.x.toFixed(2)+'" dy="19">'+svgEsc(l2)+'</tspan>' : '') + '</text>'
-         /* `href` et non `xlink:href` : la forme héritée est dépréciée, et Safari accepte les deux depuis longtemps. */
-         + (prize.img ? '<image x="'+(c.x-20).toFixed(2)+'" y="'+(c.y-8).toFixed(2)+'" width="40" height="40" href="'+svgEsc(prize.img)+'" preserveAspectRatio="xMidYMid meet"/>' : '')
-         + '</g>';
+    filets += '<line class="filet" x1="'+CX+'" y1="'+CY+'" x2="'+p1.x.toFixed(2)+'" y2="'+p1.y.toFixed(2)+'"/>';
+    const img = imageDuLot(prize);
+    if(img){
+      const c = polar(CX,CY,C_PHOTO,mid);
+      const T = Object.prototype.hasOwnProperty.call(TAILLE_PHOTO_ROUE, img) ? TAILLE_PHOTO_ROUE[img] : PHOTO;
+      replis[i] = nomDuLot(prize, c);
+      /* `href` et non `xlink:href` : la forme héritée est dépréciée, et Safari accepte les deux depuis longtemps. */
+      lots += '<g class="lot" data-secteur="'+i+'">'
+           + '<image x="'+(c.x-T/2).toFixed(2)+'" y="'+(c.y-T/2).toFixed(2)+'" width="'+T+'" height="'+T+'" href="'+svgEsc(img)+'" preserveAspectRatio="xMidYMid meet"/>'
+           + '</g>';
+    } else if(sansPhoto === 1){
+      const c = polar(CX,CY,C_PHOTO,mid);
+      const k = PICTO_SEUL / 24;
+      lots += '<g class="lot" data-secteur="'+i+'">'
+           + '<g class="picto-lot seul" transform="translate('+(c.x-PICTO_SEUL/2).toFixed(2)+' '+(c.y-PICTO_SEUL/2).toFixed(2)+') scale('+k.toFixed(4)+')">'+cadeau+'</g>'
+           + '</g>';
+    } else {
+      lots += '<g class="lot" data-secteur="'+i+'">' + nomDuLot(prize, polar(CX,CY,C_NOM,mid)) + '</g>';
+    }
   }
-  out += '<circle class="lisere" cx="'+CX+'" cy="'+CY+'" r="'+R+'"/>' + lots;
-  svg.innerHTML = out;
+  svg.innerHTML = out + filets + lots;
+  /* 10/11/2026 — une photo qui ne charge pas : le nom du lot à sa place (même en pleine rotation : le <g> garde sa
+     contre-rotation, seul son contenu change), jamais une case vide ou une image cassée. */
+  svg.querySelectorAll('.lot image').forEach(function(im){
+    im.addEventListener('error', function(){
+      const g = im.parentNode, s = g && g.getAttribute('data-secteur');
+      VISUELS_MANQUANTS[im.getAttribute('href')] = 1;
+      if(g && replis[s]) g.innerHTML = replis[s];
+    });
+  });
+  /* les lots, dits aux lecteurs d'écran (chacun une fois, dans l'ordre de PRIZES) */
+  svg.setAttribute('role', 'img');
+  svg.removeAttribute('aria-hidden');
+  svg.setAttribute('aria-label', 'Sur la roue : ' + PRIZES.map(function(p){ return p.name; }).join(', ') + '.');
 }
 
 /* Au lancement, la pastille du logo glisse de son perchoir jusqu'au centre du bouton (CSS .au-centre).
@@ -1654,7 +1794,9 @@ function spinWheel(){
   });
 
   startWheelTicks();
-  setTimeout(onWheelStop, SPIN_MS + 130);
+  /* 10/11/2026 — « moins de mouvement » : la roue est déjà arrêtée (transition réduite par la feuille) ; le résultat
+     arrive 0,45 s plus tard au lieu de 5,3 s d'immobilité sans rien. */
+  setTimeout(onWheelStop, MOINS_DE_MOUVEMENT() ? 450 : SPIN_MS + 130);
 }
 
 function onWheelStop(){
@@ -1892,10 +2034,95 @@ function addToWallet(el){
 
 /* ─── Fin du parcours : la consigne du QR (24/09) ─── */
 function montrerFin(){
+  /* 10/11/2026 — le serveur vient de refuser le cadeau (roue_jouee, découvert par wallet_start) : l'écran « Votre carte
+     vous attend » reste, l'écran de fin annoncerait un cadeau qui n'existe pas. */
+  if(roueJouee) return;
   var g = document.getElementById('finGain');
   if(g) g.textContent = wonPrize ? wonPrize.name : 'votre cadeau';
   showScreen('screenFin');
 }
+
+/* ═══ 04/11/2026 (passe 2) — LA CARTE S'OUVRE APRÈS L'AJOUT AU WALLET ══════════════════════════════════════════
+   Valentin : « directement avoir accès à l'interface fidélité ». Rescanner le QR ne faisait qu'ouvrir
+   card.html?id=…&c=…&type=… (comme majLienCarte), qui compte le tampon du jour : l'écran de fin montre donc
+   « Ouvrir ma carte », et la carte s'ouvre D'ELLE-MÊME (location.replace) quand le client REVIENT sur la page après
+   le Wallet (départ : page cachée, pagehide gardée en mémoire, blur de la feuille « Ajouter » ; retour : visible,
+   pageshow, focus). JAMAIS sur un simple minuteur (il fermerait la feuille d'Apple ou annulerait le pass). Écouteurs
+   posés à côté de l'onclick des deux badges (addToWallet passe d'abord). Le numéro : rememberCard (wallet_start),
+   sinon le card_id du lien signé (Apps Script et api.perify.app), sinon fidCardId ; sans numéro, rien ne s'ouvre
+   seul et l'écran garde la consigne du QR. Aucun appel au serveur. Falman Android : formulaire e-mail, inchangé. */
+const FORME_CARTE = /^[A-Za-z0-9][A-Za-z0-9_-]{0,63}$/;   // la même forme que le relais (PERIFY_RELAIS)
+let COMMERCE_CARTE = null;     // la fiche du registre (son ?c=), connue bien avant la remise du pass
+BA.pret().then(function(com){ COMMERCE_CARTE = com || null; }).catch(function(){});
+let RETOUR_CARTE = null;       // { lien, parti, attente } : armé à la remise du pass ; parti = l'instant où la page a perdu la main ; attente = le minuteur de confirmation d'un retour (10/11)
+function numeroDeLaCarte(lienPass){
+  const vus = [];
+  try { vus.push(localStorage.getItem('boostavis.card.' + TYPE_PARAM)); } catch (e) {}
+  try { vus.push(new URL(String(lienPass || ''), location.href).searchParams.get('card_id')); } catch (e) {}
+  vus.push(fidCardId);
+  for (let i = 0; i < vus.length; i++) { const v = String(vus[i] || '').trim(); if (FORME_CARTE.test(v)) return v; }
+  return '';
+}
+function lienVersLaCarte(id){
+  const com = COMMERCE_CARTE;
+  return 'card.html?id=' + encodeURIComponent(id)
+       + (com && com.cle ? '&c=' + encodeURIComponent(com.cle) : '')
+       + '&type=' + encodeURIComponent(TYPE_PARAM);
+}
+function preparerFinAvecCarte(lien){
+  const ecran = document.getElementById('screenFin'), a = document.getElementById('finCarte'), g = document.getElementById('finGainCarte');
+  if (!ecran || !a) return;
+  a.href = lien;
+  if (g) g.textContent = wonPrize ? wonPrize.name : 'votre cadeau';
+  ecran.classList.add('avec-carte');
+}
+function apresRemiseAuWallet(){
+  const p = walletReady;
+  if (!p || typeof p.then !== 'function') return;
+  p.then(function(lienPass){
+    const id = numeroDeLaCarte(lienPass);
+    if (!id) return;                                 // sans numéro : la consigne du QR, rien ne s'ouvre tout seul
+    const lien = lienVersLaCarte(id);
+    preparerFinAvecCarte(lien);
+    RETOUR_CARTE = { lien: lien, parti: 0 };
+  }, function(){});                                  // pas de carte : addToWallet le dit déjà au client
+}
+['btnWallet', 'btnGWallet'].forEach(function(id){
+  const b = document.getElementById(id);
+  if (b) b.addEventListener('click', apresRemiseAuWallet);
+});
+/* Le client ouvre sa carte lui-même : plus rien ne s'ouvre tout seul (sinon, revenu ici par le bouton retour, il
+   serait renvoyé vers sa carte). */
+(function(){ const a = document.getElementById('finCarte'); if (a) a.addEventListener('click', function(){ RETOUR_CARTE = null; }); })();
+/* 10/11/2026 — un retour se CONFIRME : la carte ne s'ouvre que si la page reste au premier plan 0,5 s. Si elle repart
+   entre-temps (la feuille « Ajouter » qui s'ouvre après le téléchargement), on attend le vrai retour ; un aller-retour
+   de moins de 0,7 s (un clignement) n'est pas un départ. */
+const RETOUR_CONFIRME_MS = 500, CLIGNEMENT_MS = 700;
+function departDuWallet(depuis){
+  const r = RETOUR_CARTE;
+  if (!r) return;
+  if (r.attente) { clearTimeout(r.attente); r.attente = 0; r.parti = depuis || Date.now(); return; }
+  if (!r.parti) r.parti = depuis || Date.now();
+}
+function retourDuWallet(){
+  const r = RETOUR_CARTE;
+  if (!r || !r.parti || r.attente || document.visibilityState === 'hidden') return;
+  if (Date.now() - r.parti < CLIGNEMENT_MS) { r.parti = 0; return; }   // un clignement, pas un retour du client
+  r.attente = setTimeout(function(){
+    r.attente = 0;
+    if (RETOUR_CARTE !== r || document.visibilityState === 'hidden') return;
+    RETOUR_CARTE = null;
+    location.replace(r.lien);
+  }, RETOUR_CONFIRME_MS);
+}
+document.addEventListener('visibilitychange', function(){
+  if (document.visibilityState === 'hidden') departDuWallet(); else retourDuWallet();
+});
+window.addEventListener('blur', function(){ departDuWallet(); });
+window.addEventListener('focus', retourDuWallet);
+window.addEventListener('pagehide', function(e){ if (e && e.persisted) departDuWallet(); });
+/* Revenue de la mémoire du navigateur (bouton retour après la page Google Wallet) : elle était bien partie. */
+window.addEventListener('pageshow', function(e){ if (e && e.persisted) { departDuWallet(Date.now() - 1000); retourDuWallet(); } });
 
 /* ─── S3 formulaire ─── */
 function goToForm(){

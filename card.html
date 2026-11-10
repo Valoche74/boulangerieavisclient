@@ -830,7 +830,7 @@ button{cursor:pointer}
   <div class="social" id="tripaBlock" hidden>
     <div class="social-txt" id="tripaTxt">Laissez un avis sur <b>TripAdvisor</b> et gagnez <b>+2 tampons</b></div>
     <div class="social-links">
-      <a class="slink ta" id="lkTripa" href="#" target="_blank" rel="noopener" aria-label="TripAdvisor" onclick="claimAction('tripadvisor')"><img src="assets/tripadvisor.png" alt="" width="96" height="96"></a>
+      <a class="slink ta" id="lkTripa" href="#" target="_blank" rel="noopener" aria-label="TripAdvisor" onclick="claimAction('tripadvisor')"><img src="assets/tripadvisor.png" alt="" width="96" height="96" loading="lazy" decoding="async"></a>
     </div>
   </div>
 
@@ -874,9 +874,13 @@ button{cursor:pointer}
   <div class="wal-row">
     <div class="wal-t" role="heading" aria-level="2">Votre carte dans votre téléphone</div>
     <div class="wal-d">Vous changez de téléphone ou supprimez votre carte par erreur : vous la retrouvez ici, avec vos tampons.</div>
-    <!-- Badge officiel Apple (pack « Add to Apple Wallet », FR, RGB) — 22/09. -->
+    <!-- Badge officiel Apple (pack « Add to Apple Wallet », FR, RGB) — 22/09.
+         04/11/2026 (passe 2, demande 3) — les deux badges et le logo TripAdvisor sont tout en bas de la carte (ou
+         masqués) : loading="lazy", ils ne prennent plus le réseau au chargement, avant les photos des produits ; ils
+         arrivent quand on approche du bas. width/height dans les proportions de leur fichier (viewBox
+         113,408 × 35,291 → 240 × 75 ; 317 × 50) : la place est gardée avant qu'ils arrivent. Fichiers inchangés. -->
     <button class="wal-badge" id="awBtn" type="button" onclick="ajouterAuWallet(this)" aria-label="Ajouter à l’app Cartes Apple">
-      <img src="assets/wallet/apple-wallet-badge-fr.svg" alt="Ajouter à l’app Cartes Apple">
+      <img src="assets/wallet/apple-wallet-badge-fr.svg" alt="Ajouter à l’app Cartes Apple" width="240" height="75" loading="lazy" decoding="async">
     </button>
     <!-- 21/09 — GOOGLE WALLET. À l'essai derrière ?gw=1 tant que Google n'avait pas accordé la
          publication (seuls les comptes de test pouvaient ajouter la carte). 24/09 — publication
@@ -886,7 +890,7 @@ button{cursor:pointer}
          22/09 — bouton OFFICIEL de Google (pack « Add to Google Wallet », fr-FR, SVG). -->
     <button class="wal-badge" id="gwBtn" type="button" hidden onclick="ajouterAuGoogleWallet(this)" aria-label="Ajouter au Google Wallet">
       <!-- 04/11/2026 (relecture) : sous 340 px, le badge COMPACT officiel du même pack (jamais sous 48 px de haut). -->
-      <picture><source media="(max-width:339px)" srcset="assets/wallet/google-wallet-badge-fr.svg" width="199" height="55"><img src="assets/wallet/google-wallet-bouton-fr.svg" alt="Ajouter au Google Wallet"></picture>
+      <picture><source media="(max-width:339px)" srcset="assets/wallet/google-wallet-badge-fr.svg" width="199" height="55"><img src="assets/wallet/google-wallet-bouton-fr.svg" alt="Ajouter au Google Wallet" width="317" height="50" loading="lazy" decoding="async"></picture>
     </button>
     <div class="wal-hint" id="walHint" role="status"></div>
   </div>
@@ -1483,7 +1487,7 @@ function applyPreset(p){
   const bk=$('cBakery');
   if(bk) bk.textContent = p.name;
   const lg=$('cLogo');
-  if(lg) lg.innerHTML = p.logo ? '<img src="'+p.logo+'" alt="" width="44" height="44">' : '';
+  if(lg) lg.innerHTML = p.logo ? '<img src="'+p.logo+'" alt="" width="44" height="44" decoding="async">' : '';   // decoding : passe 2 (04/11/2026)
 
   /* Anti-gaspi : module optionnel. Un commerce qui ne vend pas d'invendus ne doit
      pas voir le bandeau des paniers.
@@ -1549,6 +1553,55 @@ function poserMonogramme(){
 }
 poserMonogramme();
 BA.pret().then(poserMonogramme).catch(function(){});
+
+/* 04/11/2026 (passe 2, Valentin : « les images des produits ont du mal à charger ») — LES VISUELS DE LA CARTE SONT
+   DEMANDÉS DÈS L'OUVERTURE (un numéro de carte connu), plus seulement au dessin de la carte (réponse de fid_open : 2 à
+   6 s chez Apps Script) : le logo et les photos des TROIS premiers paliers, puis, quand elles sont là, les autres.
+   Adresses prises dans P.logo et CATALOGUE (rien en dur). new Image() et non <link rel="preload"> (avertissement si
+   l'image n'est pas affichée dans les 3 s). Jamais bloquant ; tenues dans VISUELS_PRECHARGES. Aux ouvertures
+   suivantes : le cache du téléphone (vercel.json, /assets/ hors polices : un jour + sept jours). */
+const VISUELS_PRECHARGES = [];
+function prechargerVisuels(urls, priorite, ensuite){
+  let reste = urls.length;
+  const un = function(){ if(--reste === 0 && ensuite) ensuite(); };
+  if(!reste){ if(ensuite) ensuite(); return; }
+  urls.forEach(function(u){
+    try{
+      const im = new Image();
+      im.onload = im.onerror = function(){ im.onload = im.onerror = null; un(); };
+      im.decoding = 'async';
+      if(priorite) im.fetchPriority = priorite;      // ignoré par un navigateur qui ne le connaît pas
+      im.src = u;
+      VISUELS_PRECHARGES.push(im);
+    }catch(e){ un(); }
+  });
+}
+(function(){
+  if(!cardId && !DEMO) return;
+  try{
+    const vus = {}, d1 = [], d2 = [];
+    const garder = function(liste, u){ u = String(u || '').trim(); if(u && !vus[u]){ vus[u] = 1; liste.push(u); } };
+    garder(d1, P.logo);
+    [...CATALOGUE].filter(function(r){ return r && r.img; }).sort(function(a, b){ return a.cout - b.cout; })
+      .forEach(function(r, i){ garder(i < 3 ? d1 : d2, r.img); });
+    prechargerVisuels(d1, 'high', function(){ prechargerVisuels(d2, 'low'); });
+  }catch(e){}
+})();
+
+/* 10/11/2026 — « 1 tampon », plus « 1 tampons » : l'unité à côté du gros chiffre (#cSolde) suit sa valeur, quel que
+   soit le code qui l'écrit (render, applySolde, inchangés). 0 et 1 au singulier, comme « Plus que 1 tampon ». C'est le
+   premier écran de chaque nouveau client, dont la carte s'ouvre avec 1 tampon juste après l'inscription. */
+(function(){
+  const n = $('cSolde'), u = n && n.nextElementSibling;
+  if(!n || !u || !u.classList.contains('u') || typeof MutationObserver === 'undefined') return;
+  const accorder = function(){
+    const v = Number(String(n.textContent).trim());
+    const t = (Number.isFinite(v) && v <= 1) ? 'tampon' : 'tampons';
+    if(u.textContent !== t) u.textContent = t;
+  };
+  new MutationObserver(accorder).observe(n, { childList: true, characterData: true, subtree: true });
+  accorder();
+})();
 
 /* Point de passage UNIQUE vers le backend : c'est ici, et nulle part ailleurs,
    qu'on attend le registre. Toute la page en herite. */
@@ -1753,11 +1806,14 @@ window.closeRewardModal = function(){ $('cmOverlay').classList.remove('show'); f
    barre de progression, qui reste lisible quel que soit le nombre. */
 const STAMP_GRID_MAX = 25;
 function renderStamps(solde, next){
-  /* 04/11/2026 (D1) — la vignette du prochain palier (#progVign) : sa photo, ou le pictogramme du cadeau. */
+  /* 04/11/2026 (D1) — la vignette du prochain palier (#progVign) : sa photo, ou le pictogramme du cadeau.
+     04/11/2026 (passe 2, demande 3) — width/height = la boîte carrée de la vignette (64 px) : la place est connue avant
+     que l'image arrive, et sa vraie proportion reprend la main dès qu'elle est là (.vignette img : width/height auto,
+     contain) ; decoding="async" : le reste de la carte ne l'attend pas. Même règle pour toutes les photos de la page. */
   const vg = $('progVign');
   if(vg){
     vg.classList.toggle('photo', !!(next && next.img));
-    vg.innerHTML = (next && next.img) ? '<img src="'+next.img+'" alt="">' : PICTO.cadeau;
+    vg.innerHTML = (next && next.img) ? '<img src="'+next.img+'" alt="" width="64" height="64" decoding="async">' : PICTO.cadeau;
   }
   const grid = $('stampGrid'), bar = $('progBarWrap');
   if(!grid || !bar) return;
@@ -1769,7 +1825,7 @@ function renderStamps(solde, next){
   /* 04/11/2026 (D1) — un tampon plein porte le logo du commerce s'il en a un (Le Bap's), sinon une coche dessinée
      sur sa couleur (avant : le premier emoji de P.fl). Un tampon vide n'a plus que son bord. Les classes stamp, on
      et win, et l'ordre des cases, ne changent pas : celebrerTampons() s'en sert. */
-  const mark = P.logo ? '<img src="'+P.logo+'" alt="">' : PICTO.coche;
+  const mark = P.logo ? '<img src="'+P.logo+'" alt="" width="44" height="44" decoding="async">' : PICTO.coche;   // taille posée par .stamp.on img (passe 2 : width/height, cf. #progVign)
   const avecLogo = P.logo ? ' logo' : '';
   let html = '';
   for(let i=0; i<next.cout; i++){
@@ -1822,7 +1878,7 @@ function applySolde(n){
    appelé des deux côtés. */
 function renderCatalogue(n){
   const c = $('cat'); if(!c) return;
-  c.innerHTML = [...CATALOGUE].sort((a,b)=>a.cout-b.cout).map(r=>{   // trié par palier croissant
+  c.innerHTML = [...CATALOGUE].sort((a,b)=>a.cout-b.cout).map((r, i)=>{   // trié par palier croissant ; i : rang de la tuile (passe 2)
     const ok = n >= r.cout;
     const reste = r.cout - n;
     /* ♿ 24/09 — chaque tuile est un élément de liste ; l'image est décorative (le nom est à côté) ;
@@ -1832,10 +1888,16 @@ function renderCatalogue(n){
        emoji, ou 🎁) ; sous « Plus que N tampons », une jauge (part du palier déjà gagnée). La jauge est décorative
        (aria-hidden) : le texte juste au-dessus dit déjà la même chose, une lecture d'écran ne la répète pas.
        ⚠️ Les deux boutons restent écrits À L'IDENTIQUE, sans balise à l'intérieur : _outils/tests/test-catalogue.mjs
-       les lit par expression régulière. */
+       les lit par expression régulière.
+       04/11/2026 (passe 2, demande 3 de Valentin) — les TROIS premières tuiles (visibles sans défiler, de 320 à
+       430 px de large : 156 + 12 + 156 px, la troisième dépasse du bord) en loading="eager" : en « lazy », Safari ne
+       les demandait qu'une fois la tuile à l'écran, d'où la photo qui arrive après le reste. Les suivantes restent
+       en « lazy » (le préchargement du haut de page les a déjà demandées : elles sortent du cache au défilement).
+       width/height = la boîte de 88 px (cf. #progVign). Le 3 est écrit ici, pas dans une constante : les essais
+       exécutent cette fonction seule. */
     const part = Math.max(0, Math.min(1, n / r.cout));
     return '<div class="rw'+(ok?'':' locked')+'" role="listitem">'
-      +(r.img ? '<div class="ph vignette photo" aria-hidden="true"><img class="ph-img" src="'+r.img+'" alt="" loading="lazy"></div>' : '<div class="ph vignette" aria-hidden="true">'+PICTO.cadeau+'</div>')
+      +(r.img ? '<div class="ph vignette photo" aria-hidden="true"><img class="ph-img" src="'+r.img+'" alt="" width="88" height="88" loading="'+(i < 3 ? 'eager' : 'lazy')+'" decoding="async"></div>' : '<div class="ph vignette" aria-hidden="true">'+PICTO.cadeau+'</div>')
       +'<div class="nm">'+esc(r.libelle)+'</div>'
       +'<div class="cost">'+r.cout+' tampons</div>'
       +(ok ? '<button class="btn go" aria-label="Échanger '+r.cout+' tampons contre '+esc(r.libelle)+'" onclick="redeem(\''+r.item+'\', this)">Échanger</button>'
@@ -2574,7 +2636,8 @@ function renderRewards(list, serverNow){
     const lib = esc(g.libelle).replace(/'/g,"\\'");
     const img = photoDe(g.libelle);
     return '<div class="gift rangee">'
-      +(img ? '<span class="vignette photo" aria-hidden="true"><img src="'+esc(img)+'" alt=""></span>' : '<span class="vignette" aria-hidden="true">'+PICTO.cadeau+'</span>')
+      /* passe 2 (04/11/2026) : width/height = la boîte de 48 px, decoding="async" (cf. #progVign) */
+      +(img ? '<span class="vignette photo" aria-hidden="true"><img src="'+esc(img)+'" alt="" width="48" height="48" decoding="async"></span>' : '<span class="vignette" aria-hidden="true">'+PICTO.cadeau+'</span>')
       +'<div class="meta"><div class="n">'+esc(g.libelle)+'</div>'
       +'<div class="d">'+(g.code?('Code '+esc(g.code)):'')
       +(!done && g.fin_le ? ' · jusqu’au '+esc(g.fin_le) : '')+'</div></div>'   // 🎁 15/09 — offre promo : sa date
@@ -2702,11 +2765,13 @@ function renderOffres(list){
   if(!wrap || !box) return;
   const l = carteVue.offres;
   if(!l.length){ wrap.hidden = true; box.innerHTML = ''; return; }
-  /* 04/11/2026 (D1) — titre sans emoji ; sans affiche (https), le pictogramme du cadeau au lieu de 🎁. */
+  /* 04/11/2026 (D1) — titre sans emoji ; sans affiche (https), le pictogramme du cadeau au lieu de 🎁.
+     04/11/2026 (passe 2, demande 3) — l'affiche en loading="eager" (avant : lazy) : ce bloc est juste sous les
+     tampons, à l'écran dès l'ouverture ; width/height = sa boîte (56 px de large, 9/16), decoding="async". */
   $('offresTitre').textContent = l.length > 1 ? 'Nouvelles offres' : 'Nouvelle offre';
   box.innerHTML = l.map(function(o){
     const enCours = !!offresEnCours[o.id];
-    const img = /^https:\/\//.test(o.image || '') ? '<img src="' + esc(o.image) + '" alt="" loading="lazy">' : PICTO.cadeau;
+    const img = /^https:\/\//.test(o.image || '') ? '<img src="' + esc(o.image) + '" alt="" width="56" height="100" loading="eager" decoding="async">' : PICTO.cadeau;
     return '<div class="offre">'
       + '<div class="offre-img" aria-hidden="true">' + img + '</div>'
       + '<div class="offre-meta">'
@@ -2775,7 +2840,7 @@ function renderPaniers(list){
      vignette, même quand le serveur envoie un emoji (p.emoji n'est plus affiché). */
   el.innerHTML = '<div class="agb-h" role="heading" aria-level="2">Paniers anti-gaspi<span class="tag">Aujourd\'hui</span></div>'
     + '<div class="agb-sub">À récupérer en boutique avant la fermeture — premier arrivé, premier servi&nbsp;!</div>'
-    + list.map(p => '<div class="agb-item"><span class="vignette photo" aria-hidden="true"><img src="assets/'+agImg(p.libelle)+'" alt=""></span>'
+    + list.map(p => '<div class="agb-item"><span class="vignette photo" aria-hidden="true"><img src="assets/'+agImg(p.libelle)+'" alt="" width="48" height="48" decoding="async"></span>'   /* passe 2 : cf. #progVign */
         + '<div class="agb-meta"><div class="n">'+esc(p.libelle)+'</div><div class="d">'+(p.retrait_avant?('Retrait avant '+esc(p.retrait_avant)+' · '):'')+'<span class="agb-qty">'+p.qty+' dispo</span></div></div>'
         + '<div class="agb-price"><div class="pr">'+eurC(p.prix_reduit)+'</div>'+(p.prix_origine?('<div class="or">'+eurC(p.prix_origine)+'</div>'):'')+'</div></div>').join('');
 }

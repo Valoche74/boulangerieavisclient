@@ -4,7 +4,9 @@ Les pages que **le client** d'un commerce ouvre dans son téléphone (Perify, ca
 - `card.html` — **la carte de fidélité** (tampons, progression, cadeaux, offres, réseaux, ajout à
   Apple / Google Wallet, paniers anti-gaspi). Ouverte au comptoir, souvent dehors, à bout de bras.
 - `index.html` — **le parcours d'inscription** : avis Google → roue de la chance (une seule fois par
-  carte) → ajout de la carte au Wallet → écran « Scannez le QR code pour débloquer votre compte ».
+  carte) → ajout de la carte au Wallet → écran de fin « Ouvrir ma carte » ; la carte (card.html?id=…) s'ouvre
+  d'elle-même quand le client revient du Wallet, jamais sur un minuteur (passe 2 du 04/11/2026). Sans numéro de
+  carte, l'écran garde la consigne « Scannez le QR code du présentoir ».
 - `commerces.json` — **le registre des commerces**, servi en statique, lu par toutes les pages, le
   service Wallet et la nuit. Il est PRODUIT depuis la base du serveur : ne pas l'éditer à la main.
 - `valider.html`, `showroom.html`, `card-pulse.html`, `card-v3-maquette.html` : anciens annexes et essais,
@@ -27,7 +29,9 @@ développeur : écris-lui en français simple.
   AVANT l'animation, la roue ne fait que le montrer : 6 secteurs, le lot le plus fréquent sur 3, le
   moyen sur 2, **le plus rare sur un seul** (`secteursDeLaRoue`, décision du 30/10 : « le tacos une
   fois »), jamais deux secteurs voisins identiques ; la pointe s'arrête toujours sur un secteur du lot
-  tiré, et les libellés restent droits.
+  tiré, et les libellés restent droits. Chaque photo de lot reste DANS sa case à tous les angles d'arrêt
+  (`TAILLE_PHOTO_ROUE` pour une photo qui va jusque dans ses coins ; `_outils/tests/d1/test-roue-d1.mjs` le mesure) ;
+  une photo qui ne charge pas laisse la place au nom du lot.
 - **Direction visuelle D1 « app native épurée »** (choisie le 30/10/2026, remplace la direction nuit
   du 23/09) : fond clair `#F2F2F7`, surfaces blanches, Inter seule (servie par le site,
   `assets/polices/`) ; la couleur du commerce tient en 7 jetons (bloc `PERIFY_HABILLAGE`, le MÊME
